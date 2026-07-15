@@ -12,7 +12,7 @@ __pycache__/
 .ipynb_checkpoints/
 
 # OS Files
-.DS_Store
+.DS_Storedie
 Thumbs.db
 
 # Data (optional - if datasets are large)
