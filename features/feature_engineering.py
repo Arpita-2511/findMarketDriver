@@ -2,6 +2,49 @@ import numpy as np
 import pandas as pd
 
 
+# ==========================================
+# Technical feature schema
+# ==========================================
+# Bump TECHNICAL_FEATURE_VERSION whenever a feature is added, removed,
+# renamed, or its formula changes. The evaluation harness records it
+# with every result so experiments stay comparable.
+#
+# technical_v2 (2026-09-30):
+#   - Return_Lag_k        -> Return_k         (they are cumulative k-day
+#   - Volume_Change_Lag_k -> Volume_Change_k   changes, not 1-day lags)
+#   - removed Daily_Return (exact duplicate of Return_1)
+#   - removed Dividends / Stock Splits (raw yfinance columns, not
+#     technical predictors)
+
+TECHNICAL_FEATURE_VERSION = "technical_v2"
+
+TECHNICAL_FEATURES = [
+    "Close_to_SMA_7",
+    "Close_to_SMA_30",
+    "Close_to_EMA_12",
+    "Close_to_EMA_26",
+    "MACD_Norm",
+    "MACD_Signal_Norm",
+    "MACD_Histogram_Norm",
+    "RSI",
+    "BB_Position",
+    "BB_Width",
+    "Return_1",
+    "Return_2",
+    "Return_3",
+    "Return_5",
+    "Return_10",
+    "Volume_Change_1",
+    "Volume_Change_2",
+    "Volume_Change_5",
+    "Log_Return",
+    "Volatility",
+]
+
+# Raw yfinance columns that must never reach the model
+NON_PREDICTIVE_COLUMNS = ["Dividends", "Stock Splits", "Capital Gains"]
+
+
 def engineer_features(df):
     """
     Adds technical indicators to the stock dataframe.
@@ -25,6 +68,8 @@ def engineer_features(df):
     Returns:
         pd.DataFrame: Dataframe with engineered features
     """
+
+    df = df.drop(columns=[c for c in NON_PREDICTIVE_COLUMNS if c in df.columns])
 
     close = df["Close"]
 
@@ -87,34 +132,28 @@ def engineer_features(df):
     df["BB_Width"] = (bb_upper - bb_lower) / close
 
     # =========================
-    # Lag Features -> expressed as returns, not raw prices
+    # k-day returns (cumulative change over the last k days)
     # =========================
 
-    df["Return_Lag_1"] = close.pct_change(1)
-    df["Return_Lag_2"] = close.pct_change(2)
-    df["Return_Lag_3"] = close.pct_change(3)
-    df["Return_Lag_5"] = close.pct_change(5)
-    df["Return_Lag_10"] = close.pct_change(10)
+    df["Return_1"] = close.pct_change(1)
+    df["Return_2"] = close.pct_change(2)
+    df["Return_3"] = close.pct_change(3)
+    df["Return_5"] = close.pct_change(5)
+    df["Return_10"] = close.pct_change(10)
 
-    # Volume as relative change instead of raw share counts
-    df["Volume_Change_Lag_1"] = df["Volume"].pct_change(1)
-    df["Volume_Change_Lag_2"] = df["Volume"].pct_change(2)
-    df["Volume_Change_Lag_5"] = df["Volume"].pct_change(5)
-
-    # =========================
-    # Returns
-    # =========================
-
-    df["Daily_Return"] = close.pct_change()
+    # Volume as relative change over k days instead of raw share counts
+    df["Volume_Change_1"] = df["Volume"].pct_change(1)
+    df["Volume_Change_2"] = df["Volume"].pct_change(2)
+    df["Volume_Change_5"] = df["Volume"].pct_change(5)
 
     df["Log_Return"] = np.log(close / close.shift(1))
 
     # =========================
-    # Volatility
+    # Volatility (20-day std of 1-day returns)
     # =========================
 
     df["Volatility"] = (
-        df["Daily_Return"]
+        df["Return_1"]
         .rolling(window=20)
         .std()
     )
