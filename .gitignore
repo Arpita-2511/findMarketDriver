@@ -1,20 +1,48 @@
-# Virtual Environment
-.venv/
-
-# Environment Variables
-.env
-
-# Python Cache
+# ================================
+# Python
+# ================================
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
 
+# ================================
+# Virtual environments
+# ================================
+.venv/
+venv/
+env/
+
+# ================================
+# Environment / secrets
+# ================================
+.env
+.env.*
+
+# ================================
 # Jupyter
+# ================================
 .ipynb_checkpoints/
 
-# OS Files
-.DS_Storedie
+# ================================
+# OS files
+# ================================
+.DS_Store
 Thumbs.db
 
-# Data (optional - if datasets are large)
-data/raw/
-data/processed/
+# ================================
+# Model artifacts
+# ================================
+*.pkl
+*.joblib
+
+# ================================
+# Logs / generated tracking files
+# ================================
+*.log
+data/live_predictions_log.csv
+
+# ================================
+# Temporary files
+# ================================
+*.tmp
+*.temp
