@@ -1,0 +1,6 @@
+# Data files are hashed byte-for-byte (sha256 in *.meta.json).
+# Never let git convert their line endings on checkout (core.autocrlf),
+# or a fresh clone would fail its own snapshot/dataset hash checks.
+data/raw/stocks/** -text
+data/*.csv -text
+data/*.meta.json -text

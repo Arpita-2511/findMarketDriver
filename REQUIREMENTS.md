@@ -1268,17 +1268,18 @@ Status: IMPLEMENTED (2026-09-30) — pending review/commit
 
 PHASE 2 — Data Pipeline Hardening
 
-Status: NOT STARTED
+Status: IMPLEMENTED (2026-09-30) — awaiting user test run, review and commit
+        (policies: ARCHITECTURE.md section 6.2)
 
-[ ] Completed-bar validation
-[ ] Minimum-history validation
-[ ] Consistent yfinance schema
-[ ] Fix fallback behavior
-[ ] Remove/fix stale app.py
-[ ] Fix Config/config case
-[ ] Fix requirements.txt
-[ ] Fix live evaluation adjustment issue
-[ ] Add raw snapshots
+[x] Completed-bar validation
+[x] Minimum-history validation
+[x] Consistent yfinance schema
+[x] Fix fallback behavior
+[x] Remove/fix stale app.py (placeholder reserved for Flask)
+[x] Fix Config/config case (requires the user's git index fix)
+[x] Fix requirements.txt
+[x] Fix live evaluation adjustment issue
+[x] Add raw snapshots
 
 PHASE 3 — Classification
 
@@ -1459,7 +1460,7 @@ As of 2026-09-30:
 Architecture document       COMPLETE
 Requirements document       COMPLETE
 
-Stock ingestion             PARTIAL / WORKING
+Stock ingestion             WORKING (Phase 2 hardening, pending verification)
 Technical features          WORKING (technical_v2)
 Target creation             WORKING
 Regression experiments      WORKING

@@ -213,6 +213,22 @@ def load_dataset(path: Path) -> pd.DataFrame:
     return df
 
 
+def load_dataset_metadata(dataset_path: Path, dataset_sha256: str) -> dict | None:
+    """
+    Read <dataset>.meta.json written by training/build_dataset.py (raw
+    snapshot hash, feature version, ...). Returns None if absent. Adds
+    `matches_dataset_file` so a dataset edited after its build is visible
+    in the report.
+    """
+    meta_path = Path(dataset_path).with_suffix(".meta.json")
+    if not meta_path.is_file():
+        return None
+    with open(meta_path, encoding="utf-8") as f:
+        meta = json.load(f)
+    meta["matches_dataset_file"] = meta.get("sha256") == dataset_sha256
+    return meta
+
+
 def validate_dataset(df: pd.DataFrame, feature_columns: list[str]) -> dict:
     """
     Enforce the data contract. Raises DatasetValidationError listing
@@ -602,6 +618,7 @@ def run_evaluation(
             if dataset_path.is_relative_to(PROJECT_ROOT) else str(dataset_path),
             "sha256": file_sha256(dataset_path),
         }
+        dataset_version["build_metadata"] = load_dataset_metadata(dataset_path, dataset_version["sha256"])
     else:
         df = data.copy()
         if not pd.api.types.is_datetime64_any_dtype(df["Date"]):

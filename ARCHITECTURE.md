@@ -409,6 +409,56 @@ Do not use unfinished intraday bars as daily closes.
 
 Only completed trading-day bars should enter the daily prediction pipeline.
 
+6.2 Implemented data contract (Phase 2)
+
+Canonical schema (services/market_data.py):
+
+Date      timezone-naive, = America/New_York trading date
+Open, High, Low, Close, Volume   float64
+
+Both yfinance paths (Ticker.history and the yf.download fallback) are
+normalized to exactly this schema; Dividends / Stock Splits are dropped.
+Invalid data (missing columns, NaN/inf, duplicate or unsorted dates,
+non-positive prices or volume) raises MarketDataError; it is never
+silently repaired.
+
+Completed-bar policy (services/market_calendar_service.py):
+
+A bar dated D is complete iff now >= D 16:00 America/New_York + 30 min.
+The in-progress bar is dropped by fetch_latest_stock_data().
+A bar dated after today (exchange time) is an error.
+Limitation: early-close days count as complete only from 16:30.
+
+Minimum-history policy (features/feature_engineering.py):
+
+MIN_HISTORY_ROWS is derived from the feature windows:
+max(longest rolling window = 30,
+    EMA warm-up = rows until the start value of EMA_26 and then the
+    MACD signal EMA_9 carries < 1% weight = 60 + 21) = 81 bars.
+Fewer bars -> InsufficientHistoryError. The first 80 rows are
+removed; every returned row must be finite, otherwise
+FeatureGenerationError (no silent row dropping).
+
+Price semantics:
+
+auto_adjust=True on every path: split- and dividend-adjusted prices,
+so returns and the Target are total returns. Yahoo back-adjusts
+history after each dividend, so prices from different retrievals must
+never be mixed; live outcome scoring computes returns from one
+retrieval (models/evaluate_live_tracking.py).
+
+Reproducibility (training/build_dataset.py):
+
+yfinance -> data/raw/stocks/<TICKER>_1d_<period>_<UTC>.csv + .meta.json
+(ticker, period, source method, retrieval time, parameters, sha256)
+-> features -> data/final_stock_dataset.csv + .meta.json (snapshot hash,
+feature version, dataset sha256). A download is not reproducible; a
+stored snapshot is: `python -m training.build_dataset --from-snapshot
+<file>` rebuilds a byte-identical dataset (same library versions).
+The evaluation harness copies the dataset metadata into its report.
+.gitattributes marks these data files -text so git never rewrites
+their line endings (which would break the stored hashes).
+
 7. TECHNICAL FEATURE PIPELINE
 
 Initial technical feature groups:
@@ -1359,7 +1409,9 @@ Tasks:
 2. Minimum-history validation
 3. Consistent yfinance schema
 4. Remove app.py duplicate/broken path
+   (done: app.py is now an explicit placeholder reserved for Flask, Phase 11)
 5. Fix Config/config case
+   (canonical: lowercase config/, matching every import)
 6. Fix requirements.txt
 7. Fix live evaluation adjustment issue
 8. Raw data snapshots

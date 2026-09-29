@@ -1,3 +1,8 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+# Live-network tests are opt-in:  pytest -m integration
+addopts = "-m \"not integration\""
+markers = [
+    "integration: needs internet access (live yfinance); excluded by default",
+]

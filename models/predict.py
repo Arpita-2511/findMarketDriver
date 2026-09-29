@@ -50,9 +50,13 @@ symbol = input("Enter Stock Symbol : ").strip().upper()
 # Step 4 : Fetch Live Stock Data
 # ==========================================
 
+# Returns completed daily bars only (an in-progress session bar is dropped)
 df = fetch_latest_stock_data(symbol)
 
 print("✅ Live Stock Data Downloaded")
+print(f"   Latest completed bar : {df['Date'].iloc[-1].date()} "
+      f"(source: {df.attrs.get('source_method')}, "
+      f"incomplete bars dropped: {df.attrs.get('incomplete_bars_dropped')})")
 
 # ==========================================
 # Step 5 : Feature Engineering

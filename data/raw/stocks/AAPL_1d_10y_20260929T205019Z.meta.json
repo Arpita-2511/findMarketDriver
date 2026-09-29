@@ -1,0 +1,31 @@
+{
+  "ticker": "AAPL",
+  "source": "yfinance",
+  "source_method": "Ticker.history",
+  "yfinance_version": "1.5.1",
+  "requested_period": "10y",
+  "interval": "1d",
+  "auto_adjust": true,
+  "price_semantics": "split- and dividend-adjusted as of retrieval time",
+  "dropped_columns": [
+    "Dividends",
+    "Stock Splits",
+    "Capital Gains"
+  ],
+  "retrieved_at_utc": "2026-09-29T20:50:19+00:00",
+  "completed_bar_policy": "bar kept only if retrieval time >= bar date 16:00 America/New_York + 30 min",
+  "incomplete_bars_dropped": 0,
+  "columns": [
+    "Date",
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "Volume"
+  ],
+  "rows": 2512,
+  "first_date": "2016-09-30",
+  "last_date": "2026-09-29",
+  "file": "AAPL_1d_10y_20260929T205019Z.csv",
+  "sha256": "da7039c5ce11b8751641d22220024f43f5549419f8eccee89a865fc2fa7e6adc"
+}

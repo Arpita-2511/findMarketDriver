@@ -1,26 +1,19 @@
+"""
+Reserved entry point for the Flask backend (ARCHITECTURE.md section 21,
+Phase 11). Not implemented yet.
 
-from features.feature_engineering import add_technical_indicators
-from features.finalize_dataset import finalize_dataset
+Until Phase 2 this file was a broken duplicate of training/build_dataset.py:
+it imported `add_technical_indicators`, which no longer exists (ImportError),
+and would have overwritten the dataset without a raw snapshot.
 
-from services.live_stock_service import fetch_latest_stock_data
+To build the dataset:      python -m training.build_dataset
+To evaluate models:        python -m training.evaluation_harness
+"""
 
-df = fetch_latest_stock_data(
-    symbol="AAPL",
-    period="10y"
-)
+import sys
 
-df = add_technical_indicators(df)
-
-df.to_csv(
-    "data/feature_engineered_stock_data.csv",
-    index=False
-)
-
-final_df = finalize_dataset(df)
-
-final_df.to_csv(
-    "data/final_stock_dataset.csv",
-    index=False
-)
-
-print(final_df.head())
+if __name__ == "__main__":
+    sys.exit(
+        "app.py is reserved for the Flask backend (Phase 11) and does nothing yet.\n"
+        "Build the dataset with:  python -m training.build_dataset"
+    )
