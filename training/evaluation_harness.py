@@ -73,6 +73,12 @@ from features.feature_engineering import (  # noqa: E402
     TECHNICAL_FEATURE_VERSION,
     TECHNICAL_FEATURES,
 )
+from training.targets import (  # noqa: E402
+    DIRECTION_RULE,
+    direction_label,
+    future_return,
+    target_summary,
+)
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "final_stock_dataset.csv"
 DEFAULT_RESULTS_DIR = PROJECT_ROOT / "data" / "results" / "evaluation"
@@ -283,11 +289,8 @@ def build_targets(df: pd.DataFrame, horizon: int) -> pd.DataFrame:
     features/finalize_dataset.py) and horizon == 1, it must agree with the
     recomputed target - this is the target-alignment check.
     """
-    if horizon < 1:
-        raise ValueError("horizon must be >= 1")
-
     out = df.copy()
-    out["future_return"] = out["Close"].shift(-horizon) / out["Close"] - 1
+    out["future_return"] = future_return(out["Close"], horizon)
 
     if horizon == 1 and "Target" in out.columns:
         both = out["future_return"].notna()
@@ -298,7 +301,7 @@ def build_targets(df: pd.DataFrame, horizon: int) -> pd.DataFrame:
             )
 
     out = out.iloc[:-horizon].reset_index(drop=True)
-    out["direction"] = (out["future_return"] > 0).astype(int)
+    out["direction"] = direction_label(out["future_return"])
     return out
 
 
@@ -330,6 +333,29 @@ def classification_metrics(y_true: np.ndarray, proba_up: np.ndarray) -> dict:
         "Log_Loss": float(log_loss(y_true, p, labels=[0, 1])),
         "Share_Predicted_UP": float(labels.mean()),
     }
+
+
+def reliability_table(y_true: np.ndarray, proba_up: np.ndarray, n_bins: int = 10) -> list[dict]:
+    """
+    Calibration / reliability analysis (REQ-PROB-002): pooled OOS
+    predictions grouped into equal-width probability bins. A calibrated
+    model has mean_predicted ~= observed_up_rate in every populated bin.
+    Reporting only - it does not change any metric or the gate.
+    """
+    edges = np.linspace(0.0, 1.0, n_bins + 1)
+    bins = np.clip(np.digitize(proba_up, edges[1:-1], right=False), 0, n_bins - 1)
+    rows = []
+    for b in range(n_bins):
+        mask = bins == b
+        n = int(mask.sum())
+        rows.append({
+            "bin_low": float(edges[b]),
+            "bin_high": float(edges[b + 1]),
+            "n": n,
+            "mean_predicted": float(proba_up[mask].mean()) if n else None,
+            "observed_up_rate": float(y_true[mask].mean()) if n else None,
+        })
+    return rows
 
 
 def per_observation_loss(task: str, y_true: np.ndarray, pred: np.ndarray) -> np.ndarray:
@@ -639,9 +665,13 @@ def run_evaluation(
     metrics = pooled_metrics(predictions, candidates)
     gate = qualify(predictions, candidates, metrics, config)
 
+    # Only report tracks that were actually evaluated (a classification-only
+    # run must not claim "regression: NO QUALIFIED MODEL")
+    evaluated_tasks = [t for t in (REGRESSION, CLASSIFICATION)
+                       if any(c.task == t and not c.is_baseline for c in candidates)]
     qualified = {
         task: sorted(n for n, g in gate.items() if g["task"] == task and g["status"] == QUALIFIED)
-        for task in (REGRESSION, CLASSIFICATION)
+        for task in evaluated_tasks
     }
     overall = {task: (names if names else NO_QUALIFIED_MODEL) for task, names in qualified.items()}
 
@@ -654,8 +684,21 @@ def run_evaluation(
 
     target_definitions = {
         REGRESSION: f"future_return = Close[t+{config.horizon}] / Close[t] - 1",
-        CLASSIFICATION: "direction = 1 if future_return > 0 else 0",
+        CLASSIFICATION: DIRECTION_RULE,
     }
+
+    oos_rows = np.sort(predictions["row"].unique())
+    target_stats = {
+        "all_labelled_rows": target_summary(evaluable["future_return"], evaluable["direction"]),
+        "pooled_oos_rows": target_summary(evaluable["future_return"].iloc[oos_rows],
+                                          evaluable["direction"].iloc[oos_rows]),
+    }
+
+    def reliability_for(cand: Candidate):
+        if cand.task != CLASSIFICATION:
+            return None
+        p = predictions[predictions["model"] == cand.name]
+        return reliability_table(p["y_true"].to_numpy(), p["prediction"].to_numpy())
 
     report = {
         "experiment": experiment,
@@ -666,6 +709,7 @@ def run_evaluation(
         "feature_version": feature_version,
         "features": feature_columns,
         "target": target_definitions,
+        "target_summary": target_stats,
         "horizon_days": config.horizon,
         "validation_method": "TimeSeriesSplit walk-forward, pooled out-of-sample",
         "n_splits": config.n_splits,
@@ -683,6 +727,7 @@ def run_evaluation(
                 "description": c.description,
                 "metrics": metrics[c.name],
                 "qualification": gate[c.name],
+                "reliability": reliability_for(c),
             }
             for c in candidates
         ],
@@ -741,14 +786,23 @@ def print_report(result: EvaluationResult) -> None:
           f"{r['evaluation_period']['n_oos_rows']} pooled OOS rows "
           f"({r['evaluation_period']['start']} -> {r['evaluation_period']['end']})")
 
+    # A track's metric columns exist only if that track was evaluated,
+    # so select rows first and columns only for tracks that are present.
     s = result.summary
-    reg = s[s["task"] == REGRESSION][["model", "status", "MAE", "RMSE", "R2"]]
-    clf = s[s["task"] == CLASSIFICATION][["model", "status", "Accuracy", "Balanced_Accuracy",
-                                          "ROC_AUC", "Brier", "Log_Loss"]]
-    print("\n-- Regression (pooled OOS) --")
-    print(reg.to_string(index=False, float_format=lambda v: f"{v:.6f}"))
-    print("\n-- Classification (pooled OOS) --")
-    print(clf.to_string(index=False, float_format=lambda v: f"{v:.4f}"))
+    reg = s[s["task"] == REGRESSION]
+    clf = s[s["task"] == CLASSIFICATION]
+    if not reg.empty:
+        reg = reg[["model", "status", "MAE", "RMSE", "R2"]]
+        print("\n-- Regression (pooled OOS) --")
+        print(reg.to_string(index=False, float_format=lambda v: f"{v:.6f}"))
+    if not clf.empty:
+        clf = clf[["model", "status", "Accuracy", "Balanced_Accuracy", "ROC_AUC", "Brier", "Log_Loss"]]
+        ts = r["target_summary"]["pooled_oos_rows"]
+        print("\n-- Classification (pooled OOS) --")
+        print(f"Target: {r['target'][CLASSIFICATION]}")
+        print(f"OOS labels: {ts['n_up']} UP / {ts['n_down']} DOWN "
+              f"(up share {ts['up_share']:.4f}; {ts['n_zero_return_labelled_down']} zero-return rows labelled DOWN)")
+        print(clf.to_string(index=False, float_format=lambda v: f"{v:.4f}"))
 
     print("\n-- Qualification gate --")
     for m in r["models"]:

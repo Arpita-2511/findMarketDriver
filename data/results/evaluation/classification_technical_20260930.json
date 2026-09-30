@@ -1,0 +1,2285 @@
+{
+  "experiment": "classification_technical",
+  "timestamp": "2026-09-30T12:31:48+00:00",
+  "harness_version": "1.0",
+  "gate_version": "gate_v1",
+  "dataset_version": {
+    "path": "data/final_stock_dataset.csv",
+    "sha256": "e5fef0d26ecc9d1ff971644139d14012c2372d2e49ede9553a47299e2043c8c2",
+    "build_metadata": {
+      "dataset": "final_stock_dataset.csv",
+      "sha256": "e5fef0d26ecc9d1ff971644139d14012c2372d2e49ede9553a47299e2043c8c2",
+      "rows": 2431,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Close_to_SMA_7",
+        "Close_to_SMA_30",
+        "Close_to_EMA_12",
+        "Close_to_EMA_26",
+        "MACD_Norm",
+        "MACD_Signal_Norm",
+        "MACD_Histogram_Norm",
+        "RSI",
+        "BB_Position",
+        "BB_Width",
+        "Return_1",
+        "Return_2",
+        "Return_3",
+        "Return_5",
+        "Return_10",
+        "Volume_Change_1",
+        "Volume_Change_2",
+        "Volume_Change_5",
+        "Log_Return",
+        "Volatility",
+        "Target"
+      ],
+      "first_date": "2017-01-26",
+      "last_date": "2026-09-28",
+      "target": "Target = Close[t+1] / Close[t] - 1 (next-day return, adjusted prices)",
+      "feature_version": "technical_v2",
+      "features": [
+        "Close_to_SMA_7",
+        "Close_to_SMA_30",
+        "Close_to_EMA_12",
+        "Close_to_EMA_26",
+        "MACD_Norm",
+        "MACD_Signal_Norm",
+        "MACD_Histogram_Norm",
+        "RSI",
+        "BB_Position",
+        "BB_Width",
+        "Return_1",
+        "Return_2",
+        "Return_3",
+        "Return_5",
+        "Return_10",
+        "Volume_Change_1",
+        "Volume_Change_2",
+        "Volume_Change_5",
+        "Log_Return",
+        "Volatility"
+      ],
+      "min_history_rows": 81,
+      "raw_snapshot": {
+        "path": "data/raw/stocks/AAPL_1d_10y_20260929T205051Z.csv",
+        "sha256": "141aba8fc1aafca6ccfa3e4677ac7abb20754a8f02ec66468c9974aa67a36cbb",
+        "ticker": "AAPL",
+        "retrieved_at_utc": "2026-09-29T20:50:51+00:00",
+        "rows": 2512
+      },
+      "feature_file": {
+        "path": "feature_engineered_stock_data.csv",
+        "sha256": "db97cbc9dd1ad6878c95937adb830e2f33b9a63ffacedf07d1bc1ecbf8baee4c"
+      },
+      "environment": {
+        "python": "3.14.6",
+        "pandas": "3.0.3",
+        "numpy": "2.5.1"
+      },
+      "matches_dataset_file": true
+    },
+    "rows": 2431,
+    "first_date": "2017-01-26",
+    "last_date": "2026-09-28"
+  },
+  "feature_version": "technical_v2",
+  "features": [
+    "Close_to_SMA_7",
+    "Close_to_SMA_30",
+    "Close_to_EMA_12",
+    "Close_to_EMA_26",
+    "MACD_Norm",
+    "MACD_Signal_Norm",
+    "MACD_Histogram_Norm",
+    "RSI",
+    "BB_Position",
+    "BB_Width",
+    "Return_1",
+    "Return_2",
+    "Return_3",
+    "Return_5",
+    "Return_10",
+    "Volume_Change_1",
+    "Volume_Change_2",
+    "Volume_Change_5",
+    "Log_Return",
+    "Volatility"
+  ],
+  "target": {
+    "regression": "future_return = Close[t+1] / Close[t] - 1",
+    "classification": "direction = 1 (UP) if future_return > 0 else 0 (DOWN); zero -> DOWN; no dead zone"
+  },
+  "target_summary": {
+    "all_labelled_rows": {
+      "target_version": "direction_v1",
+      "rule": "direction = 1 (UP) if future_return > 0 else 0 (DOWN); zero -> DOWN; no dead zone",
+      "n_rows": 2430,
+      "n_up": 1303,
+      "n_down": 1127,
+      "n_zero_return_labelled_down": 5,
+      "up_share": 0.5362139917695473
+    },
+    "pooled_oos_rows": {
+      "target_version": "direction_v1",
+      "rule": "direction = 1 (UP) if future_return > 0 else 0 (DOWN); zero -> DOWN; no dead zone",
+      "n_rows": 2300,
+      "n_up": 1230,
+      "n_down": 1070,
+      "n_zero_return_labelled_down": 5,
+      "up_share": 0.5347826086956522
+    }
+  },
+  "horizon_days": 1,
+  "validation_method": "TimeSeriesSplit walk-forward, pooled out-of-sample",
+  "n_splits": 20,
+  "gap": 1,
+  "significance_level": 0.05,
+  "training_period": {
+    "start": "2017-01-26",
+    "end": "2026-04-10"
+  },
+  "evaluation_period": {
+    "start": "2017-08-02",
+    "end": "2026-09-25",
+    "n_oos_rows": 2300
+  },
+  "qualification_result": {
+    "classification": "NO QUALIFIED MODEL"
+  },
+  "models": [
+    {
+      "model": "Always UP",
+      "task": "classification",
+      "is_baseline": true,
+      "description": "Always predicts UP with probability 1",
+      "metrics": {
+        "Accuracy": 0.5347826086956522,
+        "Balanced_Accuracy": 0.5,
+        "ROC_AUC": 0.5,
+        "Brier": 0.4652173913043478,
+        "Log_Loss": 16.068411439915103,
+        "Share_Predicted_UP": 1.0
+      },
+      "qualification": {
+        "status": "BASELINE",
+        "task": "classification"
+      },
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.1,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.1,
+          "bin_high": 0.2,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.30000000000000004,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.30000000000000004,
+          "bin_high": 0.4,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.5,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.5,
+          "bin_high": 0.6000000000000001,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.6000000000000001,
+          "bin_high": 0.7000000000000001,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.7000000000000001,
+          "bin_high": 0.8,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 0.9,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.9,
+          "bin_high": 1.0,
+          "n": 2300,
+          "mean_predicted": 1.0,
+          "observed_up_rate": 0.5347826086956522
+        }
+      ]
+    },
+    {
+      "model": "Base Rate",
+      "task": "classification",
+      "is_baseline": true,
+      "description": "P(UP) = training-fold share of UP days",
+      "metrics": {
+        "Accuracy": 0.5347826086956522,
+        "Balanced_Accuracy": 0.5,
+        "ROC_AUC": 0.4823493655497303,
+        "Brier": 0.24904396926217492,
+        "Log_Loss": 0.6912367109299055,
+        "Share_Predicted_UP": 1.0
+      },
+      "qualification": {
+        "status": "BASELINE",
+        "task": "classification"
+      },
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.1,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.1,
+          "bin_high": 0.2,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.30000000000000004,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.30000000000000004,
+          "bin_high": 0.4,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.5,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.5,
+          "bin_high": 0.6000000000000001,
+          "n": 2300,
+          "mean_predicted": 0.5379884208949847,
+          "observed_up_rate": 0.5347826086956522
+        },
+        {
+          "bin_low": 0.6000000000000001,
+          "bin_high": 0.7000000000000001,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.7000000000000001,
+          "bin_high": 0.8,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 0.9,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.9,
+          "bin_high": 1.0,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "model": "Logistic Regression",
+      "task": "classification",
+      "is_baseline": false,
+      "description": "C=1.0, standardized features (same as Phase 1)",
+      "metrics": {
+        "Accuracy": 0.5165217391304348,
+        "Balanced_Accuracy": 0.4962388876225211,
+        "ROC_AUC": 0.4840483245953955,
+        "Brier": 0.2576924388769252,
+        "Log_Loss": 0.7128258565631101,
+        "Share_Predicted_UP": 0.7913043478260869
+      },
+      "qualification": {
+        "status": "NOT_QUALIFIED",
+        "task": "classification",
+        "reference_baseline": "Base Rate",
+        "primary_metric": "Log_Loss",
+        "model_value": 0.7128258565631101,
+        "baseline_value": 0.6912367109299055,
+        "diebold_mariano": {
+          "dm_stat": -4.682701258609427,
+          "p_value": 0.999998584405075,
+          "mean_loss_improvement": -0.021589145633204687
+        },
+        "reasons": [
+          "Log_Loss not better than Base Rate",
+          "Accuracy below Always UP"
+        ]
+      },
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.1,
+          "n": 1,
+          "mean_predicted": 0.08961257083984203,
+          "observed_up_rate": 1.0
+        },
+        {
+          "bin_low": 0.1,
+          "bin_high": 0.2,
+          "n": 3,
+          "mean_predicted": 0.16684005478073952,
+          "observed_up_rate": 0.0
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.30000000000000004,
+          "n": 17,
+          "mean_predicted": 0.2713295987787546,
+          "observed_up_rate": 0.4117647058823529
+        },
+        {
+          "bin_low": 0.30000000000000004,
+          "bin_high": 0.4,
+          "n": 53,
+          "mean_predicted": 0.3589064373240027,
+          "observed_up_rate": 0.4716981132075472
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.5,
+          "n": 406,
+          "mean_predicted": 0.46629098328969604,
+          "observed_up_rate": 0.5615763546798029
+        },
+        {
+          "bin_low": 0.5,
+          "bin_high": 0.6000000000000001,
+          "n": 1441,
+          "mean_predicted": 0.5474668762853049,
+          "observed_up_rate": 0.5399028452463567
+        },
+        {
+          "bin_low": 0.6000000000000001,
+          "bin_high": 0.7000000000000001,
+          "n": 266,
+          "mean_predicted": 0.6350603981717735,
+          "observed_up_rate": 0.48872180451127817
+        },
+        {
+          "bin_low": 0.7000000000000001,
+          "bin_high": 0.8,
+          "n": 64,
+          "mean_predicted": 0.7468630604823161,
+          "observed_up_rate": 0.578125
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 0.9,
+          "n": 30,
+          "mean_predicted": 0.8386579533416006,
+          "observed_up_rate": 0.4
+        },
+        {
+          "bin_low": 0.9,
+          "bin_high": 1.0,
+          "n": 19,
+          "mean_predicted": 0.93003835792296,
+          "observed_up_rate": 0.631578947368421
+        }
+      ]
+    },
+    {
+      "model": "Random Forest",
+      "task": "classification",
+      "is_baseline": false,
+      "description": "300 trees, depth 3, min_samples_leaf 50 (fixed, regularized)",
+      "metrics": {
+        "Accuracy": 0.5304347826086957,
+        "Balanced_Accuracy": 0.5023782387356583,
+        "ROC_AUC": 0.48892941265861256,
+        "Brier": 0.25039766085295767,
+        "Log_Loss": 0.6939877765471971,
+        "Share_Predicted_UP": 0.9034782608695652
+      },
+      "qualification": {
+        "status": "NOT_QUALIFIED",
+        "task": "classification",
+        "reference_baseline": "Base Rate",
+        "primary_metric": "Log_Loss",
+        "model_value": 0.6939877765471971,
+        "baseline_value": 0.6912367109299055,
+        "diebold_mariano": {
+          "dm_stat": -2.01520860073819,
+          "p_value": 0.9780586016329311,
+          "mean_loss_improvement": -0.0027510656172917334
+        },
+        "reasons": [
+          "Log_Loss not better than Base Rate",
+          "Accuracy below Always UP"
+        ]
+      },
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.1,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.1,
+          "bin_high": 0.2,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.30000000000000004,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.30000000000000004,
+          "bin_high": 0.4,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.5,
+          "n": 222,
+          "mean_predicted": 0.479140538854165,
+          "observed_up_rate": 0.5225225225225225
+        },
+        {
+          "bin_low": 0.5,
+          "bin_high": 0.6000000000000001,
+          "n": 1984,
+          "mean_predicted": 0.5450138764288798,
+          "observed_up_rate": 0.5367943548387096
+        },
+        {
+          "bin_low": 0.6000000000000001,
+          "bin_high": 0.7000000000000001,
+          "n": 94,
+          "mean_predicted": 0.6137645064769202,
+          "observed_up_rate": 0.5212765957446809
+        },
+        {
+          "bin_low": 0.7000000000000001,
+          "bin_high": 0.8,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 0.9,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.9,
+          "bin_high": 1.0,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "model": "XGBoost",
+      "task": "classification",
+      "is_baseline": false,
+      "description": "300 rounds, depth 3, lr 0.03, subsample/colsample 0.8 (fixed)",
+      "metrics": {
+        "Accuracy": 0.5117391304347826,
+        "Balanced_Accuracy": 0.4981498366385533,
+        "ROC_AUC": 0.49583276346782157,
+        "Brier": 0.25848832345963385,
+        "Log_Loss": 0.7114897140522872,
+        "Share_Predicted_UP": 0.6952173913043478
+      },
+      "qualification": {
+        "status": "NOT_QUALIFIED",
+        "task": "classification",
+        "reference_baseline": "Base Rate",
+        "primary_metric": "Log_Loss",
+        "model_value": 0.7114897140522872,
+        "baseline_value": 0.6912367109299055,
+        "diebold_mariano": {
+          "dm_stat": -4.587394182375019,
+          "p_value": 0.9999977559360799,
+          "mean_loss_improvement": -0.020253003122381777
+        },
+        "reasons": [
+          "Log_Loss not better than Base Rate",
+          "Accuracy below Always UP"
+        ]
+      },
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.1,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.1,
+          "bin_high": 0.2,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.30000000000000004,
+          "n": 17,
+          "mean_predicted": 0.2740294424926533,
+          "observed_up_rate": 0.4117647058823529
+        },
+        {
+          "bin_low": 0.30000000000000004,
+          "bin_high": 0.4,
+          "n": 185,
+          "mean_predicted": 0.3589044271288691,
+          "observed_up_rate": 0.4864864864864865
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.5,
+          "n": 499,
+          "mean_predicted": 0.45915545042387707,
+          "observed_up_rate": 0.561122244488978
+        },
+        {
+          "bin_low": 0.5,
+          "bin_high": 0.6000000000000001,
+          "n": 938,
+          "mean_predicted": 0.5498955419449918,
+          "observed_up_rate": 0.5330490405117271
+        },
+        {
+          "bin_low": 0.6000000000000001,
+          "bin_high": 0.7000000000000001,
+          "n": 519,
+          "mean_predicted": 0.641761105758836,
+          "observed_up_rate": 0.5298651252408478
+        },
+        {
+          "bin_low": 0.7000000000000001,
+          "bin_high": 0.8,
+          "n": 136,
+          "mean_predicted": 0.7349679128212088,
+          "observed_up_rate": 0.5441176470588235
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 0.9,
+          "n": 6,
+          "mean_predicted": 0.8208363354206085,
+          "observed_up_rate": 0.6666666666666666
+        },
+        {
+          "bin_low": 0.9,
+          "bin_high": 1.0,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "model": "LightGBM",
+      "task": "classification",
+      "is_baseline": false,
+      "description": "300 rounds, depth 3 / 7 leaves, lr 0.03, min_child_samples 50 (fixed)",
+      "metrics": {
+        "Accuracy": 0.51,
+        "Balanced_Accuracy": 0.4986513182888838,
+        "ROC_AUC": 0.49984955550490084,
+        "Brier": 0.2615631366016658,
+        "Log_Loss": 0.7188720497911988,
+        "Share_Predicted_UP": 0.6630434782608695
+      },
+      "qualification": {
+        "status": "NOT_QUALIFIED",
+        "task": "classification",
+        "reference_baseline": "Base Rate",
+        "primary_metric": "Log_Loss",
+        "model_value": 0.7188720497911988,
+        "baseline_value": 0.6912367109299055,
+        "diebold_mariano": {
+          "dm_stat": -5.375114551548315,
+          "p_value": 0.9999999617329954,
+          "mean_loss_improvement": -0.027635338861293303
+        },
+        "reasons": [
+          "Log_Loss not better than Base Rate",
+          "Accuracy below Always UP"
+        ]
+      },
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.1,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        },
+        {
+          "bin_low": 0.1,
+          "bin_high": 0.2,
+          "n": 8,
+          "mean_predicted": 0.19142700047397582,
+          "observed_up_rate": 0.375
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.30000000000000004,
+          "n": 43,
+          "mean_predicted": 0.26779270000500094,
+          "observed_up_rate": 0.5116279069767442
+        },
+        {
+          "bin_low": 0.30000000000000004,
+          "bin_high": 0.4,
+          "n": 189,
+          "mean_predicted": 0.35878742724939644,
+          "observed_up_rate": 0.5291005291005291
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.5,
+          "n": 535,
+          "mean_predicted": 0.45695397654258124,
+          "observed_up_rate": 0.5439252336448598
+        },
+        {
+          "bin_low": 0.5,
+          "bin_high": 0.6000000000000001,
+          "n": 801,
+          "mean_predicted": 0.5485496904725133,
+          "observed_up_rate": 0.5368289637952559
+        },
+        {
+          "bin_low": 0.6000000000000001,
+          "bin_high": 0.7000000000000001,
+          "n": 541,
+          "mean_predicted": 0.645288745614757,
+          "observed_up_rate": 0.5378927911275416
+        },
+        {
+          "bin_low": 0.7000000000000001,
+          "bin_high": 0.8,
+          "n": 157,
+          "mean_predicted": 0.7373894450998782,
+          "observed_up_rate": 0.4968152866242038
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 0.9,
+          "n": 26,
+          "mean_predicted": 0.8266696978882693,
+          "observed_up_rate": 0.5769230769230769
+        },
+        {
+          "bin_low": 0.9,
+          "bin_high": 1.0,
+          "n": 0,
+          "mean_predicted": null,
+          "observed_up_rate": null
+        }
+      ]
+    }
+  ],
+  "baseline_metrics": {
+    "Always UP": {
+      "Accuracy": 0.5347826086956522,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4652173913043478,
+      "Log_Loss": 16.068411439915103,
+      "Share_Predicted_UP": 1.0
+    },
+    "Base Rate": {
+      "Accuracy": 0.5347826086956522,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.4823493655497303,
+      "Brier": 0.24904396926217492,
+      "Log_Loss": 0.6912367109299055,
+      "Share_Predicted_UP": 1.0
+    }
+  },
+  "folds": [
+    {
+      "fold": 1,
+      "train_start": "2017-01-26",
+      "train_end": "2017-07-31",
+      "test_start": "2017-08-02",
+      "test_end": "2018-01-16",
+      "n_train": 129,
+      "n_test": 115
+    },
+    {
+      "fold": 2,
+      "train_start": "2017-01-26",
+      "train_end": "2018-01-12",
+      "test_start": "2018-01-17",
+      "test_end": "2018-06-29",
+      "n_train": 244,
+      "n_test": 115
+    },
+    {
+      "fold": 3,
+      "train_start": "2017-01-26",
+      "train_end": "2018-06-28",
+      "test_start": "2018-07-02",
+      "test_end": "2018-12-13",
+      "n_train": 359,
+      "n_test": 115
+    },
+    {
+      "fold": 4,
+      "train_start": "2017-01-26",
+      "train_end": "2018-12-12",
+      "test_start": "2018-12-14",
+      "test_end": "2019-05-31",
+      "n_train": 474,
+      "n_test": 115
+    },
+    {
+      "fold": 5,
+      "train_start": "2017-01-26",
+      "train_end": "2019-05-30",
+      "test_start": "2019-06-03",
+      "test_end": "2019-11-12",
+      "n_train": 589,
+      "n_test": 115
+    },
+    {
+      "fold": 6,
+      "train_start": "2017-01-26",
+      "train_end": "2019-11-11",
+      "test_start": "2019-11-13",
+      "test_end": "2020-04-29",
+      "n_train": 704,
+      "n_test": 115
+    },
+    {
+      "fold": 7,
+      "train_start": "2017-01-26",
+      "train_end": "2020-04-28",
+      "test_start": "2020-04-30",
+      "test_end": "2020-10-12",
+      "n_train": 819,
+      "n_test": 115
+    },
+    {
+      "fold": 8,
+      "train_start": "2017-01-26",
+      "train_end": "2020-10-09",
+      "test_start": "2020-10-13",
+      "test_end": "2021-03-29",
+      "n_train": 934,
+      "n_test": 115
+    },
+    {
+      "fold": 9,
+      "train_start": "2017-01-26",
+      "train_end": "2021-03-26",
+      "test_start": "2021-03-30",
+      "test_end": "2021-09-10",
+      "n_train": 1049,
+      "n_test": 115
+    },
+    {
+      "fold": 10,
+      "train_start": "2017-01-26",
+      "train_end": "2021-09-09",
+      "test_start": "2021-09-13",
+      "test_end": "2022-02-24",
+      "n_train": 1164,
+      "n_test": 115
+    },
+    {
+      "fold": 11,
+      "train_start": "2017-01-26",
+      "train_end": "2022-02-23",
+      "test_start": "2022-02-25",
+      "test_end": "2022-08-10",
+      "n_train": 1279,
+      "n_test": 115
+    },
+    {
+      "fold": 12,
+      "train_start": "2017-01-26",
+      "train_end": "2022-08-09",
+      "test_start": "2022-08-11",
+      "test_end": "2023-01-25",
+      "n_train": 1394,
+      "n_test": 115
+    },
+    {
+      "fold": 13,
+      "train_start": "2017-01-26",
+      "train_end": "2023-01-24",
+      "test_start": "2023-01-26",
+      "test_end": "2023-07-12",
+      "n_train": 1509,
+      "n_test": 115
+    },
+    {
+      "fold": 14,
+      "train_start": "2017-01-26",
+      "train_end": "2023-07-11",
+      "test_start": "2023-07-13",
+      "test_end": "2023-12-22",
+      "n_train": 1624,
+      "n_test": 115
+    },
+    {
+      "fold": 15,
+      "train_start": "2017-01-26",
+      "train_end": "2023-12-21",
+      "test_start": "2023-12-26",
+      "test_end": "2024-06-10",
+      "n_train": 1739,
+      "n_test": 115
+    },
+    {
+      "fold": 16,
+      "train_start": "2017-01-26",
+      "train_end": "2024-06-07",
+      "test_start": "2024-06-11",
+      "test_end": "2024-11-21",
+      "n_train": 1854,
+      "n_test": 115
+    },
+    {
+      "fold": 17,
+      "train_start": "2017-01-26",
+      "train_end": "2024-11-20",
+      "test_start": "2024-11-22",
+      "test_end": "2025-05-12",
+      "n_train": 1969,
+      "n_test": 115
+    },
+    {
+      "fold": 18,
+      "train_start": "2017-01-26",
+      "train_end": "2025-05-09",
+      "test_start": "2025-05-13",
+      "test_end": "2025-10-24",
+      "n_train": 2084,
+      "n_test": 115
+    },
+    {
+      "fold": 19,
+      "train_start": "2017-01-26",
+      "train_end": "2025-10-23",
+      "test_start": "2025-10-27",
+      "test_end": "2026-04-13",
+      "n_train": 2199,
+      "n_test": 115
+    },
+    {
+      "fold": 20,
+      "train_start": "2017-01-26",
+      "train_end": "2026-04-10",
+      "test_start": "2026-04-14",
+      "test_end": "2026-09-25",
+      "n_train": 2314,
+      "n_test": 115
+    }
+  ],
+  "fold_metrics": [
+    {
+      "fold": 1,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4782608695652174,
+      "Log_Loss": 16.518927648510854,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 1,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.25085239965198575,
+      "Log_Loss": 0.6948751272150323,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 1,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5478260869565217,
+      "Balanced_Accuracy": 0.5393939393939393,
+      "ROC_AUC": 0.5551515151515152,
+      "Brier": 0.26827007671925746,
+      "Log_Loss": 0.7478971103802093,
+      "Share_Predicted_UP": 0.6956521739130435
+    },
+    {
+      "fold": 1,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.25093840383756205,
+      "Log_Loss": 0.6950495415442569,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 1,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.2508533298969269,
+      "Log_Loss": 0.694877028465271,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 1,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5106060606060606,
+      "ROC_AUC": 0.5212121212121212,
+      "Brier": 0.2643560664336222,
+      "Log_Loss": 0.7279425492034632,
+      "Share_Predicted_UP": 0.7565217391304347
+    },
+    {
+      "fold": 2,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.48695652173913045,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.5130434782608696,
+      "Log_Loss": 17.72030420476619,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 2,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.48695652173913045,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.2527487935688162,
+      "Log_Loss": 0.6986609116301814,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 2,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.46956521739130436,
+      "Balanced_Accuracy": 0.4748789346246973,
+      "ROC_AUC": 0.49818401937046,
+      "Brier": 0.2867223250950199,
+      "Log_Loss": 0.7844901112408607,
+      "Share_Predicted_UP": 0.7043478260869566
+    },
+    {
+      "fold": 2,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.4956521739130435,
+      "Balanced_Accuracy": 0.5071125907990315,
+      "ROC_AUC": 0.4745762711864407,
+      "Brier": 0.25503147210076166,
+      "Log_Loss": 0.7033361843237913,
+      "Share_Predicted_UP": 0.9391304347826087
+    },
+    {
+      "fold": 2,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5130434782608696,
+      "Balanced_Accuracy": 0.5213377723970944,
+      "ROC_AUC": 0.5183111380145278,
+      "Brier": 0.26327261328697205,
+      "Log_Loss": 0.720927894115448,
+      "Share_Predicted_UP": 0.8173913043478261
+    },
+    {
+      "fold": 2,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.48695652173913045,
+      "Balanced_Accuracy": 0.4922820823244552,
+      "ROC_AUC": 0.4818401937046005,
+      "Brier": 0.27358205817270365,
+      "Log_Loss": 0.742598385592374,
+      "Share_Predicted_UP": 0.7043478260869566
+    },
+    {
+      "fold": 3,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5478260869565217,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.45217391304347826,
+      "Log_Loss": 15.617895231319352,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 3,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5478260869565217,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.24829584959229323,
+      "Log_Loss": 0.6897367485193647,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 3,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.4608695652173913,
+      "Balanced_Accuracy": 0.4458180708180708,
+      "ROC_AUC": 0.41086691086691085,
+      "Brier": 0.3014580871736448,
+      "Log_Loss": 0.8412592558230564,
+      "Share_Predicted_UP": 0.6521739130434783
+    },
+    {
+      "fold": 3,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.4956521739130435,
+      "Balanced_Accuracy": 0.45909645909645913,
+      "ROC_AUC": 0.4093406593406593,
+      "Brier": 0.2553831605055856,
+      "Log_Loss": 0.704144319759455,
+      "Share_Predicted_UP": 0.8782608695652174
+    },
+    {
+      "fold": 3,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5043478260869565,
+      "Balanced_Accuracy": 0.48214285714285715,
+      "ROC_AUC": 0.42139804639804634,
+      "Brier": 0.269543319940567,
+      "Log_Loss": 0.734503984451294,
+      "Share_Predicted_UP": 0.7304347826086957
+    },
+    {
+      "fold": 3,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5304347826086957,
+      "Balanced_Accuracy": 0.5143467643467643,
+      "ROC_AUC": 0.44505494505494503,
+      "Brier": 0.28855200798005837,
+      "Log_Loss": 0.7839942063013335,
+      "Share_Predicted_UP": 0.6695652173913044
+    },
+    {
+      "fold": 4,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5652173913043478,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.43478260869565216,
+      "Log_Loss": 15.017206953191687,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 4,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5652173913043478,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.24687375908264425,
+      "Log_Loss": 0.6868876714180636,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 4,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5652173913043478,
+      "Balanced_Accuracy": 0.5346153846153846,
+      "ROC_AUC": 0.5436923076923077,
+      "Brier": 0.246193553677693,
+      "Log_Loss": 0.6852079723166365,
+      "Share_Predicted_UP": 0.7391304347826086
+    },
+    {
+      "fold": 4,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5061538461538462,
+      "ROC_AUC": 0.5224615384615384,
+      "Brier": 0.24562547366101836,
+      "Log_Loss": 0.6843099988028138,
+      "Share_Predicted_UP": 0.8869565217391304
+    },
+    {
+      "fold": 4,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5130434782608696,
+      "Balanced_Accuracy": 0.48384615384615387,
+      "ROC_AUC": 0.5356923076923077,
+      "Brier": 0.2464919537305832,
+      "Log_Loss": 0.6851872205734253,
+      "Share_Predicted_UP": 0.7217391304347827
+    },
+    {
+      "fold": 4,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.5276923076923077,
+      "ROC_AUC": 0.5523076923076924,
+      "Brier": 0.25390273536321517,
+      "Log_Loss": 0.7026412686703084,
+      "Share_Predicted_UP": 0.591304347826087
+    },
+    {
+      "fold": 5,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5826086956521739,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.41739130434782606,
+      "Log_Loss": 14.416518675064019,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 5,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5826086956521739,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.24514790549358248,
+      "Log_Loss": 0.6834268964169286,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 5,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.4566231343283582,
+      "ROC_AUC": 0.4514925373134328,
+      "Brier": 0.2513785738562022,
+      "Log_Loss": 0.6961639372876274,
+      "Share_Predicted_UP": 0.8869565217391304
+    },
+    {
+      "fold": 5,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5652173913043478,
+      "Balanced_Accuracy": 0.5027985074626866,
+      "ROC_AUC": 0.4741915422885572,
+      "Brier": 0.24778999836853238,
+      "Log_Loss": 0.6887714913165209,
+      "Share_Predicted_UP": 0.8782608695652174
+    },
+    {
+      "fold": 5,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5652173913043478,
+      "Balanced_Accuracy": 0.5352922885572139,
+      "ROC_AUC": 0.5382462686567164,
+      "Brier": 0.25013867020606995,
+      "Log_Loss": 0.6943295001983643,
+      "Share_Predicted_UP": 0.6869565217391305
+    },
+    {
+      "fold": 5,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5739130434782609,
+      "Balanced_Accuracy": 0.5427549751243781,
+      "ROC_AUC": 0.5226990049751243,
+      "Brier": 0.2554292821623377,
+      "Log_Loss": 0.7060571305526978,
+      "Share_Predicted_UP": 0.6956521739130435
+    },
+    {
+      "fold": 6,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5130434782608696,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.48695652173913045,
+      "Log_Loss": 16.81927178757469,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 6,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5130434782608696,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.25079028574717027,
+      "Log_Loss": 0.6947369017498772,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 6,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5478260869565217,
+      "Balanced_Accuracy": 0.5388922518159807,
+      "ROC_AUC": 0.5402542372881356,
+      "Brier": 0.2526789248896391,
+      "Log_Loss": 0.6993173596227479,
+      "Share_Predicted_UP": 0.8434782608695652
+    },
+    {
+      "fold": 6,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5125605326876513,
+      "ROC_AUC": 0.5057506053268765,
+      "Brier": 0.2516055429250604,
+      "Log_Loss": 0.6964011176770488,
+      "Share_Predicted_UP": 0.8521739130434782
+    },
+    {
+      "fold": 6,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5198244552058111,
+      "ROC_AUC": 0.5127118644067796,
+      "Brier": 0.2601270377635956,
+      "Log_Loss": 0.7146056890487671,
+      "Share_Predicted_UP": 0.5739130434782609
+    },
+    {
+      "fold": 6,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5130434782608696,
+      "Balanced_Accuracy": 0.5108958837772397,
+      "ROC_AUC": 0.4927360774818402,
+      "Brier": 0.2670288767061389,
+      "Log_Loss": 0.7298256416383734,
+      "Share_Predicted_UP": 0.5826086956521739
+    },
+    {
+      "fold": 7,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.6086956521739131,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.391304347826087,
+      "Log_Loss": 13.515486257872517,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 7,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.6086956521739131,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.24294806489423468,
+      "Log_Loss": 0.6790169083695967,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 7,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.5142857142857142,
+      "ROC_AUC": 0.5638095238095239,
+      "Brier": 0.2468697019197935,
+      "Log_Loss": 0.6873984597074541,
+      "Share_Predicted_UP": 0.6173913043478261
+    },
+    {
+      "fold": 7,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.591304347826087,
+      "Balanced_Accuracy": 0.5055555555555555,
+      "ROC_AUC": 0.5873015873015873,
+      "Brier": 0.23832802794398916,
+      "Log_Loss": 0.669508297572806,
+      "Share_Predicted_UP": 0.8956521739130435
+    },
+    {
+      "fold": 7,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5826086956521739,
+      "Balanced_Accuracy": 0.5460317460317461,
+      "ROC_AUC": 0.5311111111111111,
+      "Brier": 0.25268763303756714,
+      "Log_Loss": 0.7012117505073547,
+      "Share_Predicted_UP": 0.6782608695652174
+    },
+    {
+      "fold": 7,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5304347826086957,
+      "Balanced_Accuracy": 0.515079365079365,
+      "ROC_AUC": 0.5377777777777779,
+      "Brier": 0.25985653536549447,
+      "Log_Loss": 0.7169318679159689,
+      "Share_Predicted_UP": 0.5739130434782609
+    },
+    {
+      "fold": 8,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.46956521739130436,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.5304347826086957,
+      "Log_Loss": 18.320992482893857,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 8,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.46956521739130436,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.2554234739028562,
+      "Log_Loss": 0.7040373208910444,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 8,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5043478260869565,
+      "Balanced_Accuracy": 0.5210989678202793,
+      "ROC_AUC": 0.5009107468123861,
+      "Brier": 0.25965077950129273,
+      "Log_Loss": 0.7133175455657993,
+      "Share_Predicted_UP": 0.7739130434782608
+    },
+    {
+      "fold": 8,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.45217391304347826,
+      "Balanced_Accuracy": 0.4751062537947784,
+      "ROC_AUC": 0.478749241044323,
+      "Brier": 0.25937371626011,
+      "Log_Loss": 0.7122572766798604,
+      "Share_Predicted_UP": 0.8782608695652174
+    },
+    {
+      "fold": 8,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.46956521739130436,
+      "Balanced_Accuracy": 0.4840619307832422,
+      "ROC_AUC": 0.4990892531876139,
+      "Brier": 0.2754000425338745,
+      "Log_Loss": 0.7484602332115173,
+      "Share_Predicted_UP": 0.7391304347826086
+    },
+    {
+      "fold": 8,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.46956521739130436,
+      "Balanced_Accuracy": 0.48299939283545845,
+      "ROC_AUC": 0.4887674559805708,
+      "Brier": 0.27534542656463373,
+      "Log_Loss": 0.7479529716497301,
+      "Share_Predicted_UP": 0.7217391304347827
+    },
+    {
+      "fold": 9,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4434782608695652,
+      "Log_Loss": 15.317551092255519,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 9,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.24706151587506267,
+      "Log_Loss": 0.6872609105253691,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 9,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5099571078431373,
+      "ROC_AUC": 0.5897671568627452,
+      "Brier": 0.24204433004688053,
+      "Log_Loss": 0.6771061438983379,
+      "Share_Predicted_UP": 0.9130434782608695
+    },
+    {
+      "fold": 9,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5099571078431373,
+      "ROC_AUC": 0.5484068627450981,
+      "Brier": 0.24540065196334507,
+      "Log_Loss": 0.6839148482025663,
+      "Share_Predicted_UP": 0.9130434782608695
+    },
+    {
+      "fold": 9,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5026041666666666,
+      "ROC_AUC": 0.5441176470588236,
+      "Brier": 0.25387656688690186,
+      "Log_Loss": 0.7030258774757385,
+      "Share_Predicted_UP": 0.6695652173913044
+    },
+    {
+      "fold": 9,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.4986213235294118,
+      "ROC_AUC": 0.5171568627450981,
+      "Brier": 0.2563718458228161,
+      "Log_Loss": 0.7079658015096179,
+      "Share_Predicted_UP": 0.7043478260869566
+    },
+    {
+      "fold": 10,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5043478260869565,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4956521739130435,
+      "Log_Loss": 17.119615926638524,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 10,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5043478260869565,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.251341915926934,
+      "Log_Loss": 0.6958409992036036,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 10,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5199637023593466,
+      "ROC_AUC": 0.5205686630369025,
+      "Brier": 0.2556292349523807,
+      "Log_Loss": 0.7052042706869792,
+      "Share_Predicted_UP": 0.7043478260869566
+    },
+    {
+      "fold": 10,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5184513006654567,
+      "ROC_AUC": 0.5,
+      "Brier": 0.25295503640129174,
+      "Log_Loss": 0.6992279324518453,
+      "Share_Predicted_UP": 0.8782608695652174
+    },
+    {
+      "fold": 10,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5652173913043478,
+      "Balanced_Accuracy": 0.5630671506352087,
+      "ROC_AUC": 0.5326678765880217,
+      "Brier": 0.25997793674468994,
+      "Log_Loss": 0.7173438668251038,
+      "Share_Predicted_UP": 0.7478260869565218
+    },
+    {
+      "fold": 10,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5826086956521739,
+      "Balanced_Accuracy": 0.5809134906231095,
+      "ROC_AUC": 0.5698729582577133,
+      "Brier": 0.2516835423606849,
+      "Log_Loss": 0.6986997633435231,
+      "Share_Predicted_UP": 0.6956521739130435
+    },
+    {
+      "fold": 11,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4782608695652174,
+      "Log_Loss": 16.518927648510854,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 11,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.2497892388446491,
+      "Log_Loss": 0.6927276169411383,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 11,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.531060606060606,
+      "ROC_AUC": 0.526060606060606,
+      "Brier": 0.25016263039545267,
+      "Log_Loss": 0.6935155041789004,
+      "Share_Predicted_UP": 0.6869565217391305
+    },
+    {
+      "fold": 11,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5652173913043478,
+      "Balanced_Accuracy": 0.5545454545454546,
+      "ROC_AUC": 0.5615151515151515,
+      "Brier": 0.24624937385493664,
+      "Log_Loss": 0.6856058756400514,
+      "Share_Predicted_UP": 0.7478260869565218
+    },
+    {
+      "fold": 11,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.48695652173913045,
+      "Balanced_Accuracy": 0.4840909090909091,
+      "ROC_AUC": 0.52,
+      "Brier": 0.25303301215171814,
+      "Log_Loss": 0.6995294094085693,
+      "Share_Predicted_UP": 0.5652173913043478
+    },
+    {
+      "fold": 11,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5537878787878788,
+      "ROC_AUC": 0.5490909090909091,
+      "Brier": 0.2519941089267537,
+      "Log_Loss": 0.6980497842612701,
+      "Share_Predicted_UP": 0.5652173913043478
+    },
+    {
+      "fold": 12,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.4782608695652174,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.5217391304347826,
+      "Log_Loss": 18.020648343830022,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 12,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.4782608695652174,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.2530133510154779,
+      "Log_Loss": 0.6991876947883526,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 12,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.48695652173913045,
+      "Balanced_Accuracy": 0.4939393939393939,
+      "ROC_AUC": 0.4609090909090909,
+      "Brier": 0.26147088779624367,
+      "Log_Loss": 0.7168893292444314,
+      "Share_Predicted_UP": 0.6608695652173913
+    },
+    {
+      "fold": 12,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.45217391304347826,
+      "Balanced_Accuracy": 0.46742424242424246,
+      "ROC_AUC": 0.45999999999999996,
+      "Brier": 0.258938083443394,
+      "Log_Loss": 0.7112071922637433,
+      "Share_Predicted_UP": 0.8521739130434782
+    },
+    {
+      "fold": 12,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.45217391304347826,
+      "Balanced_Accuracy": 0.46212121212121215,
+      "ROC_AUC": 0.44333333333333336,
+      "Brier": 0.27566346526145935,
+      "Log_Loss": 0.7468457221984863,
+      "Share_Predicted_UP": 0.7304347826086957
+    },
+    {
+      "fold": 12,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.43478260869565216,
+      "Balanced_Accuracy": 0.44166666666666665,
+      "ROC_AUC": 0.4396969696969697,
+      "Brier": 0.27725557915576016,
+      "Log_Loss": 0.7510913156183818,
+      "Share_Predicted_UP": 0.6608695652173913
+    },
+    {
+      "fold": 13,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4608695652173913,
+      "Log_Loss": 15.918239370383185,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 13,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.24851766839632194,
+      "Log_Loss": 0.6901798513605354,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 13,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.4956521739130435,
+      "Balanced_Accuracy": 0.46241631162507607,
+      "ROC_AUC": 0.41996348143639683,
+      "Brier": 0.25558673039290103,
+      "Log_Loss": 0.7045935629946749,
+      "Share_Predicted_UP": 0.9217391304347826
+    },
+    {
+      "fold": 13,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.5054777845404748,
+      "ROC_AUC": 0.4759586122945831,
+      "Brier": 0.24988537521657556,
+      "Log_Loss": 0.6929498648681053,
+      "Share_Predicted_UP": 0.9304347826086956
+    },
+    {
+      "fold": 13,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.4434782608695652,
+      "Balanced_Accuracy": 0.43594035301278145,
+      "ROC_AUC": 0.43091905051734636,
+      "Brier": 0.26646777987480164,
+      "Log_Loss": 0.7269669771194458,
+      "Share_Predicted_UP": 0.591304347826087
+    },
+    {
+      "fold": 13,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.45217391304347826,
+      "Balanced_Accuracy": 0.4426354230066951,
+      "ROC_AUC": 0.4430919050517346,
+      "Brier": 0.264318577913991,
+      "Log_Loss": 0.7226047301501317,
+      "Share_Predicted_UP": 0.6173913043478261
+    },
+    {
+      "fold": 14,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4434782608695652,
+      "Log_Loss": 15.317551092255517,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 14,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.24737584695512904,
+      "Log_Loss": 0.6878929199319066,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 14,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5304347826086957,
+      "Balanced_Accuracy": 0.48651960784313725,
+      "ROC_AUC": 0.4641544117647059,
+      "Brier": 0.2501490414779717,
+      "Log_Loss": 0.6934465025699359,
+      "Share_Predicted_UP": 0.8869565217391304
+    },
+    {
+      "fold": 14,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5079656862745098,
+      "ROC_AUC": 0.48008578431372556,
+      "Brier": 0.2485075063143285,
+      "Log_Loss": 0.690187832325979,
+      "Share_Predicted_UP": 0.9304347826086956
+    },
+    {
+      "fold": 14,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.5182291666666666,
+      "ROC_AUC": 0.5560661764705882,
+      "Brier": 0.24562200903892517,
+      "Log_Loss": 0.6845961213111877,
+      "Share_Predicted_UP": 0.6869565217391305
+    },
+    {
+      "fold": 14,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.4956521739130435,
+      "Balanced_Accuracy": 0.4771752450980392,
+      "ROC_AUC": 0.5389093137254901,
+      "Brier": 0.24645498531591767,
+      "Log_Loss": 0.6858512074812518,
+      "Share_Predicted_UP": 0.6608695652173913
+    },
+    {
+      "fold": 15,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5043478260869565,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4956521739130435,
+      "Log_Loss": 17.11961592663852,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 15,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5043478260869565,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.2509078290129954,
+      "Log_Loss": 0.6949677381031742,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 15,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.48695652173913045,
+      "Balanced_Accuracy": 0.48336358136721114,
+      "ROC_AUC": 0.38868723532970356,
+      "Brier": 0.2580855876283318,
+      "Log_Loss": 0.7095223201219314,
+      "Share_Predicted_UP": 0.9130434782608695
+    },
+    {
+      "fold": 15,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.4956521739130435,
+      "Balanced_Accuracy": 0.49168179068360557,
+      "ROC_AUC": 0.40623109497882637,
+      "Brier": 0.25510399154785374,
+      "Log_Loss": 0.7034316136750141,
+      "Share_Predicted_UP": 0.9565217391304348
+    },
+    {
+      "fold": 15,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.4956521739130435,
+      "Balanced_Accuracy": 0.49364791288566245,
+      "ROC_AUC": 0.43799153055051426,
+      "Brier": 0.2763731777667999,
+      "Log_Loss": 0.749138355255127,
+      "Share_Predicted_UP": 0.7304347826086957
+    },
+    {
+      "fold": 15,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.4608695652173913,
+      "Balanced_Accuracy": 0.45856019358741684,
+      "ROC_AUC": 0.43950393224440415,
+      "Brier": 0.2760144517612978,
+      "Log_Loss": 0.7493892983587404,
+      "Share_Predicted_UP": 0.7652173913043478
+    },
+    {
+      "fold": 16,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.591304347826087,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.40869565217391307,
+      "Log_Loss": 14.116174536000182,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 16,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.591304347826087,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.2451376622619661,
+      "Log_Loss": 0.6834103583852594,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 16,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5130434782608696,
+      "Balanced_Accuracy": 0.46339173967459324,
+      "ROC_AUC": 0.42928660826032544,
+      "Brier": 0.25223554087079325,
+      "Log_Loss": 0.69762173191516,
+      "Share_Predicted_UP": 0.7652173913043478
+    },
+    {
+      "fold": 16,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.591304347826087,
+      "Balanced_Accuracy": 0.5262828535669587,
+      "ROC_AUC": 0.48372966207759704,
+      "Brier": 0.24653858147470417,
+      "Log_Loss": 0.6862007078864563,
+      "Share_Predicted_UP": 0.8608695652173913
+    },
+    {
+      "fold": 16,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5043478260869565,
+      "Balanced_Accuracy": 0.49874843554443055,
+      "ROC_AUC": 0.5193992490613266,
+      "Brier": 0.2499159425497055,
+      "Log_Loss": 0.692626953125,
+      "Share_Predicted_UP": 0.5304347826086957
+    },
+    {
+      "fold": 16,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5130434782608696,
+      "Balanced_Accuracy": 0.506101376720901,
+      "ROC_AUC": 0.5115769712140175,
+      "Brier": 0.25326086917615703,
+      "Log_Loss": 0.6996925980366273,
+      "Share_Predicted_UP": 0.5391304347826087
+    },
+    {
+      "fold": 17,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4434782608695652,
+      "Log_Loss": 15.317551092255519,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 17,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.2472344772328008,
+      "Log_Loss": 0.6876088518355398,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 17,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.5082720588235294,
+      "ROC_AUC": 0.39368872549019607,
+      "Brier": 0.25736450254342663,
+      "Log_Loss": 0.7081063743946026,
+      "Share_Predicted_UP": 0.7739130434782608
+    },
+    {
+      "fold": 17,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.47472426470588236,
+      "ROC_AUC": 0.4329044117647059,
+      "Brier": 0.25118145345256315,
+      "Log_Loss": 0.695543024987883,
+      "Share_Predicted_UP": 0.9130434782608695
+    },
+    {
+      "fold": 17,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.4782608695652174,
+      "Balanced_Accuracy": 0.4496017156862745,
+      "ROC_AUC": 0.4145220588235295,
+      "Brier": 0.2649829089641571,
+      "Log_Loss": 0.7247909307479858,
+      "Share_Predicted_UP": 0.7478260869565218
+    },
+    {
+      "fold": 17,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.46956521739130436,
+      "Balanced_Accuracy": 0.44577205882352944,
+      "ROC_AUC": 0.4365808823529412,
+      "Brier": 0.2615562013916412,
+      "Log_Loss": 0.7172740297062898,
+      "Share_Predicted_UP": 0.7043478260869566
+    },
+    {
+      "fold": 18,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4608695652173913,
+      "Log_Loss": 15.918239370383185,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 18,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.2484735713245716,
+      "Log_Loss": 0.6900912438619046,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 18,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.48695652173913045,
+      "Balanced_Accuracy": 0.4543517954960438,
+      "ROC_AUC": 0.35605599513085817,
+      "Brier": 0.2568585680971301,
+      "Log_Loss": 0.7070293668951673,
+      "Share_Predicted_UP": 0.9130434782608695
+    },
+    {
+      "fold": 18,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5304347826086957,
+      "Balanced_Accuracy": 0.49467437614120513,
+      "ROC_AUC": 0.4166159464394401,
+      "Brier": 0.250939671607771,
+      "Log_Loss": 0.6950520265226818,
+      "Share_Predicted_UP": 0.9565217391304348
+    },
+    {
+      "fold": 18,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5391304347826087,
+      "Balanced_Accuracy": 0.5191722458916616,
+      "ROC_AUC": 0.5079123554473524,
+      "Brier": 0.2503879964351654,
+      "Log_Loss": 0.6935476660728455,
+      "Share_Predicted_UP": 0.7565217391304347
+    },
+    {
+      "fold": 18,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5016737674984784,
+      "ROC_AUC": 0.4811320754716981,
+      "Brier": 0.2564513433608858,
+      "Log_Loss": 0.7065998686867884,
+      "Share_Predicted_UP": 0.7565217391304347
+    },
+    {
+      "fold": 19,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.4956521739130435,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.5043478260869565,
+      "Log_Loss": 17.419960065702355,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 19,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.4956521739130435,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.25169589503747947,
+      "Log_Loss": 0.6965477300707892,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 19,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.48695652173913045,
+      "Balanced_Accuracy": 0.4904718693284936,
+      "ROC_AUC": 0.5087719298245614,
+      "Brier": 0.25149731516204676,
+      "Log_Loss": 0.6961908683302462,
+      "Share_Predicted_UP": 0.9043478260869565
+    },
+    {
+      "fold": 19,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5257108287961282,
+      "ROC_AUC": 0.5526315789473685,
+      "Brier": 0.2501951167527642,
+      "Log_Loss": 0.6935429848029006,
+      "Share_Predicted_UP": 0.9565217391304348
+    },
+    {
+      "fold": 19,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.5217391304347826,
+      "Balanced_Accuracy": 0.5231397459165155,
+      "ROC_AUC": 0.5486993345432547,
+      "Brier": 0.25006821751594543,
+      "Log_Loss": 0.6936250329017639,
+      "Share_Predicted_UP": 0.6608695652173913
+    },
+    {
+      "fold": 19,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.5478260869565217,
+      "Balanced_Accuracy": 0.5496067755595886,
+      "ROC_AUC": 0.6085904416212946,
+      "Brier": 0.24217615552466176,
+      "Log_Loss": 0.6771121812879073,
+      "Share_Predicted_UP": 0.7043478260869566
+    },
+    {
+      "fold": 20,
+      "model": "Always UP",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.4434782608695652,
+      "Log_Loss": 15.317551092255519,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 20,
+      "model": "Base Rate",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5,
+      "ROC_AUC": 0.5,
+      "Brier": 0.24724988142652715,
+      "Log_Loss": 0.6876398173804478,
+      "Share_Predicted_UP": 1.0
+    },
+    {
+      "fold": 20,
+      "model": "Logistic Regression",
+      "task": "classification",
+      "Accuracy": 0.5304347826086957,
+      "Balanced_Accuracy": 0.4885110294117647,
+      "ROC_AUC": 0.47395833333333337,
+      "Brier": 0.24954238534240333,
+      "Log_Loss": 0.6922394040874443,
+      "Share_Predicted_UP": 0.8695652173913043
+    },
+    {
+      "fold": 20,
+      "model": "Random Forest",
+      "task": "classification",
+      "Accuracy": 0.5565217391304348,
+      "Balanced_Accuracy": 0.5039828431372549,
+      "ROC_AUC": 0.4957107843137255,
+      "Brier": 0.24798257942700555,
+      "Log_Loss": 0.6891133996401653,
+      "Share_Predicted_UP": 0.9652173913043478
+    },
+    {
+      "fold": 20,
+      "model": "XGBoost",
+      "task": "classification",
+      "Accuracy": 0.4956521739130435,
+      "Balanced_Accuracy": 0.49111519607843135,
+      "ROC_AUC": 0.501531862745098,
+      "Brier": 0.2548828423023224,
+      "Log_Loss": 0.7036542892456055,
+      "Share_Predicted_UP": 0.5391304347826087
+    },
+    {
+      "fold": 20,
+      "model": "LightGBM",
+      "task": "classification",
+      "Accuracy": 0.4782608695652174,
+      "Balanced_Accuracy": 0.4675245098039216,
+      "ROC_AUC": 0.4954044117647059,
+      "Brier": 0.25567208257454477,
+      "Log_Loss": 0.7051663958591965,
+      "Share_Predicted_UP": 0.591304347826087
+    }
+  ],
+  "git": {
+    "commit": "e132c2c6fa58c75f948c36756ea24e5b94e12b7a",
+    "uncommitted_changes": true
+  },
+  "environment": {
+    "python": "3.14.6",
+    "packages": {
+      "numpy": "2.5.1",
+      "pandas": "3.0.3",
+      "scikit-learn": "1.9.0",
+      "scipy": "1.18.0",
+      "yfinance": "1.5.1"
+    }
+  }
+}

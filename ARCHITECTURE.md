@@ -549,6 +549,39 @@ Example:
 
 The probability must be calibrated and evaluated.
 
+8.1 Implemented classification target (Phase 3, training/targets.py)
+
+For the feature row dated t (features use completed bars up to t):
+
+future_return[t] = Close[t+h] / Close[t] - 1      h = horizon (default 1)
+direction[t]     = 1 (UP) if future_return[t] > 0 else 0 (DOWN)
+
+target_version = direction_v1. Close is adjusted, so this is a total return.
+
+Boundary decision:
+
+- future_return == 0 exactly -> DOWN. "UP" asserts a rise; this is the
+  rule above and the one used by the Phase 1-2 baselines.
+- No dead zone. Excluding "small" moves would choose evaluation rows
+  using the future outcome, unknown at prediction time.
+- No epsilon. Identical adjusted closes give exactly 0.0; any non-zero
+  total return (e.g. a dividend on a flat day) is a real move.
+- The last h rows have no future close and get no label.
+
+Every report records target_summary, including the number of
+zero-return rows labelled DOWN.
+
+Temporal safety: the latest close used by any training label is
+Close[train_end + h]; TimeSeriesSplit gap = h puts the first test row at
+train_end + h + 1, so every training label is known before the first
+test prediction.
+
+Benchmark: python -m training.train_classification runs the central
+harness on the classification track only (Always UP, Base Rate,
+Logistic Regression, Random Forest, XGBoost, LightGBM; fixed, untuned
+hyperparameters) and saves classification_technical_YYYYMMDD.json.
+Reports include a 10-bin reliability table per model (REQ-PROB-002).
+
 9. EVALUATION HARNESS
 
 This is the FIRST major implementation task.
@@ -1420,12 +1453,15 @@ PHASE 3 — PRODUCT TARGET
 
 Tasks:
 
-1. UP/DOWN target
-2. Logistic Regression baseline
-3. Time-aware evaluation
-4. Probability calibration
-5. Brier score
-6. Log loss
+1. UP/DOWN target                     (implemented: section 8.1)
+2. Logistic Regression baseline       (implemented, + RF / XGBoost / LightGBM)
+3. Time-aware evaluation              (central harness, gap = horizon)
+4. Probability calibration            (reliability analysis implemented;
+                                       fitting a calibrator deferred until a
+                                       model qualifies - calibrating a model
+                                       with no skill cannot create skill)
+5. Brier score                        (harness, since Phase 1)
+6. Log loss                           (harness, since Phase 1)
 
 PHASE 4 — HISTORICAL NEWS
 

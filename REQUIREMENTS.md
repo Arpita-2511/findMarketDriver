@@ -284,6 +284,19 @@ future_return = Close[t+1] / Close[t] - 1
 
 target = 1 if future_return > 0 else 0
 
+Implemented (Phase 3): training/targets.py, target_version direction_v1.
+For horizon h: future_return = Close[t+h] / Close[t] - 1.
+
+REQ-TARGET-003 — Zero-return boundary
+
+Priority: P0
+
+An exactly-zero future return shall be labelled DOWN (0). No dead zone
+and no epsilon shall be applied, because excluding small moves would
+select rows using the future outcome. Rows without a future close
+shall receive no label. Evaluation reports shall state how many rows
+were labelled DOWN because their return was exactly zero.
+
 REQ-TARGET-002 — Regression target
 
 Priority: P2
@@ -1268,7 +1281,8 @@ Status: IMPLEMENTED (2026-09-30) — pending review/commit
 
 PHASE 2 — Data Pipeline Hardening
 
-Status: IMPLEMENTED (2026-09-30) — awaiting user test run, review and commit
+Status: COMPLETE (commit e132c2c; 93 unit + 2 integration tests passed,
+        deterministic snapshot rebuild verified)
         (policies: ARCHITECTURE.md section 6.2)
 
 [x] Completed-bar validation
@@ -1283,17 +1297,19 @@ Status: IMPLEMENTED (2026-09-30) — awaiting user test run, review and commit
 
 PHASE 3 — Classification
 
-Status: NOT STARTED
+Status: IMPLEMENTED — awaiting user test run, evaluation, review and commit
 
-[ ] UP/DOWN target
-[ ] Logistic Regression
-[ ] Random Forest
-[ ] XGBoost
-[ ] LightGBM
-[ ] Classification evaluation
-[ ] Probability calibration
-[ ] Brier score
-[ ] Log loss
+[x] UP/DOWN target (training/targets.py, direction_v1, REQ-TARGET-003)
+[x] Logistic Regression
+[x] Random Forest
+[x] XGBoost
+[x] LightGBM
+[x] Classification evaluation (python -m training.train_classification)
+[ ] Probability calibration — reliability analysis implemented; fitting
+    Platt/isotonic calibration is deferred until a model qualifies
+    (REQ-PROB-001 applies to production probabilities; there is none)
+[x] Brier score
+[x] Log loss
 
 PHASE 4 — Historical News
 
