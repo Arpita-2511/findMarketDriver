@@ -633,6 +633,37 @@ Priority: P0
 News shall be available only to symbols listed in the article's
 canonical `symbols`; no symbol shall be inferred or added.
 
+REQ-NEWS-013 — Historical ingestion runs
+
+Priority: P0
+
+Multi-period history shall be ingested in bounded chunks through the
+NewsProvider interface, one verified snapshot per chunk, tied together
+by a run manifest written only after every chunk succeeded. Errors
+shall propagate; results shall never be silently truncated.
+
+REQ-NEWS-014 — Canonical news dataset
+
+Priority: P0
+
+The dataset shall be built only from verified snapshots and shall:
+keep articles with start <= created_at < end; keep articles whose
+canonical symbols contain a requested symbol (symbols never altered or
+inferred); deduplicate by (provider, provider_article_id) independently
+of input order (latest information_available_at, then fetched_at, then
+smallest serialized record; never by headline similarity); sort
+deterministically; and record its rules, counts, source hashes and
+sha256. The same snapshots shall produce byte-identical output.
+
+REQ-NEWS-015 — Interval is not eligibility
+
+Priority: P0
+
+The ingestion interval selects which published articles are stored.
+It shall never be used as prediction eligibility, which remains
+information_available_at <= prediction_timestamp (REQ-NEWS-010).
+information_available_at shall be stored unchanged.
+
 REQ-NEWS-009 — Ingestion provenance and safety
 
 Priority: P0
@@ -1388,7 +1419,8 @@ Status: COMPLETE (commit 73d01bb)
 
 PHASE 4 — Historical News
 
-Status: 4A COMPLETE (commit c9184e0); 4B IMPLEMENTED — awaiting user test run, review and commit
+Status: 4A COMPLETE (c9184e0); 4B COMPLETE (a16920f);
+        4C IMPLEMENTED — awaiting user test run, review and commit
 
 [x] Verify source coverage (manual: Alpaca AAPL news back to 2017-01)
 [x] Obtain historical articles (4A: NewsProvider + AlpacaNewsProvider)
@@ -1398,6 +1430,9 @@ Status: 4A COMPLETE (commit c9184e0); 4B IMPLEMENTED — awaiting user test run,
 [x] Assign trading dates (4B: services/news_alignment.py, REQ-NEWS-010/011)
 [ ] Map tickers — partial (4B): canonical symbols only, never inferred
     (REQ-NEWS-012); alias / company-name mapping not implemented
+[x] Chunked historical ingestion runs + manifest (4C, REQ-NEWS-013)
+[x] Deterministic canonical news dataset (4C, REQ-NEWS-014/015)
+[ ] Full 2017-present AAPL backfill (run by the user; data stays local)
 
 PHASE 5 — FinBERT
 

@@ -802,6 +802,63 @@ Pagination stops when next_page_token is empty, and fails on a repeated
 token or when a max_pages cap is reached (no infinite loops). 429 /
 5xx / timeouts are retried with backoff; 401/403 and other 4xx are not.
 
+11.4 Historical ingestion runs and canonical dataset (Phase 4C)
+
+Purpose: turn multi-year provider history into ONE deterministic,
+reproducible canonical dataset that later phases (FinBERT, events,
+feature store) read. No NLP happens here.
+
+Flow:
+
+IngestionConfig (provider, symbols, UTC start/end, chunk_days,
+                 include_content, page_size, sort, max_pages)
+  -> chunk_intervals          consecutive half-open [a, b) chunks
+  -> per chunk: NewsProvider.fetch_historical (provider paginates until
+                next_page_token is absent; bounded as in 11.3)
+              save_news_snapshot (11.3; hash + meta, never overwritten)
+  -> run manifest             data/raw/news/<run_id>.manifest.json
+  -> build_canonical_dataset  data/processed/news/<run_id>.jsonl + .meta.json
+
+services/historical_news_ingestion.py orchestrates through the
+NewsProvider interface only (no HTTP / provider formats).
+services/news_dataset.py builds the dataset.
+
+All-or-nothing: the manifest is written only after every chunk
+succeeded. Provider, auth, pagination and validation errors propagate;
+a failed run has no manifest and cannot become a dataset.
+
+Canonicalization (pure, order-independent):
+
+1. Deduplicate by (provider, provider_article_id). Within one fetch the
+   provider keeps the first occurrence (11.3). Across chunk snapshots
+   the dataset keeps the version with the latest
+   (information_available_at, fetched_at), then the smallest serialized
+   record - independent of arrival order, and leakage-conservative.
+   Headline similarity is never used.
+2. Interval: start <= created_at < end (publication time, half-open so
+   chunks tile exactly). updated_at / information_available_at may lie
+   after end and are kept unchanged.
+3. Symbols: keep an article iff its canonical symbols contain a
+   requested symbol; its symbols stay exactly as provided.
+4. Sort by (created_at, provider, provider_article_id); serialize with
+   sorted keys; sha256 over the bytes.
+
+Ingestion interval vs prediction eligibility: the interval decides which
+published articles are IN the dataset; eligibility for a prediction is
+still only information_available_at <= prediction_timestamp (12.1). An
+article published inside the interval but revised after it is in the
+dataset yet not eligible until its information_available_at.
+
+Reproducibility: the same manifest + snapshots always yield a
+byte-identical dataset. Dataset metadata records the manifest hash,
+every source snapshot hash, all rules, the counts (input, duplicates,
+conflicting duplicates, outside interval, without requested symbol,
+rows) and the dataset sha256. The manifest records the run parameters,
+per-chunk pages / counts / snapshot hash, and totals. No credentials.
+
+Storage: data/raw/news/ and data/processed/news/ are git-ignored (full
+licensed text). Datasets are rebuilt locally from snapshots.
+
 12. NEWS TIME ALIGNMENT
 
 Critical rule:

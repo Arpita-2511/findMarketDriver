@@ -45,6 +45,8 @@ data/live_predictions_log.csv
 # Raw news snapshots (Phase 4A): large, licensed provider content - local only
 # ================================
 data/raw/news/
+# Canonical news datasets (Phase 4C): derived from the same licensed content
+data/processed/news/
 
 # ================================
 # Temporary files

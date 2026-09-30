@@ -49,6 +49,11 @@ def _sort_key(article: NewsArticle):
     return (article.created_at, article.provider, article.provider_article_id)
 
 
+def serialize_article(article: NewsArticle) -> str:
+    """Stable one-line JSON form used by snapshots and the canonical dataset."""
+    return json.dumps(article.to_dict(), sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+
+
 def save_news_snapshot(result: NewsFetchResult, query: NewsQuery, raw_dir: Path = RAW_NEWS_DIR) -> Path:
     """
     Write articles as JSON Lines, ordered by (created_at, provider,
@@ -69,7 +74,7 @@ def save_news_snapshot(result: NewsFetchResult, query: NewsQuery, raw_dir: Path 
     articles = sorted(result.articles, key=_sort_key)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         for article in articles:
-            f.write(json.dumps(article.to_dict(), sort_keys=True, ensure_ascii=False, separators=(",", ":")))
+            f.write(serialize_article(article))
             f.write("\n")
 
     meta = {
