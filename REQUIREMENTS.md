@@ -695,6 +695,29 @@ neutral_probability
 negative_probability
 sentiment_score
 
+Implemented for single articles in Phase 5A (ARCHITECTURE.md 13.1).
+
+REQ-NLP-004 — FinBERT inference contract
+
+Priority: P0
+
+Model ProsusAI/finbert, inference only, loaded once, eval mode, no
+gradients, CPU by default (CUDA optional, never required). Input text
+follows text_v1: headline + summary, content only as a fallback, never
+metadata; empty text is an error. Truncation by tokens at the model
+maximum. sentiment_score = positive_probability - negative_probability.
+Probabilities shall be validated (range, sum = 1, label = argmax).
+Every result shall record inference version, model name, resolved
+model revision and a sha256 of the input text. Model weights shall
+never be committed; secrets shall never appear in errors or logs.
+
+REQ-NLP-005 — Offline unit tests
+
+Priority: P0
+
+Unit tests shall not download models or need network access; the real
+model shall be exercised only by opt-in integration tests.
+
 REQ-NLP-003 — Daily sentiment aggregation
 
 Priority: P1
@@ -1419,8 +1442,7 @@ Status: COMPLETE (commit 73d01bb)
 
 PHASE 4 — Historical News
 
-Status: 4A COMPLETE (c9184e0); 4B COMPLETE (a16920f);
-        4C IMPLEMENTED — awaiting user test run, review and commit
+Status: 4A COMPLETE (c9184e0); 4B COMPLETE (a16920f); 4C COMPLETE (c896c2b)
 
 [x] Verify source coverage (manual: Alpaca AAPL news back to 2017-01)
 [x] Obtain historical articles (4A: NewsProvider + AlpacaNewsProvider)
@@ -1436,11 +1458,12 @@ Status: 4A COMPLETE (c9184e0); 4B COMPLETE (a16920f);
 
 PHASE 5 — FinBERT
 
-Status: NOT STARTED
+Status: 5A IMPLEMENTED (article-level sentiment foundation) — awaiting
+        user test run, review and commit
 
-[ ] Load pretrained model
-[ ] Process news
-[ ] Generate sentiment
+[x] Load pretrained model (5A: ProsusAI/finbert, inference only)
+[ ] Process news — scoring service ready (5A); historical corpus not processed yet
+[x] Generate sentiment (5A: article-level probabilities + score, REQ-NLP-004)
 [ ] Aggregate daily
 [ ] Create sentiment features
 [ ] Evaluate sentiment-only

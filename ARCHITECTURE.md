@@ -1013,6 +1013,62 @@ Do not fine-tune initially.
 
 Use the pretrained model first.
 
+13.1 Implemented article-level sentiment (Phase 5A, services/finbert_sentiment.py)
+
+Model: ProsusAI/finbert via transformers + torch, inference only (no
+fine-tuning). Loaded ONCE per service; eval mode; torch.inference_mode()
+(no gradients, no sampling). Weights stay in the Hugging Face cache and
+are never committed. The public model needs no token; any token or API
+key values found in the environment are redacted from error messages.
+
+Device: CPU by default. "cuda" is optional and only accepted if
+torch.cuda.is_available(); nothing assumes a GPU.
+
+Text policy (text_v1, compose_sentiment_text / build_sentiment_text):
+
+    headline + " " + summary      each whitespace-collapsed; summary dropped
+                                  if it repeats the headline (case-insensitive)
+    content (HTML stripped)       only if headline and summary are both empty
+    empty                         SentimentTextError - never a fabricated score
+
+URLs, ids, symbols, timestamps and source are never model input. The
+article is not modified.
+
+Tokenization: truncation by TOKENS at the model's own maximum
+(min(tokenizer.model_max_length, max_position_embeddings) = 512 for
+FinBERT); characters are never cut. A single text is not padded; a
+batch is padded to its longest member (attention mask applied).
+
+Output - SentimentResult (inference_version finbert_sentiment_v1):
+
+    positive_probability, negative_probability, neutral_probability
+                          softmax of the logits in float64, each in [0, 1],
+                          sum = 1 (validated)
+    label                 most probable class; ties -> positive, negative, neutral
+    sentiment_score       positive_probability - negative_probability, in [-1, 1]
+                          (never the label itself)
+    model_name, model_revision (resolved Hugging Face commit hash),
+    input_text_hash (sha256 of the exact input text), text_policy
+
+Logits are mapped to labels via the model's own id2label, so column order
+cannot silently swap classes. Structurally invalid output (wrong shape,
+non-finite values, wrong label set, inconsistent probabilities) raises
+SentimentModelError.
+
+Batching: configurable batch size; output order == input order; empty
+input -> empty output. The service never persists results.
+
+Sentiment is an attribute of an article's text. It does not change when
+the article may be used: eligibility is still only
+information_available_at <= prediction_timestamp (12.1).
+
+Testing: unit tests use a deterministic fake backend (offline, no
+torch/transformers needed); the real model runs only in the opt-in
+integration test tests/integration/test_live_finbert.py.
+
+Not in 5A: corpus-wide scoring, daily aggregation, sentiment features,
+model integration.
+
 14. DAILY NEWS AGGREGATION
 
 For each ticker and trading day:

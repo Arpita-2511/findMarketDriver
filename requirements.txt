@@ -2,7 +2,7 @@
 #
 # Python: 3.14.6 (the version this project is developed and tested with)
 #
-# Direct dependencies of the CURRENT pipeline only (Phases 1-2). Pinned to
+# Direct dependencies of the CURRENT pipeline only (Phases 1-5A). Pinned to
 # the versions in the verified development environment. Packages for later
 # phases (flask, transformers, torch, shap, ...) are added when that phase
 # begins (ARCHITECTURE.md section 31).
@@ -21,6 +21,12 @@ scipy==1.18.0
 joblib==1.5.3
 xgboost==3.3.0           # models/train_regression.py, save_all_models.py, training/ diagnostics
 lightgbm==4.7.0          # same scripts as xgboost
+
+# --- NLP (Phase 5A: FinBERT inference, CPU) ---
+# PyPI's Windows torch wheel is the CPU build; no CUDA is required.
+# Model weights live in the Hugging Face cache, never in this repository.
+torch==2.9.0
+transformers==4.57.1
 
 # --- configuration / legacy Alpha Vantage client ---
 python-dotenv==1.2.2     # config/settings.py
