@@ -1094,6 +1094,74 @@ M&A
 
 The exact event taxonomy should be documented before implementation.
 
+14.1 Implemented sentiment features (Phase 5B, services/sentiment_features.py)
+
+Version: sentiment_features_v1. Pure, in-memory; no network, no model
+inference, no persistence (no feature store yet).
+
+Input: ScoredArticle = canonical NewsArticle + the SentimentResult for
+ITS text. Validated on construction: the Phase 5A result contract is
+re-checked (probabilities, sum = 1, label = argmax, score); the result's
+input_text_hash must equal the article's text_v1 hash (sentiment cannot
+be attached to the wrong article); impossible-future records rejected.
+
+Rows: (symbol, trading_date) for completed-bar session dates of the
+TradingCalendar. Weekend / holiday dates raise - no artificial rows.
+
+    prediction_timestamp(D) = row_prediction_timestamp(D) = D 16:30 America/New_York
+                              (stored timezone-aware, UTC)
+
+Eligibility (reused from 12.1, the only rule):
+
+    symbol in article.symbols  and  is_eligible(article, prediction_timestamp(D))
+    i.e. information_available_at <= prediction_timestamp(D)
+
+created_at, updated_at, fetched_at, dates and session labels are never
+used. The generator has no horizon input: sentiment features for a date
+are identical for h = 1 and h = 5 (tested through build_targets).
+News at 17:00 on D reaches the row of the next session, not D.
+
+Semantics (v1): CUMULATIVE - all eligible articles for the symbol in the
+supplied news (i.e. since the start of the ingestion interval), as of
+prediction_timestamp. No rolling windows, no decay; windows are a later,
+explicit feature-design decision.
+
+Features per row (labels are the validated argmax labels):
+
+    news_count                  eligible articles
+    positive/negative/neutral_count
+    positive/negative/neutral_ratio      count / news_count
+    mean_sentiment              mean of sentiment_score (= p_pos - p_neg)
+    sentiment_std               POPULATION std of sentiment_score (Welford)
+    mean_positive/negative/neutral_probability
+    max_positive/negative/neutral_probability
+
+Zero-news convention: when news_count == 0 every feature is 0 (never
+NaN). A model therefore sees "no news" as neutral-looking zeros;
+news_count == 0 is what distinguishes it and must be kept as a feature.
+
+Duplicates: identity (provider, provider_article_id); identical records
+collapse; conflicting records (article or sentiment differ) raise.
+Headline/timestamp similarity is never used.
+
+Determinism: articles sorted by (information_available_at, provider,
+provider_article_id), rows by prediction timestamp; one chronological
+pointer pass per symbol admits each article once (O(articles + rows)).
+Output sorted by (symbol, trading_date); shuffled input -> identical
+output. features_as_of() computes one row directly with the same
+accumulator (used to cross-check the single pass).
+
+Relation to section 14 above: v1 implements news_count,
+positive_count (= positive_news_count), negative_count
+(= negative_news_count), mean_sentiment and the probability maxima
+(max_positive_probability ~ max_positive_sentiment). recent_news_count
+requires a time window and is NOT implemented in v1.
+
+Known limitation: cumulative counts grow with elapsed time (non-
+stationary) and cumulative means are dominated by old news; v1 is
+leakage-safe but probably weak as a model input until windowed
+features are designed and evaluated.
+
 15. COMBINED FEATURE STORE
 
 Final daily row:

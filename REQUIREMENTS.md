@@ -732,6 +732,27 @@ max_positive_sentiment
 max_negative_sentiment
 recent_news_count
 
+Phase 5B status: implemented as sentiment_features_v1 (ARCHITECTURE.md
+14.1) except recent_news_count, which needs a time window (not in v1).
+
+REQ-NLP-006 — Leakage-safe sentiment features (sentiment_features_v1)
+
+Priority: P0
+
+For each (symbol, completed-bar trading date D), features shall use only
+articles with symbol in their canonical symbols and
+information_available_at <= prediction_timestamp(D) = D 16:30
+America/New_York (REQ-NEWS-010, reusing the Phase 4B implementation).
+Features: news_count; positive/negative/neutral count and ratio;
+mean_sentiment; population sentiment_std; mean and max of each class
+probability. With no eligible news every feature is 0 (never NaN).
+Semantics are cumulative (no windows in v1). Sentiment results shall be
+re-validated and matched to their article by input_text_hash; identical
+duplicates collapse, conflicting duplicates raise. Output shall be
+deterministic, independent of input order and of the prediction
+horizon; prediction timestamps shall remain timezone-aware. No
+persistence or feature store in this phase.
+
 14. EVENT CLASSIFICATION REQUIREMENTS
 
 REQ-EVENT-001 — Event taxonomy
@@ -1458,14 +1479,15 @@ Status: 4A COMPLETE (c9184e0); 4B COMPLETE (a16920f); 4C COMPLETE (c896c2b)
 
 PHASE 5 — FinBERT
 
-Status: 5A IMPLEMENTED (article-level sentiment foundation) — awaiting
-        user test run, review and commit
+Status: 5A COMPLETE (9dd32d2); 5B IMPLEMENTED (leakage-safe daily
+        sentiment features) — awaiting user test run, review and commit
 
 [x] Load pretrained model (5A: ProsusAI/finbert, inference only)
 [ ] Process news — scoring service ready (5A); historical corpus not processed yet
 [x] Generate sentiment (5A: article-level probabilities + score, REQ-NLP-004)
-[ ] Aggregate daily
-[ ] Create sentiment features
+[x] Aggregate daily (5B: cumulative as-of-prediction aggregation, REQ-NLP-006)
+[ ] Create sentiment features — v1 contract implemented in memory (5B);
+    not yet joined to the market dataset / feature store; no windows yet
 [ ] Evaluate sentiment-only
 [ ] Evaluate technical + sentiment
 
