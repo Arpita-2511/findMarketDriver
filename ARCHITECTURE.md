@@ -850,6 +850,80 @@ text is not proven to have existed before updated_at, so the stored
 version is treated as available only from then. created_at is still
 kept unchanged. Future real-time ingestion will use the receipt time.
 
+12.1 Implemented temporal alignment (Phase 4B, services/news_alignment.py)
+
+Eligibility - the ONLY rule deciding whether news may inform a prediction:
+
+    information_available_at <= prediction_timestamp
+
+information_available_at is the authoritative eligibility timestamp;
+prediction_timestamp is the boundary. created_at, updated_at, calendar
+dates and session labels are never used to decide eligibility.
+
+Two separate concepts - never conflated:
+
+    news availability     information_available_at of the article
+    daily-bar completion  D 16:00 New York + 30 min (section 6.2); defines
+                          only WHEN a daily row's prediction is made
+
+News at 10:00 is available at 10:00; it is not delayed to 16:30. The
+16:30 bar-completion time is simply the prediction_timestamp of a daily
+row, so that 10:00 article is eligible for that row.
+
+direction_v1 integration:
+
+    row t prediction_timestamp = completion_time(bar t) = D_t 16:30 New York
+    news eligible for row t     : information_available_at <= that timestamp
+    label                        : Close[t+h] / Close[t] - 1
+
+The horizon h moves only the label's close, never the prediction
+timestamp, so news arriving in (t, t+h] can never be eligible for row t.
+(row_prediction_timestamp; tested for h = 1 and h = 5.)
+
+Trading sessions (services/market_calendar_service.TradingCalendar):
+
+Sessions are the dates of completed daily bars (the Phase 2 principle:
+holidays and weekends produce no bar). A weekday without a bar inside
+the calendar's range is a non-trading day. Dates outside the range
+raise OutsideCalendarError - they are never guessed from weekdays.
+
+Session assignment (descriptive label, REQ-NEWS-005, cutoff 16:00):
+
+    phase            exchange-local time of information_available_at   session
+    pre_market       trading day D, before 09:30                        D
+    regular          trading day D, 09:30 .. 16:00 inclusive            D
+    post_market      trading day D, after 16:00                         next session after D
+    non_trading_day  weekend / holiday                                  next session after that date
+
+Friday post-market and weekend news -> Monday (or the next session if
+Monday is a holiday). The label says which session an article falls
+into; it does NOT make the article eligible for that session's earlier
+predictions (10:30 news is in session D but not eligible at D 09:30).
+
+Time handling:
+
+- UTC internally; America/New_York only to read calendar dates and
+  phases. zoneinfo applies EST/EDT, so the same UTC instant can be
+  pre-market in winter and regular session in summer (tested around
+  2024-03-10).
+- Naive datetimes are rejected everywhere.
+
+Future information:
+
+- information_available_at > fetched_at is impossible (the stored
+  version cannot appear after we retrieved it) -> FutureInformationError.
+- In live use, eligible_articles(..., now=...) rejects a prediction
+  timestamp later than now.
+
+Multi-ticker: an article is available to every symbol in its canonical
+`symbols` and to no other; symbols are never inferred. Weighting of
+multi-symbol articles is left to the feature layer.
+
+Lookback windows: eligible_articles(..., not_before=x) selects
+x < information_available_at <= prediction_timestamp. Window features
+(pre-market, intraday, previous session, rolling) are built later on
+top of this; Phase 4B implements none of them.
+
 13. FINBERT PIPELINE
 
 Use a pretrained financial sentiment model.
@@ -1567,8 +1641,10 @@ Tasks:
 2. Obtain timestamped news           (4A: provider abstraction + Alpaca)
 3. Store raw articles                (4A: hash-verified raw snapshots)
 4. Deduplicate                       (4A: provider + provider_article_id)
-5. Assign trading dates              (later Phase 4 step)
-6. Map tickers                       (later Phase 4 step)
+5. Assign trading dates              (4B: section 12.1 - eligibility by
+                                      information_available_at, session labels)
+6. Map tickers                       (4B: canonical symbols only, no inference;
+                                      alias/company-name mapping is later work)
 
 Phase 4A does not add sentiment, events, news features, real-time
 ingestion, or any change to the training dataset or models.

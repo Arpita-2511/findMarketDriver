@@ -603,6 +603,36 @@ be stored separately. updated_at shall never silently replace
 created_at. For historical backfill, information_available_at =
 max(created_at, updated_at) (rule historical_backfill_v1).
 
+REQ-NEWS-010 — Prediction-time eligibility
+
+Priority: P0
+
+An article shall inform a prediction only if
+information_available_at <= prediction_timestamp. Calendar-date or
+session matching shall never grant eligibility. For a direction_v1
+row t, prediction_timestamp = completion time of bar t (D_t 16:30
+America/New_York); the prediction horizon shall not change it.
+Articles with information_available_at > fetched_at shall be rejected.
+All timestamps shall be timezone-aware; UTC internally, exchange-local
+only for interpretation.
+
+REQ-NEWS-011 — Trading sessions for news
+
+Priority: P0
+
+Trading sessions shall be derived from completed daily bars (no
+weekday-only heuristics). Dates outside the known sessions shall raise
+an error rather than be guessed. News after the 16:00 close, on
+weekends or on holidays shall be assigned to the next known session.
+Session assignment is descriptive and shall not decide eligibility.
+
+REQ-NEWS-012 — Symbol safety
+
+Priority: P0
+
+News shall be available only to symbols listed in the article's
+canonical `symbols`; no symbol shall be inferred or added.
+
 REQ-NEWS-009 — Ingestion provenance and safety
 
 Priority: P0
@@ -1358,15 +1388,16 @@ Status: COMPLETE (commit 73d01bb)
 
 PHASE 4 — Historical News
 
-Status: 4A IMPLEMENTED — awaiting user test run, review and commit
+Status: 4A COMPLETE (commit c9184e0); 4B IMPLEMENTED — awaiting user test run, review and commit
 
 [x] Verify source coverage (manual: Alpaca AAPL news back to 2017-01)
 [x] Obtain historical articles (4A: NewsProvider + AlpacaNewsProvider)
 [x] Store raw articles (4A: hash-verified raw snapshots, local only)
 [x] Normalize timestamps (4A: UTC, information_available_at)
 [x] Deduplicate (4A: provider + provider_article_id)
-[ ] Assign trading dates
-[ ] Map tickers
+[x] Assign trading dates (4B: services/news_alignment.py, REQ-NEWS-010/011)
+[ ] Map tickers — partial (4B): canonical symbols only, never inferred
+    (REQ-NEWS-012); alias / company-name mapping not implemented
 
 PHASE 5 — FinBERT
 

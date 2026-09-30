@@ -1,8 +1,21 @@
 """Shared, deterministic market-data fixtures (no network)."""
 
+from datetime import date
+
 import numpy as np
 import pandas as pd
 import pytest
+
+from services.market_calendar_service import TradingCalendar
+
+# NYSE holidays inside 2024-03-01 .. 2024-07-31 (Good Friday, Memorial Day, Juneteenth, Independence Day)
+HOLIDAYS_2024 = [date(2024, 3, 29), date(2024, 5, 27), date(2024, 6, 19), date(2024, 7, 4)]
+
+
+def calendar_2024() -> TradingCalendar:
+    """Real 2024 sessions (business days minus exchange holidays); spans the March DST change."""
+    days = [d.date() for d in pd.bdate_range("2024-03-01", "2024-07-31")]
+    return TradingCalendar(d for d in days if d not in HOLIDAYS_2024)
 
 
 def make_bars(n: int = 200, start: str = "2024-01-02", seed: int = 7) -> pd.DataFrame:
