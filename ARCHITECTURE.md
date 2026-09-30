@@ -728,6 +728,80 @@ published_at
 assigned_trading_date
 text
 
+11.1 Provider architecture (Phase 4A)
+
+NewsProvider                      services/news_provider.py (interface)
+├── AlpacaNewsProvider            services/alpaca_news_provider.py
+│                                 PRIMARY: canonical historical provider
+│                                 (Benzinga via Alpaca; future real-time via
+│                                 Alpaca WebSocket - not in Phase 4A)
+├── AlphaVantageNewsProvider      FUTURE: secondary / reference only
+└── NewsDataProvider              FUTURE: optional expansion
+
+Rules:
+
+- The training dataset is built from ONE canonical provider (Alpaca).
+  Providers are never merged into training data.
+- Provider-specific code stays inside its provider module. Everything
+  downstream consumes only the canonical NewsArticle schema.
+- No provider-specific ML features. NewsArticle.ml_view() is the only
+  ML-facing representation and contains no provider fields.
+
+11.2 Canonical news schema (services/news_schema.py, news_v1)
+
+provider                   str       e.g. "alpaca"
+provider_article_id        str       provider's id, as text
+headline                   str       required, non-empty
+summary                    str|None
+content                    str|None  as delivered (Benzinga: HTML)
+symbols                    tuple     upper-case tickers, sorted, unique
+source                     str|None  publisher reported by the provider
+source_url                 str|None
+created_at                 UTC datetime  provider publication time
+updated_at                 UTC datetime|None  provider last-update time
+information_available_at   UTC datetime  earliest time THIS version of
+                                     the record may be used (see 12)
+fetched_at                 UTC datetime  retrieval time
+provider_metadata          dict      raw provider fields not mapped above
+                                     (provenance/debugging only)
+
+Mapping to the article list above: article_id = provider +
+provider_article_id; ticker -> symbols (an article can mention several);
+text -> content; url -> source_url; published_at -> created_at;
+assigned_trading_date is derived later from information_available_at
+(section 12), not stored by the provider layer.
+
+All timestamps must be timezone-aware; they are normalized to UTC.
+Naive timestamps are rejected. updated_at is never substituted for
+created_at.
+
+Deduplication key: (provider, provider_article_id). First occurrence
+wins; duplicates and conflicting duplicates are counted in provenance.
+
+11.3 Historical ingestion and provenance
+
+services/news_service.py fetches a query (symbols, UTC start/end,
+sort, include_content, page size) through a provider, deduplicates,
+and writes a raw snapshot, reusing the Phase 2 snapshot pattern:
+
+data/raw/news/<provider>_<SYMBOLS>_<start>_<end>_<UTC stamp>.jsonl
+data/raw/news/...meta.json   provider, endpoint, request parameters
+                             (never credentials), fetched_at, pages,
+                             raw/duplicate counts, availability rule,
+                             schema version, sha256
+
+Snapshots are loaded only after their sha256 is verified.
+data/raw/news/ is git-ignored: full-text articles are large and
+provider content is licensed; snapshots stay local.
+
+Alpaca specifics (isolated in its module): GET
+https://data.alpaca.markets/v1beta1/news, page_token pagination, page
+size 1-50 (Alpaca's documented maximum), headers APCA-API-KEY-ID /
+APCA-API-SECRET-KEY read from ALPACA_API_KEY / ALPACA_API_SECRET.
+Pagination stops when next_page_token is empty, and fails on a repeated
+token or when a max_pages cap is reached (no infinite loops). 429 /
+5xx / timeouts are retried with backoff; 401/403 and other 4xx are not.
+
 12. NEWS TIME ALIGNMENT
 
 Critical rule:
@@ -754,6 +828,27 @@ should normally influence:
 Weekend/holiday news rolls forward to the next trading session.
 
 This prevents future information from leaking into the prediction.
+
+Timestamp used for alignment (Phase 4A decision):
+
+Trading-date assignment uses information_available_at, never created_at
+or updated_at directly.
+
+Four times are kept separate:
+
+created_at                 when the provider says the article was published
+updated_at                 when the provider last changed it
+fetched_at                 when we retrieved it
+information_available_at   when the version WE STORED may be used
+
+For historical backfill (rule historical_backfill_v1):
+
+information_available_at = max(created_at, updated_at)
+
+A historical request returns the latest version of each article; its
+text is not proven to have existed before updated_at, so the stored
+version is treated as available only from then. created_at is still
+kept unchanged. Future real-time ingestion will use the receipt time.
 
 13. FINBERT PIPELINE
 
@@ -1467,12 +1562,16 @@ PHASE 4 — HISTORICAL NEWS
 
 Tasks:
 
-1. Verify historical source
-2. Obtain timestamped news
-3. Store raw articles
-4. Deduplicate
-5. Assign trading dates
-6. Map tickers
+1. Verify historical source          (done manually: Alpaca AAPL news back
+                                      to 2017-01, pagination, content)
+2. Obtain timestamped news           (4A: provider abstraction + Alpaca)
+3. Store raw articles                (4A: hash-verified raw snapshots)
+4. Deduplicate                       (4A: provider + provider_article_id)
+5. Assign trading dates              (later Phase 4 step)
+6. Map tickers                       (later Phase 4 step)
+
+Phase 4A does not add sentiment, events, news features, real-time
+ingestion, or any change to the training dataset or models.
 
 PHASE 5 — FINBERT
 

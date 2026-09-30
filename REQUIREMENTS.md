@@ -570,6 +570,51 @@ After cutoff:
 
 Weekend/holiday news shall roll forward to the next trading session.
 
+The eligibility time shall be information_available_at (REQ-NEWS-008),
+not the raw publication or update time.
+
+REQ-NEWS-006 — Provider abstraction
+
+Priority: P0
+
+News shall be obtained through a NewsProvider interface. Alpaca
+(Benzinga) is the primary and canonical historical provider. Alpha
+Vantage NEWS_SENTIMENT (reference) and NewsData.io (optional) may be
+added later as providers. Providers shall NOT be merged into the
+training dataset, and no provider-specific ML features shall exist.
+
+REQ-NEWS-007 — Canonical news schema
+
+Priority: P0
+
+Every provider shall return the canonical schema (ARCHITECTURE.md
+11.2): provider, provider_article_id, headline, summary, content,
+symbols, source, source_url, created_at, updated_at,
+information_available_at, fetched_at, provider_metadata. Timestamps
+shall be timezone-aware UTC; naive timestamps shall be rejected. The
+ML-facing view shall exclude provider-specific fields.
+
+REQ-NEWS-008 — Information availability
+
+Priority: P0
+
+created_at, updated_at, fetched_at and information_available_at shall
+be stored separately. updated_at shall never silently replace
+created_at. For historical backfill, information_available_at =
+max(created_at, updated_at) (rule historical_backfill_v1).
+
+REQ-NEWS-009 — Ingestion provenance and safety
+
+Priority: P0
+
+Historical ingestion shall record provider, request parameters
+(excluding credentials), retrieval time, page count, raw/duplicate
+counts and a sha256 of the stored snapshot. Credentials shall come
+only from ALPACA_API_KEY / ALPACA_API_SECRET and shall never be
+logged, printed, stored or included in errors. Pagination shall be
+bounded (repeated-token detection and a page cap). Unit tests shall
+not require network access or credentials.
+
 13. FINBERT REQUIREMENTS
 
 REQ-NLP-001 — Pretrained model
@@ -1297,7 +1342,7 @@ Status: COMPLETE (commit e132c2c; 93 unit + 2 integration tests passed,
 
 PHASE 3 — Classification
 
-Status: IMPLEMENTED — awaiting user test run, evaluation, review and commit
+Status: COMPLETE (commit 73d01bb)
 
 [x] UP/DOWN target (training/targets.py, direction_v1, REQ-TARGET-003)
 [x] Logistic Regression
@@ -1313,13 +1358,13 @@ Status: IMPLEMENTED — awaiting user test run, evaluation, review and commit
 
 PHASE 4 — Historical News
 
-Status: NOT STARTED
+Status: 4A IMPLEMENTED — awaiting user test run, review and commit
 
-[ ] Verify source coverage
-[ ] Obtain historical articles
-[ ] Store raw articles
-[ ] Normalize timestamps
-[ ] Deduplicate
+[x] Verify source coverage (manual: Alpaca AAPL news back to 2017-01)
+[x] Obtain historical articles (4A: NewsProvider + AlpacaNewsProvider)
+[x] Store raw articles (4A: hash-verified raw snapshots, local only)
+[x] Normalize timestamps (4A: UTC, information_available_at)
+[x] Deduplicate (4A: provider + provider_article_id)
 [ ] Assign trading dates
 [ ] Map tickers
 

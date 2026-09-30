@@ -42,6 +42,11 @@ Thumbs.db
 data/live_predictions_log.csv
 
 # ================================
+# Raw news snapshots (Phase 4A): large, licensed provider content - local only
+# ================================
+data/raw/news/
+
+# ================================
 # Temporary files
 # ================================
 *.tmp
