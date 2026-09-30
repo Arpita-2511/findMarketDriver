@@ -47,6 +47,8 @@ data/live_predictions_log.csv
 data/raw/news/
 # Canonical news datasets (Phase 4C): derived from the same licensed content
 data/processed/news/
+# Sentiment datasets (Phase 5C): derived from licensed news, reproducible locally
+data/processed/sentiment/
 
 # ================================
 # Temporary files

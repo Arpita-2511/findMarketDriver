@@ -1162,6 +1162,69 @@ stationary) and cumulative means are dominated by old news; v1 is
 leakage-safe but probably weak as a model input until windowed
 features are designed and evaluated.
 
+14.2 Historical sentiment scoring and daily dataset (Phase 5C,
+     services/historical_sentiment.py)
+
+Purpose: score a whole canonical news dataset once, store auditable
+article-level sentiment, and derive the daily sentiment_features_v1
+dataset - reproducibly and without leakage. Orchestration only: text
+policy + inference = Phase 5A, validation + aggregation = Phase 5B.
+
+Flow:
+
+canonical news .jsonl (4C, sha256 verified)
+  -> unique_articles           identical duplicates collapse (scored once),
+                               conflicting records raise; no headline merging
+  -> impossible-future check   before any model work
+  -> FinBertSentimentService   batched (batch size never changes results)
+  -> ScoredArticle             5A result contract + text_v1 hash match (5B)
+  -> <source>.finbert-<rev>.sentiment.jsonl + .meta.json
+  -> reload                    file sha256, source dataset sha256, provenance,
+                               re-join each record to its canonical article
+                               (same key, information_available_at, symbols)
+                               and re-validate
+  -> generate_sentiment_features (5B, unchanged) on completed-bar sessions
+     from a verified Phase 2 market snapshot
+  -> <source>.finbert-<rev>.daily.jsonl + .meta.json
+
+Article-level record (sentiment_records_v1), one per unique article,
+ordered by (information_available_at, provider, provider_article_id):
+record_version, provider, provider_article_id, symbols,
+information_available_at, inference_version, model_name, model_revision,
+text_policy, label, positive/negative/neutral_probability,
+sentiment_score, input_text_hash. No article text is duplicated; records
+are re-joined to the canonical dataset on load.
+
+Provenance contract: one (model_name, model_revision, inference_version,
+text_policy) per dataset, taken from the scoring backend; every record
+must match it and none may be missing - mixing fails. The model revision
+is part of the file name. Metadata: source dataset file/sha256/run_id,
+provenance, input/scored/collapsed counts, rows, ordering, sha256,
+generated_at.
+
+Determinism: sorted input, sorted output, sorted JSON keys, shortest
+round-trip floats. The file (and its sha256) contains content only;
+generated_at is metadata. Identical re-runs rewrite identical bytes;
+DIFFERENT content for an existing file is refused (never silently
+overwritten). Bit-identical floats are not guaranteed across hardware /
+torch builds - such a run is refused rather than mixed.
+
+Daily dataset (daily_sentiment_v1): one row per (symbol, completed-bar
+trading date), start <= date < end (default: the news interval's UTC
+dates), columns = sentiment_features_v1 output (symbol, trading_date,
+prediction_timestamp as aware UTC ISO, version, 15 features). Eligibility
+remains only information_available_at <= prediction_timestamp
+(D 16:30 New York); zero-news rows are all 0; no windows. Metadata links
+the sentiment file hash, source dataset, provenance and the market
+snapshot (file + sha256) that defined the sessions.
+
+Storage: data/processed/sentiment/ is git-ignored (derived from licensed
+news; reproducible from the canonical dataset + cached model). No API
+keys are needed.
+
+FinBERT sentiment is an NLP signal about article text. It does not
+establish that any news caused a price movement.
+
 15. COMBINED FEATURE STORE
 
 Final daily row:

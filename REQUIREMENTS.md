@@ -753,6 +753,32 @@ deterministic, independent of input order and of the prediction
 horizon; prediction timestamps shall remain timezone-aware. No
 persistence or feature store in this phase.
 
+REQ-NLP-007 — Historical sentiment dataset
+
+Priority: P0
+
+A canonical news dataset shall be scored once per unique article with
+the Phase 5A service and stored as article-level records
+(sentiment_records_v1: identity, symbols, information_available_at,
+probabilities, label, sentiment_score, input_text_hash and full
+provenance), in deterministic order with a sha256 and metadata linking
+the source dataset hash. A dataset shall contain exactly one
+(model_name, model_revision, inference_version, text_policy); mixing or
+missing provenance shall fail. Reloading shall verify both hashes and
+re-validate every record against its canonical article (text hash,
+identity, availability, symbols). Existing output with different
+content shall never be overwritten.
+
+REQ-NLP-008 — Daily sentiment dataset
+
+Priority: P0
+
+The daily dataset shall be produced only by the Phase 5B aggregation
+(REQ-NLP-006) on completed-bar sessions from a verified market snapshot,
+from re-validated sentiment records, and shall record its sources and
+sha256. Sentiment is an NLP signal and shall not be presented as a
+causal explanation of price movements.
+
 14. EVENT CLASSIFICATION REQUIREMENTS
 
 REQ-EVENT-001 — Event taxonomy
@@ -1479,11 +1505,13 @@ Status: 4A COMPLETE (c9184e0); 4B COMPLETE (a16920f); 4C COMPLETE (c896c2b)
 
 PHASE 5 — FinBERT
 
-Status: 5A COMPLETE (9dd32d2); 5B IMPLEMENTED (leakage-safe daily
-        sentiment features) — awaiting user test run, review and commit
+Status: 5A COMPLETE (9dd32d2); 5B COMPLETE (d470e52);
+        5C IMPLEMENTED (historical scoring + daily sentiment dataset) —
+        awaiting user test run, review and commit
 
 [x] Load pretrained model (5A: ProsusAI/finbert, inference only)
-[ ] Process news — scoring service ready (5A); historical corpus not processed yet
+[x] Process news — historical pipeline (5C, REQ-NLP-007); full 2017-present
+    corpus not yet scored (user-run, data stays local)
 [x] Generate sentiment (5A: article-level probabilities + score, REQ-NLP-004)
 [x] Aggregate daily (5B: cumulative as-of-prediction aggregation, REQ-NLP-006)
 [ ] Create sentiment features — v1 contract implemented in memory (5B);
