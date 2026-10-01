@@ -878,6 +878,45 @@ Priority: P1
 
 Given the same source data and feature version, the feature pipeline should reproduce the same feature values.
 
+Phase 7: implemented as feature_store_v1 (ARCHITECTURE.md 15.1);
+REQ-STORE-001..003 satisfied for the available data.
+
+REQ-STORE-004 — Grain, keys and join
+
+Priority: P0
+
+One row per (symbol, trading_date), the existing prediction grain.
+Duplicate or null keys shall be detected before joining and raise;
+every key shall be a calendar session; sentiment/event prediction
+timestamps shall equal the canonical D 16:30 America/New_York; joins
+are 1:1.
+
+REQ-STORE-005 — Missing vs no observations
+
+Priority: P0
+
+Inside a family's coverage its own zero convention applies and every
+session must be present (a gap is an error); outside coverage values are
+NaN with an explicit coverage flag. No blanket zero imputation.
+
+REQ-STORE-006 — Targets and leakage
+
+Priority: P0
+
+Targets keep the existing definitions (next-day return; direction_v1),
+are verified against Close, and never appear in feature families.
+Feature values for an earlier date shall not change when later news is
+added.
+
+REQ-STORE-007 — Incremental evaluation
+
+Priority: P0
+
+Technical / +sentiment / +events shall be evaluated only through the
+central harness on identical rows, targets, splits, candidates and gate.
+Below the minimum evaluable sample the result shall be reported as
+INSUFFICIENT_DATA without metrics.
+
 16. EXPERIMENT REQUIREMENTS
 
 Every feature experiment shall follow:
@@ -1556,7 +1595,7 @@ Status: 5A COMPLETE (9dd32d2); 5B COMPLETE (d470e52);
 
 PHASE 6 — Events
 
-Status: IMPLEMENTED (baseline) — awaiting user test run, review and commit
+Status: COMPLETE (baseline, commit 6c2b7ab)
 
 [x] Define taxonomy (taxonomy_v1)
 [x] Build event classifier (baseline: KeywordEventClassifier rules_v1)
@@ -1567,14 +1606,17 @@ Status: IMPLEMENTED (baseline) — awaiting user test run, review and commit
 
 PHASE 7 — Feature Store
 
-Status: NOT STARTED
+Status: IMPLEMENTED — awaiting user test run, review and commit;
+        incremental evaluation INSUFFICIENT_DATA on the current news sample
 
-[ ] Version feature schema
-[ ] Store technical features
-[ ] Store sentiment features
-[ ] Store event features
-[ ] Build combined feature table
-[ ] Add reproducibility metadata
+[x] Version feature schema (feature_store_v1 / feature_store_schema_v1)
+[x] Store technical features (reused technical_v2)
+[x] Store sentiment features (reused sentiment_features_v1, sentiment__*)
+[x] Store event features (reused event_features_v1, event__*)
+[x] Build combined feature table ((symbol, trading_date), REQ-STORE-004/005/006)
+[x] Add reproducibility metadata (content hash, sources, quality report)
+[ ] Incremental A/B/C evaluation with results — runner done (REQ-STORE-007);
+    needs >= 252 sessions covered by every family (full news backfill)
 
 PHASE 8 — Production Model
 
@@ -1705,7 +1747,7 @@ Evaluation harness          BUILT (Phase 1)
 Historical news             MISSING
 FinBERT                     MISSING
 Event classifier             BASELINE (rules_v1, Phase 6; no labelled evaluation yet)
-Feature store               MISSING
+Feature store               IMPLEMENTED (feature_store_v1; evaluation awaits full news backfill)
 Probability calibration    MISSING
 SHAP                        MISSING
 Market drivers              MISSING

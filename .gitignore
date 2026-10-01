@@ -51,6 +51,8 @@ data/processed/news/
 data/processed/sentiment/
 # Event datasets + human-labelling templates (Phase 6): derived from licensed news
 data/processed/events/
+# Feature stores (Phase 7): contain sentiment/event aggregates of licensed news
+data/processed/features/
 
 # ================================
 # Temporary files

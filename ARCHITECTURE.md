@@ -1356,6 +1356,84 @@ Example:
 
 feature_version = v1.0
 
+15.1 Implemented feature store (Phase 7, training/feature_store.py)
+
+CURRENT IMPLEMENTATION - feature_store_v1 / feature_store_schema_v1.
+Joins EXISTING, hash-verified datasets; no feature is recomputed:
+
+technical  data/final_stock_dataset.csv               Phase 2, technical_v2 (20)
+sentiment  data/processed/sentiment/*.daily.jsonl     Phase 5C, sentiment_features_v1 (15)
+events     data/processed/events/*.daily.jsonl        Phase 6, event_features_v1 (24 = 23 numeric + 1 categorical)
+sessions   data/raw/stocks/<snapshot>.csv             Phase 2 raw snapshot (calendar)
+
+Grain: (symbol, trading_date) - one prediction observation per row,
+predicted at row_prediction_timestamp(D) = D 16:30 America/New_York (the
+existing convention; no new timestamp system). The technical dataset is
+the spine; its symbol comes from its metadata (raw_snapshot.ticker).
+
+Join contract: keys normalised (upper-case symbol, ISO date) and checked
+for nulls/duplicates BEFORE joining (error, never silent aggregation);
+every key must be a calendar session; every sentiment/event row's
+prediction_timestamp must equal row_prediction_timestamp(D); 1:1 left
+joins (pandas validate="one_to_one"). News rows without a technical row
+(e.g. before the technical warm-up) are counted in the join report.
+
+Namespaces: technical names unchanged (the harness uses them);
+sentiment__*, event__* for the news families; version columns moved to
+metadata; event__dominant_event_type kept as a categorical column outside
+the numeric families; sentiment__covered / event__covered flags.
+
+Missing-data semantics:
+  inside a family's coverage (its first..last daily row): the family's
+    own zero convention applies (no news / no events -> 0, dominant NONE);
+    every covered session must have a row - a gap is an ERROR (missing
+    data is never read as "no news")
+  outside coverage: values NaN (unknown), <family>__covered = False
+  no blanket fill with 0
+
+Targets (unchanged, direction_v1): target_return_1d = stored Target =
+Close[t+1]/Close[t] - 1 (re-verified against Close), target_direction_1d
+= 1 if > 0. Close is kept as a reference column (needed to rebuild
+targets in the harness); targets and Close are never in a feature family.
+Feature columns only contain information available at prediction time:
+technical = completed bar D, sentiment/events = articles with
+information_available_at <= D 16:30 (inherited from 5B/6).
+
+Output: data/processed/features/feature_store_v1_<SYM>_<first>_<last>.csv
++ .meta.json (git-ignored). The CSV is deterministic (fixed columns,
+sorted rows, ISO dates, full-precision floats); its sha256 is the CONTENT
+hash. generated_at and git commit are build metadata only. Identical
+rebuilds rewrite identical bytes; different content is never
+overwritten. Metadata: versions, grain, every source file + sha256 +
+version/provenance, target definitions, family counts, row/column
+counts, join report, data-quality report (date range, symbols,
+duplicate/null keys, NaN per column, infinities, coverage, constant
+features, |z| > 6 counts, unexpected categories, target distribution).
+
+Chronological order is preserved (rows sorted by symbol, trading_date);
+downstream evaluation must stay walk-forward (no shuffling).
+
+Incremental evaluation (training/incremental_evaluation.py), through the
+CENTRAL harness only:
+
+  A technical (20)   B + sentiment (35)   C + events (58)
+
+Same rows (sessions where every family is covered), same targets, same
+default_candidates, same TimeSeriesSplit(20, gap = horizon), same
+metrics and gate_v1 for all three. Guard: fewer than 252 evaluable rows
+-> INSUFFICIENT_DATA, nothing is fitted or reported.
+
+Current result (2017-01/02 AAPL news sample): the families overlap on
+23 sessions (2017-01-26 .. 2017-02-28; the technical dataset starts after
+its warm-up) -> INSUFFICIENT_DATA. This is a pipeline/integration
+validation dataset, not sufficient evidence of generalizable model
+performance.
+
+FUTURE IMPROVEMENTS (not implemented): full 2017-present news backfill
+so A/B/C can actually run; multi-symbol evaluation; windowed sentiment
+features (sentiment_features_v1 is cumulative and non-stationary);
+human-validated event labels; a database-backed store.
+
 16. EXPERIMENT GATE
 
 Every new feature group must pass the same evaluation harness.
@@ -2011,11 +2089,12 @@ PHASE 7 — FINAL FEATURE STORE
 
 Tasks:
 
-1. Technical features
-2. Sentiment features
-3. Event features
-4. Versioned combined dataset
-5. Reproducible feature pipeline
+1. Technical features             (reused: technical_v2)
+2. Sentiment features             (reused: sentiment_features_v1)
+3. Event features                 (reused: event_features_v1)
+4. Versioned combined dataset     (feature_store_v1, section 15.1)
+5. Reproducible feature pipeline  (content hash, write-once)
+6. Incremental A/B/C evaluation   (runner done; current sample -> INSUFFICIENT_DATA)
 
 PHASE 8 — FINAL MODEL
 
