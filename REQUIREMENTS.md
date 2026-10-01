@@ -1826,6 +1826,34 @@ period has been used by Phase 9, 10A, 10B and 10C; inherited limitations
 FinBERT model-level determinism not verified); development rerun determinism
 not verified.
 
+PHASE 11 — Cross-Stock Generalization Research (29 historical DJIA members;
+          research - no production model, API or UI)
+
+Status: 11.0 DESIGN FROZEN (2026-10-01) — design sha256
+        266daaddba0e8cb18163b4ec9db7eadabe2d5ab574bf410e043a7d28d3247650;
+        no data acquired, no experiment run (details: ARCHITECTURE.md 15.6)
+
+[x] Universe frozen: 2016-12-31 DJIA membership (Wikipedia historical
+    components, section "March 19, 2015"), 29 securities; DD excluded (no
+    single continuous listed series); UTX represented by RTX (continuation,
+    pending Phase 11.1 adjustment check)
+[x] Corporate-action integrity rule and affected-row semantics frozen
+    (rows D in [E-h, E+49] excluded only if the provider history is not
+    properly adjusted); events for RTX/UTX, GE, MMM, MRK, IBM, PFE, JNJ
+    recorded as requiring Phase 11.1 verification
+[x] Sample rule frozen: >= 1,800 labelled development rows after exclusions
+[x] Target (Phase 10A excess vs SPY), horizons 1/3/5, feature sets A-F,
+    11 fixed models frozen
+[x] Panel (primary) and per-stock (secondary) designs frozen: date-grouped
+    TimeSeriesSplit(20), gap = h, no ticker identity feature, panel
+    baselines, per-date cross-sectional mean-loss DM
+[x] Families frozen: panel 198 (Holm), per-stock 5,742 (Holm),
+    AAPL-excluded panel sensitivity 198 (descriptive)
+[x] Qualification and confirmation rules frozen; 11A/11B staging frozen
+[x] Focused tests: tests/unit/test_phase11_design.py (9 passed)
+[ ] 11.1 price data, corporate-action verification, eligibility
+[ ] 11.2-11.6 evaluator, development (11A / 11B), confirmation, report
+
 PHASE 8 (original numbering) — Production Model
 
 Status: NOT STARTED

@@ -2056,6 +2056,77 @@ Statistical methodology and limitations:
      (frame, matrix and development-target construction verified identical at
      freeze; the unconditional reference reproduced Phase 10A bit for bit).
 
+15.6 Phase 11.0 cross-stock generalization - DESIGN FROZEN (no data, no experiments)
+
+Question: is the absence of a qualified predictive signal specific to AAPL,
+or does the FindMarketDriver methodology fail to generalize across equities?
+
+  code       training/phase11_design.py (design definition, affected-row and
+             eligibility semantics; no data access)
+  registry   data/results/research/phase11/design_registry.json (write-once)
+             design sha256 266daaddba0e8cb18163b4ec9db7eadabe2d5ab574bf410e043a7d28d3247650
+
+Frozen decisions:
+  universe   historical DJIA membership on 2016-12-31 (source: Wikipedia,
+             "Historical components of the Dow Jones Industrial Average",
+             section "March 19, 2015", in force until 2017-09-01; used only to
+             establish membership, not corporate-action mechanics). 29
+             securities: AAPL AXP BA CAT CSCO CVX DIS GE GS HD IBM INTC JNJ JPM
+             KO MCD MMM MRK MSFT NKE PFE PG RTX TRV UNH V VZ WMT XOM.
+             Later-removed members are kept (historical, not current, membership).
+             DD EXCLUDED: the 2016 member (E.I. du Pont de Nemours) has no single
+             continuous listed security series over the research interval; no
+             successor substitution, no synthetic series.
+             UTX -> RTX: legal/security continuation (UTC was the legal survivor
+             of the Raytheon merger completed 2020-04-03), subject to Phase 11.1
+             verification of the Carrier/Otis adjustment.
+             No security may be removed for predictive performance or low news
+             coverage.
+  corporate  provider-adjusted history; every material event (pre-registered
+  actions    for RTX/UTX, GE, MMM, MRK, IBM, PFE, JNJ, plus any further material
+             action in the provider records) is verified in Phase 11.1; properly
+             adjusted -> rows kept; not adjusted -> rows whose feature lookback
+             or target spans the event are excluded and counted: for first
+             reflecting session E, rows D in [E-h, E+49] (session indices; 50-
+             session maximum lookback); no price repair, no splicing, no whole-
+             stock exclusion without a separately frozen rule. Event dates and
+             ratios other than the 2020-04-03 merger completion are recorded as
+             REQUIRES_PHASE_11_1_VERIFICATION (none invented).
+  sample     >= 1,800 labelled development rows per stock AFTER all exclusions;
+             missing sessions never filled
+  intervals  research frame 2017-02-01..2026-09-28; development
+             2017-02-01..2024-09-30; confirmation 2024-10-01..2026-09-25
+  target     Phase 10A excess return vs SPY (each stock's own adjusted close);
+             horizons 1, 3, 5
+  features   Phase 10A sets A-F (20/35/43/58/29/64), aapl_minus_spy_* renamed
+             stock_minus_spy_* (same formula); rules_v1 events unchanged (its
+             Apple-specific product keywords are a recorded limitation)
+  models     the 11 Phase 9 fixed models, seed 42, no tuning
+  panel      PRIMARY: all eligible stocks pooled; TimeSeriesSplit(20) over
+             unique development dates with gap = h (all stocks of a date in the
+             same fold); one model per fold; no ticker identity feature;
+             baselines Zero, pooled Mean, per-stock Mean / Always UP, pooled and
+             per-stock Base Rate (reference = strongest by pooled OOS loss);
+             DM on the per-date cross-sectional mean loss with the existing
+             one-sided test (Newey-West h - 1 lags); gate_v1 logic unchanged
+  per-stock  SECONDARY: existing per-symbol harness for each stock
+  counts     per-stock 29 x 6 x 3 x 11 = 5,742; panel 198; AAPL-excluded panel
+             sensitivity 198 (descriptive only)
+  families   Holm within the primary panel family (198) and within the
+             secondary per-stock family (5,742); never merged after results
+  qualifies  gate_v1 + raw p < 0.05 + Holm p < 0.05 within the family;
+             confirmation only for qualifiers with authorization, else
+             NOT_APPLICABLE; a generalization claim requires a confirmed panel
+             qualifier
+  staging    11A: A, E (prices only); 11B: B, C, D, F (multi-symbol news) -
+             runs regardless of 11A
+  AAPL       included; per-stock A/E checked for equivalence with Phase 10A
+             (reproducibility check only)
+
+Deferred to Phase 11.1 (not yet facts): price downloads and session checks,
+verification of every corporate-action event and its provider adjustment,
+affected-row counts and per-stock eligibility.
+
 16. EXPERIMENT GATE
 
 Every new feature group must pass the same evaluation harness.
@@ -2787,6 +2858,22 @@ Tasks:
    NO DEVELOPMENT QUALIFIERS
 5. Final audit                          - done, 18 / 18
 6. Confirmation holdout                - not applicable; not read
+
+PHASE 11 — CROSS-STOCK GENERALIZATION RESEARCH (29 historical DJIA members;
+research, no production model / API)
+
+Status: 11.0 DESIGN FROZEN (2026-10-01) - section 15.6; no data acquired,
+        no experiment run
+
+Tasks:
+
+1. 11.0 design freeze (universe, corporate-action rule, matrix) - done
+2. 11.1 price data, corporate-action verification, eligibility   - not started
+3. 11.2 panel evaluator + per-stock runner                       - not started
+4. 11.3 / 11A development (A, E)                                  - not started
+5. 11.4 multi-symbol news, FinBERT, events                       - not started
+6. 11.5 / 11B development (B, C, D, F)                            - not started
+7. 11.6 confirmation (qualifiers only) and report                 - not started
 
 PHASE 8 (original numbering) — FINAL MODEL
 
