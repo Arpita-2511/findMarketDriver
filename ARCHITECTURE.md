@@ -1563,10 +1563,10 @@ because the file name depends only on the technical date range):
            full hash chain store -> daily -> records -> canonical news;
            Phase 7 artifact unchanged.
 
-A/B/C evaluation (training.incremental_evaluation, unchanged; preserved
-report data/results/evaluation/
-feature_store_incremental_20261001_phase8_backfill.json, sha256
-997e6010d22451654c5a615d498a983fc73abf4bcabc63a64051a5b91c5f00c2):
+A/B/C evaluation (training.incremental_evaluation, unchanged; canonical
+report data/results/evaluation/feature_store_incremental_20261001.json,
+sha256 997e6010d22451654c5a615d498a983fc73abf4bcabc63a64051a5b91c5f00c2;
+a temporary _phase8_backfill copy of the same file was not kept):
 
   rows in store 2,431; evaluable 2,431; out-of-sample 2,300 rows,
   2017-08-02 .. 2026-09-25, identical for A, B and C (the harness rebuilds
@@ -1650,11 +1650,152 @@ Limitations of this result:
      but not default candidates), no tuning by design.
   8. Traceability: the incremental report stores neither the feature-store
      path/sha256 nor gate reasons or Diebold-Mariano p-values; reports are
-     named by UTC date, so a same-day rerun overwrites the file (worked
-     around with the _phase8_backfill copy).
+     named by UTC date, so a same-day rerun overwrites the file (the
+     committed report is identified by its sha256 above).
   9. Multiple comparisons: 3 experiments x 3 non-baseline candidates; moot
      here because nothing qualified.
  10. FinBERT model-level determinism not verified (section 11.5).
+
+15.3 Phase 9 predictive signal research - development stage (AAPL, 2026-10-01)
+
+Design: pre-registered, two-stage (training/phase9_research.py). The
+complete experiment matrix was frozen BEFORE any result existed; the
+development stage runs it once through the UNCHANGED central harness
+(run_evaluation, gate_v1); only development qualifiers may be evaluated,
+once each, on the Phase-9 confirmation holdout.
+
+  registry   data/results/research/phase9/registry.json
+             matrix sha256   12e16f11ba886d1a61d7f91bf912478dc6850653373e3c1094afd26ae9b12545
+             registry sha256 3f7ffd7fb2c5aec36a4fd04460cc24497a346bc69333ed80aa10f92b531b14f1
+             (after development; status DEVELOPMENT_COMPLETE)
+  run files  data/results/research/phase9/experiments/dev_{A..F}_h{1,3,5}.json
+             (18 harness reports, write-once, sha256 recorded in the registry)
+  commands   python -m training.phase9_research freeze | validate-context |
+             develop | holdout --confirm | status
+
+New modules (no existing module changed):
+  training/research_targets.py   documents h = 1/3/5 use of the EXISTING
+                                 targets (future_return, direction_v1, gap = h)
+  services/sentiment_window.py   sentiment_window_v1 (13 features), read-only
+                                 from the verified Phase 8 sentiment records
+  services/market_context.py     market_context_v1 (9 features) from raw
+                                 SPY / QQQ snapshots
+  training/phase9_research.py    freeze / develop / holdout / registry
+
+sentiment_window_v1: W_k(D) = AAPL articles with ts(prev_k(D)) <
+information_available_at <= ts(D), ts(D) = D 16:30 New York, k = 1, 5, 20
+sessions. sw_count_k, sw_mean_k (mean FinBERT sentiment_score),
+sw_positive_ratio_k / sw_negative_ratio_k (k = 5, 20), sw_mean_change_5_20
+= sw_mean_5 - sw_mean_20, sw_count_surprise_1_20 = sw_count_1 -
+sw_count_20 / 20, sw_mean_surprise_1_20 = sw_mean_1 - sw_mean_20; empty
+window -> 0. A row is covered only if its 20-session window lies inside the
+news interval (otherwise NaN).
+
+market_context_v1 (S = SPY, Q = QQQ, A = AAPL adjusted Close; k sessions
+back on each series): spy_return_1/5/20, qqq_return_1/5 = X[D]/X[D-k] - 1;
+aapl_minus_spy_return_1/5; spy_volatility_20 = sample std (ddof 1) of 20
+SPY log returns ending D; spy_close_to_sma_50 = S[D] / mean(S[D-49..D]).
+Only bars dated <= D (complete at D 16:30 New York = prediction time).
+SPY/QQQ sessions must equal AAPL sessions over the needed range; a missing
+or extra session raises (no forward fill, no dropped rows).
+  SPY data/raw/stocks/SPY_1d_10y_20261001T104943Z.csv  sha256 bc827c76bc61bee2...
+  QQQ data/raw/stocks/QQQ_1d_10y_20261001T104948Z.csv  sha256 106509bae648328d...
+  (2,512 rows each, 2016-10-03 .. 2026-09-30, yfinance 1.5.1; created with
+  training.build_dataset.fetch_and_snapshot only - the AAPL dataset was not
+  rebuilt). Over the needed range 2016-11-18 .. 2026-09-28: 2,476 AAPL
+  sessions, 0 missing / 0 extra in SPY and QQQ.
+
+Pre-registered matrix: 6 feature sets x 3 horizons x (6 regression + 5
+classification models) = 198 experiments (108 regression, 90
+classification); baselines (Mean Return, Zero Return, Always UP, Base
+Rate) are references in every run, not experiments.
+  A technical (20)                         B + sentiment_features_v1 (35)
+  C technical + events (43)                D technical + sentiment + events (58)
+  E technical + market context (29)
+  F technical + sentiment window + events + market context (65 registered
+    columns, 64 distinct - see limitations)
+  horizons 1, 3, 5 trading days; targets future_return_{h}d (regression) and
+    direction_{h}d (classification), existing formulas, gap = h
+  regression: Linear Regression, Ridge, RF Regressor, HistGradientBoosting
+    Regressor, XGBoost Regressor, LightGBM Regressor
+  classification: Logistic Regression, Random Forest, HistGradientBoosting,
+    XGBoost, LightGBM
+  fixed parameters (Phase 3 tree settings, seed 42; HistGradientBoosting
+  without early stopping); no tuning.
+
+Data: research frame = Phase 8 store rows covered by every family, 2,427
+rows 2017-02-01 .. 2026-09-28 (the first 4 store rows lack a full 20-session
+news window). Development = rows <= 2024-09-30: 1,928 rows; targets are
+built inside this frame, so the last h rows are unlabelled and no price
+after 2024-09-30 is used. Labelled rows 1,927 / 1,925 / 1,923 (h = 1/3/5);
+TimeSeriesSplit(20), gap = h, test size 91, 1,820 pooled out-of-sample rows
+per run (h = 1: 2017-07-06 .. 2024-09-27); first training fold 106 / 102 /
+98 rows. Inputs verified against the frozen hashes (store 73966443...,
+sentiment records d3f40991..., sentiment daily e25e7d9d..., events
+50a44ae0..., canonical news cc974e83..., AAPL snapshot 141aba8f...).
+
+Development result (18 runs, 27 min, exit 0):
+  0 development qualifiers under gate_v1 (0 / 108 regression, 0 / 90
+  classification); raw p < 0.05: 0 (smallest raw p 0.390; none < 0.10);
+  Holm-adjusted p: 1.0000 for all 198 (informational only).
+  Baselines (identical across feature sets):
+    h  Mean Return MSE   Zero Return MSE   Base Rate log loss   Always UP accuracy
+    1  3.62967e-4        3.64138e-4        0.691610             0.5368
+    3  9.70034e-4        9.80392e-4        0.684821             0.5736
+    5  1.56097e-3        1.59044e-3        0.678512             0.5918
+  Descriptive only (no ranking, no recommendation): 4 of 198 experiments
+  beat their reference baseline on the primary metric, none qualified:
+    p9_A_h1_rf_regressor    MSE -0.102% vs Mean Return, DM 0.251, p 0.401
+    p9_C_h1_rf_regressor    MSE -0.103% vs Mean Return, DM 0.279, p 0.390
+    p9_C_h5_random_forest   log loss -0.052% vs Base Rate, DM 0.077, p 0.469;
+                            accuracy below Always UP
+    p9_F_h5_random_forest   log loss -0.064% vs Base Rate, DM 0.099, p 0.461;
+                            accuracy below Always UP
+  The other 194 experiments did not beat their reference on the primary
+  metric. Full per-experiment metrics, baseline metrics, DM statistics,
+  raw/Holm p-values, gate reasons and fold boundaries are in the registry
+  and run files.
+
+Phase-9 confirmation holdout (2024-10-01 .. 2026-09-25): NOT EVALUATED.
+With no development qualifiers it is not applicable; no holdout file
+exists. (Recording NOT_APPLICABLE in the registry is done by `holdout
+--confirm`, which reads no data in this case; it has not been run, so the
+registry status is still DEVELOPMENT_COMPLETE.) The holdout is in any case
+not pristine: Phase 3 (technical trees, h = 1) and Phase 8 (linear A/B/C,
+h = 1) evaluated parts of it. Phase 3 / Phase 8 results are separate
+evaluations on different rows and are not part of the Phase 9 matrix.
+
+Conclusion (scoped): no candidate passed gate_v1 during Phase-9
+development - i.e. none of these 198 pre-registered AAPL configurations
+(these features, horizons, fixed models and this walk-forward design)
+showed significant out-of-sample improvement over its baseline. This is
+not a statement about predictive signal in general.
+
+Audit: an independent read-only audit passed 32/32 checks (completeness,
+registry == run files, gate_v1 re-applied from stored metrics reproduces
+all 198 statuses, raw p == 1 - Phi(DM), Holm recomputed, cutoff and gap per
+fold, input and artifact hashes) and found no non-finite values in 5,400
+fold-metric rows.
+
+Limitations:
+  1. No candidate passed gate_v1 during Phase-9 development; the
+     confirmation holdout was therefore not evaluated.
+  2. Feature set F contains an exact duplicate: event__article_count ==
+     sw_count_1 (both count AAPL articles in the 1-session window). F has
+     65 registered columns but 64 distinct; kept unchanged because the
+     matrix was frozen. Its effect on predictions was not assessed.
+  3. SPY/QQQ hashes are stored in registry.development.context_inputs, not
+     in the individual run files (which are harness reports of in-memory
+     data); the registry links each run file by sha256.
+  4. 101,097 identical scikit-learn UserWarnings ("sklearn.utils.parallel
+     .delayed should be used with sklearn.utils.parallel.Parallel ...")
+     were emitted. They produced no errors and no non-finite metrics; the
+     triggering estimator was not identified.
+  5. Development rerun determinism has NOT been independently verified.
+  6. Inherited: sentiment_features_v1 is cumulative (non-stationary);
+     event labels are keyword rules, not ground truth; single symbol; fixed
+     parameters only (no tuning by design); FinBERT model-level determinism
+     not verified (section 11.5).
 
 16. EXPERIMENT GATE
 
@@ -2339,6 +2480,23 @@ Tasks:
                                    FinBERT model-level determinism NOT
                                    verified (section 11.5)
 
+PHASE 9 — PREDICTIVE SIGNAL RESEARCH (inserted 2026-10-01; AAPL only;
+research, no production model / API)
+
+Status: DEVELOPMENT COMPLETE (2026-10-01) - 0 development qualifiers;
+        Phase-9 confirmation holdout not applicable (not evaluated)
+
+Tasks:
+
+1. Pre-register the experiment matrix  (section 15.3) - frozen, 198 experiments
+2. Sentiment-window features           (sentiment_window_v1) - done
+3. Market-context features             (market_context_v1, SPY/QQQ) - done
+4. Development evaluation              (<= 2024-09-30, gate_v1) - done,
+                                         NO DEVELOPMENT QUALIFIERS
+5. Confirmation holdout                (2024-10-01 .. 2026-09-25) - not
+                                         applicable; not evaluated
+6. Explainability of a qualified model - not applicable (none qualified)
+
 PHASE 8 (original numbering) — FINAL MODEL
 
 Tasks:
@@ -2349,7 +2507,7 @@ Tasks:
 4. Save artifact
 5. Save metadata
 
-PHASE 9 — EXPLAINABILITY
+PHASE 9 (original numbering) — EXPLAINABILITY
 
 Tasks:
 

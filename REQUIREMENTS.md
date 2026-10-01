@@ -1671,6 +1671,66 @@ store and the evaluation. Determinism of FinBERT re-scoring (sentiment
 records) is NOT verified — the stored records are the authoritative
 FinBERT output.
 
+PHASE 9 — Predictive Signal Research (inserted 2026-10-01; AAPL only;
+          research - no production model, API or UI)
+
+Status: DEVELOPMENT COMPLETE (2026-10-01) — 0 development qualifiers
+        under gate_v1; Phase-9 confirmation holdout not applicable and
+        NOT evaluated (details: ARCHITECTURE.md 15.3)
+
+[x] Pre-registered experiment matrix frozen before any result
+    (data/results/research/phase9/registry.json, matrix sha256
+    12e16f11ba886d1a61d7f91bf912478dc6850653373e3c1094afd26ae9b12545):
+    6 feature sets (A-F) x 3 horizons (1, 3, 5) x (6 regression + 5
+    classification models) = 198 experiments (108 regression, 90
+    classification); fixed parameters, seed 42, no tuning
+[x] sentiment_window_v1 (13 features, read-only from the verified Phase 8
+    sentiment records) and market_context_v1 (9 features, SPY/QQQ raw
+    snapshots, strict session alignment)
+[x] Targets: existing future_return / direction_v1 at h = 1, 3, 5; gap = h
+[x] Unit tests: 52 new (tests/unit/test_research_targets.py,
+    test_sentiment_window.py, test_market_context.py,
+    test_phase9_research.py); full suite reported 549 passed, 10 deselected
+[x] Context validation: 2,427 research rows 2017-02-01..2026-09-28;
+    2,476 / 2,476 required sessions aligned (0 missing / 0 extra)
+[x] Development evaluation: sessions <= 2024-09-30 (1,928 rows),
+    TimeSeriesSplit(20), gap = horizon, 1,820 out-of-sample rows per run,
+    central harness and gate_v1 unchanged — 198 / 198 completed;
+    0 qualifiers; raw p < 0.05: 0; Holm p < 0.05: 0 (informational)
+[x] Independent read-only audit: 32 / 32 checks passed; 5,400 fold rows
+    finite; registry sha256 3f7ffd7fb2c5aec36a4fd04460cc24497a346bc69333ed80aa10f92b531b14f1
+[ ] Phase-9 confirmation holdout (2024-10-01..2026-09-25) — not applicable
+    (no development qualifier); not evaluated. Registry still records
+    DEVELOPMENT_COMPLETE (the NOT_APPLICABLE record via `holdout --confirm`,
+    which reads no data, has not been written)
+[ ] Development rerun determinism — NOT independently verified
+[ ] Explainability — not applicable (no qualified model)
+
+Scoped conclusion: no candidate passed gate_v1 during Phase-9 development
+for these 198 pre-registered AAPL configurations. This does not establish
+the absence of predictive signal in general.
+
+Recorded limitations: feature set F contains an exact duplicate
+(event__article_count == sw_count_1; 65 registered columns, 64 distinct);
+SPY/QQQ hashes are stored in registry.development.context_inputs, not in
+the individual run files; 101,097 identical scikit-learn UserWarnings were
+emitted without errors or non-finite metrics, triggering estimator not
+identified; development rerun determinism not verified.
+
+REQ-RESEARCH-001 — Pre-registered research evaluation
+
+Priority: P0
+
+Research experiments that may lead to a production candidate shall be
+pre-registered: feature sets, horizons, targets, models with fixed
+parameters and the evaluation configuration are persisted (with a content
+hash) before any result exists, and the run refuses a changed matrix. Every
+pre-registered experiment is evaluated exactly once through the central
+harness and gate_v1, and every result is recorded, including failures.
+Multiple-comparison adjustments are reported for information and never
+replace the gate. A confirmation holdout is evaluated only for development
+qualifiers, once each; with no qualifiers it is not evaluated.
+
 PHASE 8 (original numbering) — Production Model
 
 Status: NOT STARTED
@@ -1682,7 +1742,7 @@ Status: NOT STARTED
 [ ] Save metadata
 [ ] Version model
 
-PHASE 9 — Explainability
+PHASE 9 (original numbering) — Explainability
 
 Status: NOT STARTED
 
