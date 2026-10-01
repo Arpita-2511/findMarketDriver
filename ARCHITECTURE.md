@@ -1225,6 +1225,97 @@ keys are needed.
 FinBERT sentiment is an NLP signal about article text. It does not
 establish that any news caused a price movement.
 
+14.3 Financial event classification (Phase 6)
+
+Modules:
+
+services/event_taxonomy.py     the ONLY definition of event types/impacts
+services/event_classifier.py   EventClassifier interface; KeywordEventClassifier
+services/event_features.py     daily event_features_v1 (pure)
+services/historical_events.py  article-level + daily event datasets, CLI
+services/event_evaluation.py   human-label validation tooling
+
+Taxonomy (taxonomy_v1, derived from the 372-headline AAPL sample):
+EARNINGS, GUIDANCE, M_AND_A, LEGAL, REGULATORY, CAPITAL_ACTION,
+ANALYST_RATING, MANAGEMENT_GOVERNANCE, PARTNERSHIP, OWNERSHIP, PRODUCT,
+OPERATIONS, MACRO, MARKET_ACTIVITY, OTHER. Changes vs the suggested list:
+PRODUCT_LAUNCH/UPDATE merged (headlines rarely distinguish them);
+MANAGEMENT_CHANGE widened to governance (shareholder meetings, proxy);
+OPERATIONS = supply chain/manufacturing; OWNERSHIP (13F, investor
+stakes) and MARKET_ACTIVITY (option/technical alerts, block trades,
+market wraps - price-action reports, kept apart so they are never read
+as fundamental events) added. Order = tie-break priority.
+
+CURRENT BASELINE classifier - KeywordEventClassifier (rules_v1):
+weighted, case-insensitive regex rules per type on text_v1 (headline +
+summary; the exact text FinBERT scored, same input_text_hash).
+score(type) = sum of matched rule weights; event_type = argmax (ties ->
+taxonomy order); no match -> OTHER. event_confidence =
+score(event_type) / sum(scores): the share of matched rule evidence, a
+heuristic - NOT a probability and NOT accuracy. Every record lists the
+rules that fired. Chosen because no labelled event data exists (no model
+could be shown to be better), it is deterministic, instant on CPU, needs
+no download/dependency, and is fully explainable. Rejected for now:
+zero-shot NLI (large download, slow on CPU, unverifiable without labels)
+and FinBERT embeddings (not trained for similarity).
+
+Impact is separate from type: event_impact = the article's FinBERT label
+(POSITIVE/NEGATIVE/NEUTRAL), event_impact_score = its sentiment_score,
+read from the Phase 5C dataset (no FinBERT re-run).
+
+Article-level dataset (event_records_v1), one record per unique article,
+ordered by (information_available_at, provider, provider_article_id):
+provider, provider_article_id, symbols, published_at (= created_at),
+information_available_at (= the eligibility timestamp), input_text_hash,
+event_type, event_confidence, matched_rules, event_impact,
+event_impact_score, classifier_name, classifier_version,
+taxonomy_version. No article text. Built from the verified 5C sentiment
+dataset; reload verifies hashes and lineage, re-joins each record to its
+article/sentiment and can re-classify to prove labels reproduce.
+Metadata: classifier, impact source (sentiment file + sha + model
+revision), source dataset, data-quality report (counts, duplicates,
+type/impact distribution, confidence stats, low-confidence count,
+symbols, availability range), labels_are_ground_truth = false.
+
+Daily dataset (event_features_v1), per (symbol, completed-bar date D):
+
+    window  ts(previous session) < information_available_at <= ts(D),  ts(D) = D 16:30 New York
+    article_count, event_count (non-OTHER), unique_event_type_count,
+    <type>_event_count for every non-OTHER type (generated from the taxonomy),
+    positive/negative/neutral_event_count, event_impact_score (mean
+    sentiment_score of events), mean_event_confidence, dominant_event_type
+    (ties by taxonomy order; NONE if no events), recent_event_count
+    (same rule over the last 5 sessions)
+
+The upper bound is the Phase 4B eligibility rule; window bounds come from
+the TradingCalendar (previous_session_before), never from which dates
+were requested, so each article lands in exactly one row and features
+do not depend on the horizon. Per-session windows were chosen (unlike the
+cumulative sentiment_features_v1) so counts do not grow with time. Zero
+convention: counts/scores 0, dominant NONE. Weekend/holiday news falls
+into the next session's window; DST via zoneinfo.
+
+Storage: data/processed/events/ (git-ignored, includes validation
+templates). Duplicates: identical collapse, conflicting raise; identical
+re-runs rewrite identical bytes, different content is never overwritten.
+
+Evaluation: no labelled event dataset exists, so FORMAL SUPERVISED
+CLASSIFICATION ACCURACY CANNOT BE ESTABLISHED from the current data.
+Classifier output and event_confidence are not accuracy.
+event_evaluation exports a human-labelling template (predictions hidden)
+and, once a person fills it, reports precision/recall/F1 per class,
+macro/weighted F1 and a confusion matrix against baselines "always
+OTHER" and "majority human label"; under 100 labels it is descriptive
+only.
+
+FUTURE IMPROVEMENT (not implemented): a human-labelled financial event
+dataset, then a zero-shot or supervised fine-tuned classifier evaluated
+against rules_v1 on held-out labels; incremental evaluation of event
+features through the central harness (REQ-EVENT-003).
+
+Event classification describes what an article is about; like sentiment
+it does not establish that the event caused a price movement.
+
 15. COMBINED FEATURE STORE
 
 Final daily row:
@@ -1909,11 +2000,12 @@ PHASE 6 — EVENT CLASSIFICATION
 
 Tasks:
 
-1. Define event taxonomy
-2. Build event classifier
-3. Generate event labels
-4. Aggregate daily
-5. Evaluate incremental value
+1. Define event taxonomy          (taxonomy_v1, section 14.3)
+2. Build event classifier         (baseline: keyword rules_v1)
+3. Generate event labels          (classifier output, not ground truth)
+4. Aggregate daily                (event_features_v1)
+5. Evaluate incremental value     (NOT done - needs human labels and the
+                                   central-harness feature evaluation)
 
 PHASE 7 — FINAL FEATURE STORE
 

@@ -49,6 +49,8 @@ data/raw/news/
 data/processed/news/
 # Sentiment datasets (Phase 5C): derived from licensed news, reproducible locally
 data/processed/sentiment/
+# Event datasets + human-labelling templates (Phase 6): derived from licensed news
+data/processed/events/
 
 # ================================
 # Temporary files

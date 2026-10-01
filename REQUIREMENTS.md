@@ -798,11 +798,47 @@ M&A
 
 The final taxonomy must be documented before production use.
 
+Phase 6: taxonomy_v1 documented in ARCHITECTURE.md 14.3 and defined only
+in services/event_taxonomy.py.
+
 REQ-EVENT-002 — Event aggregation
 
 Priority: P2
 
 Aggregate event counts/features by ticker and trading date.
+
+Phase 6: event_features_v1 (ARCHITECTURE.md 14.3).
+
+REQ-EVENT-004 — Event classification contract
+
+Priority: P0
+
+Each unique article shall receive exactly one event_type from the
+central taxonomy, an event_confidence in [0, 1] documented as what it
+is (rules_v1: share of rule evidence, not a probability), the evidence
+used (matched_rules), and an event_impact taken from its FinBERT label -
+type and impact are separate. Classification shall be deterministic,
+replaceable behind EventClassifier, and recorded with classifier name,
+version and taxonomy version.
+
+REQ-EVENT-005 — Leakage-safe event features
+
+Priority: P0
+
+Daily event features for (symbol, D) shall use only articles listing
+the symbol with prev(D) < information_available_at <= D 16:30 New York
+(Phase 4B rule as the upper bound, calendar-derived lower bounds);
+duplicates shall not inflate counts; zero windows are all 0 / NONE; no
+dependence on the prediction horizon.
+
+REQ-EVENT-006 — No fabricated ground truth
+
+Priority: P0
+
+Classifier output shall never be reported as accuracy. Supervised
+metrics (precision, recall, F1, macro/weighted F1, confusion matrix,
+baselines) shall be computed only from human labels, and small samples
+shall be reported as descriptive only.
 
 REQ-EVENT-003 — Incremental evaluation
 
@@ -1506,8 +1542,7 @@ Status: 4A COMPLETE (c9184e0); 4B COMPLETE (a16920f); 4C COMPLETE (c896c2b)
 PHASE 5 — FinBERT
 
 Status: 5A COMPLETE (9dd32d2); 5B COMPLETE (d470e52);
-        5C IMPLEMENTED (historical scoring + daily sentiment dataset) —
-        awaiting user test run, review and commit
+        5C COMPLETE (846d3de)
 
 [x] Load pretrained model (5A: ProsusAI/finbert, inference only)
 [x] Process news — historical pipeline (5C, REQ-NLP-007); full 2017-present
@@ -1521,13 +1556,14 @@ Status: 5A COMPLETE (9dd32d2); 5B COMPLETE (d470e52);
 
 PHASE 6 — Events
 
-Status: NOT STARTED
+Status: IMPLEMENTED (baseline) — awaiting user test run, review and commit
 
-[ ] Define taxonomy
-[ ] Build event classifier
-[ ] Generate event labels
-[ ] Aggregate events
-[ ] Evaluate incremental value
+[x] Define taxonomy (taxonomy_v1)
+[x] Build event classifier (baseline: KeywordEventClassifier rules_v1)
+[x] Generate event labels (classifier output - NOT ground truth)
+[x] Aggregate events (event_features_v1)
+[ ] Human-labelled validation sample (template + tooling ready; needs a person)
+[ ] Evaluate incremental value (REQ-EVENT-003, central harness)
 
 PHASE 7 — Feature Store
 
@@ -1668,7 +1704,7 @@ Classification              EXPERIMENTAL
 Evaluation harness          BUILT (Phase 1)
 Historical news             MISSING
 FinBERT                     MISSING
-Event classifier             MISSING
+Event classifier             BASELINE (rules_v1, Phase 6; no labelled evaluation yet)
 Feature store               MISSING
 Probability calibration    MISSING
 SHAP                        MISSING

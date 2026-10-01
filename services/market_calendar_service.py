@@ -174,6 +174,20 @@ class TradingCalendar:
     def next_session_after(self, d) -> date:
         return self.next_session_on_or_after(_as_date(d) + timedelta(days=1))
 
+    def previous_session_before(self, d, n: int = 1) -> date | None:
+        """
+        The n-th known session strictly before `d` (Phase 6). None if fewer
+        than n known sessions precede it - history before the calendar's
+        first session is unknown, never guessed.
+        """
+        if not isinstance(n, int) or n < 1:
+            raise ValueError("n must be a positive integer")
+        d = _as_date(d)
+        if d > self.last_session:
+            raise OutsideCalendarError(f"{d} is after the last known session {self.last_session}")
+        i = bisect.bisect_left(self._sessions, d) - n
+        return self._sessions[i] if i >= 0 else None
+
     def session_open(self, d) -> datetime:
         """Regular-session open (09:30 New York) as a UTC datetime."""
         d = self._require_session(d)
