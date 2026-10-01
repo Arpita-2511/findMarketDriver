@@ -46,6 +46,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass
@@ -66,6 +67,8 @@ from services.finbert_sentiment import (  # noqa: E402
     FinBertSentimentService,
     SentimentModelError,
     SentimentResult,
+    build_sentiment_text,
+    text_hash,
 )
 from services.market_calendar_service import TradingCalendar  # noqa: E402
 from services.news_alignment import check_not_future  # noqa: E402
@@ -86,6 +89,10 @@ SENTIMENT_RECORD_VERSION = "sentiment_records_v1"
 DAILY_DATASET_VERSION = "daily_sentiment_v1"
 RECORD_ORDER = "information_available_at, provider, provider_article_id"
 DAILY_ORDER = "symbol, trading_date"
+
+# Phase 8: the FinBERT commit this project's datasets were produced with (CLI default).
+PINNED_FINBERT_REVISION = "4556d13015211d73dccd3fdd39d39232506f3e43"
+CHECKPOINT_BLOCK = 512           # articles scored between checkpoint flushes
 
 PROVENANCE_FIELDS = ("model_name", "model_revision", "inference_version", "text_policy")
 
@@ -157,12 +164,51 @@ def unique_articles(articles: Iterable[NewsArticle]) -> tuple[list[NewsArticle],
     return sorted(seen.values(), key=_article_order), collapsed
 
 
-def score_canonical_articles(articles: Iterable[NewsArticle], service: FinBertSentimentService
-                             ) -> tuple[list[ScoredArticle], dict]:
+def load_checkpoint(path: Path, provenance: dict) -> dict:
+    """
+    Phase 8 resumable scoring: read a checkpoint (sentiment_records_v1 lines)
+    into {((provider, id), input_text_hash): SentimentResult}. Every record is
+    re-validated (Phase 5A contract) and must carry exactly `provenance`.
+    A partially written LAST line (interrupted append) is removed; any other
+    malformed line raises.
+    """
+    path = Path(path)
+    if not path.exists():
+        return {}
+    text = path.read_text(encoding="utf-8")
+    lines = text.split("\n")
+    if text and not text.endswith("\n"):
+        lines = lines[:-1]                                         # drop the torn tail ...
+        path.write_text("".join(line + "\n" for line in lines if line), encoding="utf-8", newline="\n")
+    cached = {}
+    for line in lines:
+        if not line.strip():
+            continue
+        record = SentimentRecord.from_dict(json.loads(line))
+        check_consistent_provenance([record.sentiment], provenance)
+        cached[(record.key, record.sentiment.input_text_hash)] = record.sentiment
+    return cached
+
+
+def _append_checkpoint(path: Path, scored: list[ScoredArticle]) -> None:
+    with open(path, "a", encoding="utf-8", newline="\n") as f:
+        for s in scored:
+            f.write(_dumps(SentimentRecord.from_scored(s).to_dict()) + "\n")
+        f.flush()
+        os.fsync(f.fileno())
+
+
+def score_canonical_articles(articles: Iterable[NewsArticle], service: FinBertSentimentService, *,
+                             checkpoint: Path | None = None) -> tuple[list[ScoredArticle], dict]:
     """
     Score each unique article once with the Phase 5A service. Impossible-future
     articles are rejected BEFORE inference. Returns (scored articles in
     RECORD_ORDER, stats).
+
+    checkpoint (Phase 8): results are appended to this file every
+    CHECKPOINT_BLOCK articles; a rerun reuses every checkpointed result whose
+    (article key, text_v1 hash) and provenance match, and scores only the rest.
+    The final dataset is identical either way.
     """
     articles = list(articles)
     unique, collapsed = unique_articles(articles)
@@ -170,17 +216,35 @@ def score_canonical_articles(articles: Iterable[NewsArticle], service: FinBertSe
         check_not_future(a)                          # FutureInformationError, before any model work
 
     provenance = backend_provenance(service)
-    results = service.score_articles(unique)          # batched; order == input order
-    if len(results) != len(unique):
-        raise HistoricalSentimentError("sentiment service returned a different number of results")
-    check_consistent_provenance(results, provenance)
+    cached = load_checkpoint(checkpoint, provenance) if checkpoint is not None else {}
+    results: dict[tuple[str, str], SentimentResult] = {}
+    for a in unique:
+        hit = cached.get((a.key, text_hash(build_sentiment_text(a))))
+        if hit is not None:
+            results[a.key] = hit
+    todo = [a for a in unique if a.key not in results]
+
+    block = CHECKPOINT_BLOCK if checkpoint is not None else max(len(todo), 1)
+    for start in range(0, len(todo), block):
+        part = todo[start:start + block]
+        fresh = service.score_articles(part)          # batched; order == input order
+        if len(fresh) != len(part):
+            raise HistoricalSentimentError("sentiment service returned a different number of results")
+        check_consistent_provenance(fresh, provenance)
+        try:
+            scored_part = [ScoredArticle(a, r) for a, r in zip(part, fresh)]
+        except SentimentFeatureError as e:
+            raise HistoricalSentimentError(str(e)) from None
+        if checkpoint is not None:
+            _append_checkpoint(checkpoint, scored_part)
+        results.update({s.article.key: s.sentiment for s in scored_part})
 
     try:
-        scored = [ScoredArticle(a, r) for a, r in zip(unique, results)]
+        scored = [ScoredArticle(a, results[a.key]) for a in unique]
     except SentimentFeatureError as e:
         raise HistoricalSentimentError(str(e)) from None
     stats = {"n_input_articles": len(articles), "n_duplicates_collapsed": collapsed,
-             "n_scored_articles": len(scored)}
+             "n_scored_articles": len(scored), "n_from_checkpoint": len(unique) - len(todo)}
     return prepare_scored_articles(scored), stats
 
 
@@ -406,11 +470,11 @@ def save_daily_dataset(rows: list[SentimentFeatureRow], sentiment_path: Path, se
 def run_historical_sentiment(canonical_path: Path, bars: pd.DataFrame, service: FinBertSentimentService, *,
                              calendar_source: dict, symbols: list[str] | None = None,
                              start: date | None = None, end: date | None = None,
-                             output_dir: Path = SENTIMENT_DIR) -> dict:
+                             output_dir: Path = SENTIMENT_DIR, checkpoint: Path | None = None) -> dict:
     """
     Score -> persist -> RELOAD (full re-validation) -> aggregate -> persist.
     Daily rows are built from the reloaded data, so what is saved is exactly
-    what a later reader would get.
+    what a later reader would get. `checkpoint` makes scoring resumable.
     """
     articles, canonical_meta = load_canonical_dataset(canonical_path)
     symbols = symbols or canonical_meta.get("symbols")
@@ -422,7 +486,7 @@ def run_historical_sentiment(canonical_path: Path, bars: pd.DataFrame, service: 
     if end is None and canonical_meta.get("end"):
         end = parse_timestamp(canonical_meta["end"], "end").date()
 
-    scored, stats = score_canonical_articles(articles, service)
+    scored, stats = score_canonical_articles(articles, service, checkpoint=checkpoint)
     sentiment_path, sentiment_meta = save_sentiment_dataset(
         scored, stats, backend_provenance(service), canonical_path, canonical_meta, output_dir)
 
@@ -445,13 +509,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--symbols", nargs="+", default=None, help="default: symbols of the news dataset")
     parser.add_argument("--start", type=date.fromisoformat, default=None, help="first trading date (inclusive)")
     parser.add_argument("--end", type=date.fromisoformat, default=None, help="last trading date (exclusive)")
+    parser.add_argument("--revision", default=PINNED_FINBERT_REVISION,
+                        help="Hugging Face model revision (default: the project's pinned FinBERT commit)")
+    parser.add_argument("--checkpoint", type=Path, default=None,
+                        help="resumable scoring: append results here and reuse them on rerun")
     args = parser.parse_args(argv)
 
     bars, snapshot_meta = load_raw_snapshot(args.market_snapshot)          # hash-verified
-    service = FinBertSentimentService.load(device="cpu", batch_size=args.batch_size)
+    service = FinBertSentimentService.load(device="cpu", batch_size=args.batch_size, revision=args.revision)
     out = run_historical_sentiment(
         args.news, bars, service, symbols=args.symbols, start=args.start, end=args.end,
-        output_dir=args.output_dir,
+        output_dir=args.output_dir, checkpoint=args.checkpoint,
         calendar_source={"file": args.market_snapshot.name, "sha256": snapshot_meta["sha256"]})
 
     sm, dm = out["sentiment_meta"], out["daily_meta"]

@@ -1602,12 +1602,14 @@ Status: COMPLETE (baseline, commit 6c2b7ab)
 [x] Generate event labels (classifier output - NOT ground truth)
 [x] Aggregate events (event_features_v1)
 [ ] Human-labelled validation sample (template + tooling ready; needs a person)
-[ ] Evaluate incremental value (REQ-EVENT-003, central harness)
+[x] Evaluate incremental value (REQ-EVENT-003, central harness) — done in
+    Phase 8 (experiment C): no qualified model; ARCHITECTURE.md 15.2
 
 PHASE 7 — Feature Store
 
-Status: IMPLEMENTED — awaiting user test run, review and commit;
-        incremental evaluation INSUFFICIENT_DATA on the current news sample
+Status: COMPLETE (commit 90c9e74); incremental evaluation
+        INSUFFICIENT_DATA on the 2017-01/02 news sample (historical
+        result; that feature store is kept unchanged)
 
 [x] Version feature schema (feature_store_v1 / feature_store_schema_v1)
 [x] Store technical features (reused technical_v2)
@@ -1615,10 +1617,61 @@ Status: IMPLEMENTED — awaiting user test run, review and commit;
 [x] Store event features (reused event_features_v1, event__*)
 [x] Build combined feature table ((symbol, trading_date), REQ-STORE-004/005/006)
 [x] Add reproducibility metadata (content hash, sources, quality report)
-[ ] Incremental A/B/C evaluation with results — runner done (REQ-STORE-007);
-    needs >= 252 sessions covered by every family (full news backfill)
+[x] Incremental A/B/C evaluation with results — runner done (REQ-STORE-007);
+    run on the Phase 8 backfill (2,431 evaluable rows): no qualified model
 
-PHASE 8 — Production Model
+PHASE 8 — Historical News Backfill (inserted 2026-10-01; later phases
+          shift by one in the working roadmap)
+
+Status: COMPLETE (2026-10-01) — backfill run and verified; A/B/C
+        evaluated: NO QUALIFIED MODEL in any experiment
+        (details: ARCHITECTURE.md 11.5 run record and 15.2)
+
+[x] Resumable chunked ingestion (--resume; REQ-NEWS-016)
+[x] Backfill audit (services/news_audit.py)
+[x] Resumable, revision-pinned FinBERT scoring (--checkpoint, --revision)
+[x] Run backfill 2017-01-01 -> 2026-09-29 (user-run): 119 chunks,
+    28,992 AAPL articles, 0 duplicates / conflicts
+[x] Rebuild 5C / 6 / 7 on the backfill
+    5C  ProsusAI/finbert @ 4556d13015211d73dccd3fdd39d39232506f3e43:
+        28,992 scored, 2,447 daily rows; verification 22/22
+    6   rules_v1 / taxonomy_v1: 17,686 events, 11,306 OTHER,
+        2,364 sessions with events
+    7   feature store 2,431 rows x 67 columns (20 / 15 / 23 + 1 + 2),
+        sha256 73966443a9223b344752c2a40a3fdb185d4b561b9138538c4a3ca72ec37ca12d;
+        verification 37/37
+[x] Incremental A/B/C evaluation (2,431 evaluable rows >= 252; 2,300
+    out-of-sample rows 2017-08-02 .. 2026-09-25; TimeSeriesSplit(20),
+    gap 1, gate_v1, features 20 / 35 / 58): regression and classification
+    NO QUALIFIED MODEL in A, B and C; B and C worse than A on every
+    reported metric
+[x] Downstream determinism: 46/46 — event records, event daily, feature
+    store byte-identical; A/B/C bit-identical; preserved step 16 report
+    and Phase 7 artifacts unchanged
+[ ] FinBERT model-level determinism — NOT VERIFIED (full 28,992-article
+    CPU re-run stopped after ~2-3 hours; not repeated)
+[ ] Revision-lag measurement (16,388 revised articles; lag unknown)
+
+REQ-NEWS-016 — Resumable, reproducible backfill
+
+Priority: P0
+
+A backfill shall be restartable without refetching or rescoring verified
+work: chunk snapshots are reused only when provider and request match and
+the sha256 verifies; sentiment checkpoints are reused only for the same
+article key, text_v1 hash and full model provenance. Corruption shall
+raise, never trigger silent refetching. The FinBERT revision shall be
+pinned by default. Raw provider data is the frozen record; all derived
+datasets shall be deterministic and hash-verified.
+
+Verification status (Phase 8): resume, checkpoint and pinning are
+implemented, with unit tests in tests/unit/test_news_backfill.py; every derived dataset is hash-verified;
+determinism is verified for events, daily event features, the feature
+store and the evaluation. Determinism of FinBERT re-scoring (sentiment
+records) is NOT verified — the stored records are the authoritative
+FinBERT output.
+
+PHASE 8 (original numbering) — Production Model
 
 Status: NOT STARTED
 

@@ -859,6 +859,103 @@ per-chunk pages / counts / snapshot hash, and totals. No credentials.
 Storage: data/raw/news/ and data/processed/news/ are git-ignored (full
 licensed text). Datasets are rebuilt locally from snapshots.
 
+11.5 Historical backfill (Phase 8)
+
+Purpose: expand the news sample (2017-01..02) to the technical spine's
+full range with the EXISTING stages; no new provider, model, schema or
+feature definition. Pipeline per run:
+
+  4C  python -m services.historical_news_ingestion ... --resume
+      chunked (default 30 days), --resume reuses a chunk snapshot only if
+      its metadata records the same provider + request (symbols, exact
+      start/end, sort, include_content, page_size) AND its sha256 verifies;
+      a corrupt snapshot raises; a snapshot without metadata (interrupted
+      write) is ignored; the manifest marks reused chunks.
+  audit  python -m services.news_audit --news <canonical>   (read-only:
+      duplicate ids (must be 0), duplicate URLs / same headline+time under
+      different ids (reported, never deleted), per-year counts, empty
+      months, after-close/weekend availability, revised articles)
+  5C  python -m services.historical_sentiment ... --checkpoint <file>
+      --revision defaults to the pinned FinBERT commit
+      4556d13015211d73dccd3fdd39d39232506f3e43; --checkpoint appends
+      validated sentiment_records_v1 every 512 articles (flushed) and a
+      rerun reuses entries whose (article key, text_v1 hash) and full
+      provenance match (a torn last line is repaired; other provenance
+      raises). The final dataset is identical with or without resuming.
+  6   python -m services.historical_events ...           (unchanged)
+  7   python -m training.feature_store ... / training.incremental_evaluation
+      (unchanged; the 252-row guard decides whether A/B/C run)
+
+Determinism: provider responses are not reproducible (Yahoo/Benzinga
+revise); RAW chunk snapshots are the frozen record. Everything after them
+is hash-verified. Rebuilding events, daily event features, the feature
+store and the A/B/C evaluation from the stored sentiment records was
+verified byte-identical (Phase 8 run record below). FinBERT model-level
+determinism (re-scoring the same texts reproduces the same records) is
+NOT verified: the stored sentiment records are the authoritative FinBERT
+output for this backfill.
+
+--no-content is safe for this project: text_v1 uses content only when
+headline and summary are both empty, and canonical articles always have a
+headline; it keeps backfill snapshots small. include_content is part of
+the request identity, so --resume never mixes the two modes.
+
+Phase 8 run record (AAPL, 2026-10-01; artifacts git-ignored, local only)
+
+  Ingestion (4C, --no-content --resume, 30-day chunks)
+    request interval   2017-01-01T00:00Z .. 2026-09-29T00:00Z (end exclusive)
+    chunks             119
+    canonical dataset  alpaca_AAPL_20170101T000000Z_20260929T000000Z_
+                       20261001T022146Z.jsonl
+    articles           28,992 (all tagged AAPL by the provider)
+    duplicates / conflicting duplicates / without requested symbol: 0 / 0 / 0
+  Audit (read-only)
+    duplicate article ids 0; same headline + created_at under different
+    ids 7 (kept, reported); months without articles: none;
+    available after 16:00 New York or on a weekend 5,122 (kept: they
+    reach the next eligible row, see below); revised after creation
+    (information_available_at > created_at) 16,388 - one stored version
+    per id, availability = max(created_at, updated_at); the size of the
+    revision lag was not measured.
+    Other tickers in the audit's symbol counts are the provider's
+    per-article tags of multi-ticker stories, not dataset membership.
+  FinBERT (5C)       ProsusAI/finbert @ 4556d13015211d73dccd3fdd39d39232506f3e43,
+                     text_v1 (headline + summary), CPU
+    28,992 scored, 0 collapsed; 2,447 daily rows 2017-01-03 .. 2026-09-28
+    (all with news - sentiment_features_v1 is cumulative)
+    daily sha256 e25e7d9d8923cb6a463f18c595821c1bb9c3f3083b76eb4f5846c36ab2a6be3a
+    independent verification 22/22: record count, unique ids == canonical
+    ids, finite probabilities summing to 1, AAPL only, pinned revision in
+    every record and both metadata files, rows == every session in the
+    interval, prediction_timestamp == D 16:30 New York, cumulative counts
+    re-counted as #articles with information_available_at <= ts(D)
+  Events (6)         KeywordEventClassifier rules_v1, taxonomy_v1
+    17,686 events, 11,306 OTHER; 2,447 daily rows, 2,364 with events
+    records sha256 072287327265e7a0...; daily sha256
+    50a44ae00df0a9a0051c6870afc86043b2f03991d9b487e8421142aed99e6bb0
+  Feature store (7)  section 15.2
+
+Eligibility is unchanged: an article contributes to row D only if
+information_available_at <= D 16:30 America/New_York. After-close and
+weekend articles are therefore not leakage; they first count in the next
+row whose prediction timestamp is at or after their availability
+(articles available 16:00-16:30 on D count in row D, whose target starts
+from the already-fixed Close[D]).
+
+Determinism verification (step 17): a full re-run of FinBERT on the
+28,992 articles was started and stopped after roughly 2-3 hours of CPU
+inference without completing; it was not repeated. The downstream
+rebuild from the verified sentiment records passed 46/46 checks:
+
+  event records, event daily, feature store   byte-identical to the originals
+  A/B/C evaluation on the rebuilt store        bit-identical metrics, periods,
+                                               statuses (in memory, not saved)
+  preserved step 16 report                     unchanged (sha256 997e6010d224...)
+  Phase 7 feature store + its 2017 inputs      unchanged
+
+  NOT verified: FinBERT model-level determinism; sentiment records and
+  sentiment daily were not rebuilt.
+
 12. NEWS TIME ALIGNMENT
 
 Critical rule:
@@ -1423,16 +1520,141 @@ default_candidates, same TimeSeriesSplit(20, gap = horizon), same
 metrics and gate_v1 for all three. Guard: fewer than 252 evaluable rows
 -> INSUFFICIENT_DATA, nothing is fitted or reported.
 
-Current result (2017-01/02 AAPL news sample): the families overlap on
-23 sessions (2017-01-26 .. 2017-02-28; the technical dataset starts after
-its warm-up) -> INSUFFICIENT_DATA. This is a pipeline/integration
-validation dataset, not sufficient evidence of generalizable model
-performance.
+Phase 7 result (historical; 2017-01/02 AAPL news sample): the families
+overlap on 23 sessions (2017-01-26 .. 2017-02-28; the technical dataset
+starts after its warm-up) -> INSUFFICIENT_DATA. This is a
+pipeline/integration validation dataset, not sufficient evidence of
+generalizable model performance. That store
+(data/processed/features/feature_store_v1_AAPL_20170126_20260928.csv,
+sha256 5af804bd42bd...) is kept unchanged. Phase 8 result: section 15.2.
 
-FUTURE IMPROVEMENTS (not implemented): full 2017-present news backfill
-so A/B/C can actually run; multi-symbol evaluation; windowed sentiment
-features (sentiment_features_v1 is cumulative and non-stationary);
-human-validated event labels; a database-backed store.
+FUTURE IMPROVEMENTS (not implemented): multi-symbol evaluation; windowed
+sentiment features (sentiment_features_v1 is cumulative and
+non-stationary); human-validated event labels; a database-backed store.
+(The full 2017-present news backfill was done in Phase 8.)
+
+15.2 Phase 8 feature store and A/B/C result (AAPL, 2026-10-01)
+
+Feature store (unchanged feature_store_v1 code; separate output directory
+because the file name depends only on the technical date range):
+
+  data/processed/features/backfill_2017_2026/
+      feature_store_v1_AAPL_20170126_20260928.csv
+  sha256   73966443a9223b344752c2a40a3fdb185d4b561b9138538c4a3ca72ec37ca12d
+  rows 2,431 (2017-01-26 .. 2026-09-28), columns 67
+  families technical 20 / sentiment 15 / event 23 numeric
+           + 1 categorical (event__dominant_event_type) + 2 targets
+  coverage technical, sentiment, events, all three: 2,431 each
+  sessions with events 2,348 (the other 16 of the 2,364 fall before the
+           technical spine starts; join report 16 sentiment + 16 event rows
+           without a technical row)
+  quality  0 duplicate keys, 0 NaN / infinite feature values, 0 constant
+           features, no unexpected categories; up share 0.536
+  inputs   technical final_stock_dataset.csv (sha256 e5fef0d2...), raw
+           snapshot AAPL_1d_10y_20260929T205051Z.csv (141aba8f...), sentiment
+           and event daily files of section 11.5
+  verification 37/37 (step 15): hash == metadata; schema/version/family
+           lists == code contract; dates, Close, technical features and
+           target_return_1d exactly equal to the technical spine; every row
+           an AAPL session, none skipped; prediction_timestamp == D 16:30
+           New York; store values == source daily rows of the SAME date;
+           sentiment news_count and event counts re-counted from the
+           article-level records (0 mismatches); categorical values valid;
+           full hash chain store -> daily -> records -> canonical news;
+           Phase 7 artifact unchanged.
+
+A/B/C evaluation (training.incremental_evaluation, unchanged; preserved
+report data/results/evaluation/
+feature_store_incremental_20261001_phase8_backfill.json, sha256
+997e6010d22451654c5a615d498a983fc73abf4bcabc63a64051a5b91c5f00c2):
+
+  rows in store 2,431; evaluable 2,431; out-of-sample 2,300 rows,
+  2017-08-02 .. 2026-09-25, identical for A, B and C (the harness rebuilds
+  the target from Close, so 2026-09-28 has no next close; 2,430 // 21 =
+  115 rows per fold x 20 folds)
+  TimeSeriesSplit(20), gap 1, horizon 1, min_rows 252, gate_v1,
+  default_candidates, no tuning; features A 20, B 35, C 58
+
+  Baselines (feature-independent, identical in A, B and C)
+    Mean Return   MSE 3.572769e-4  MAE 0.0131249  RMSE 0.0189018  R2 -0.000937
+    Zero Return   MSE 3.582601e-4  MAE 0.0131515  RMSE 0.0189278  R2 -0.003691
+    Always UP     Acc 0.534783  BalAcc 0.5  AUC 0.5  Brier 0.465217
+                  LogLoss 16.0684  share UP 1.0
+    Base Rate     Acc 0.534783  BalAcc 0.5  AUC 0.482349  Brier 0.249044
+                  LogLoss 0.691237  share UP 1.0
+
+  Regression (reference = Mean Return, lowest baseline MSE)
+    exp  model    MSE          vs Mean   MAE        RMSE       R2
+    A    Linear   3.743109e-4  +4.8%     0.0135642  0.0193471  -0.048659
+    A    Ridge    3.658838e-4  +2.4%     0.0134358  0.0191281  -0.025050
+    B    Linear   4.338441e-4  +21.4%    0.0151676  0.0208289  -0.215445
+    B    Ridge    3.984617e-4  +11.5%    0.0144362  0.0199615  -0.116319
+    C    Linear   4.905051e-4  +37.3%    0.0160604  0.0221473  -0.374185
+    C    Ridge    4.271430e-4  +19.6%    0.0148485  0.0206674  -0.196672
+    gate_v1 reason (all six): "MSE not better than Mean Return"
+
+  Classification (reference = Base Rate; accuracy floor = Always UP)
+    exp  Logistic  LogLoss   Acc       BalAcc    AUC       Brier     share UP
+    A              0.712826  0.516522  0.496239  0.484048  0.257692  0.791304
+    B              0.809571  0.492174  0.485389  0.483540  0.273988  0.596522
+    C              0.863365  0.485652  0.480385  0.480345  0.280054  0.574348
+    gate_v1 reasons (all three): "Log_Loss not better than Base Rate";
+    "Accuracy below Always UP"
+
+  Qualification: A, B and C - regression NO QUALIFIED MODEL,
+  classification NO QUALIFIED MODEL.
+
+  Reasons are derived from the gate code because the report stores only
+  the status: every candidate's primary metric is worse than its
+  reference, so the Diebold-Mariano reason is never reached (its p-value is
+  not stored; with a worse mean loss the one-sided statistic is negative,
+  p > 0.5).
+
+  B and C did not improve on A on any reported metric: every candidate
+  degrades A -> B -> C (MSE, MAE, log loss, accuracy, AUC, Brier). AUC < 0.5
+  everywhere: no ranking ability. No sign of leakage (leakage would
+  inflate B/C, not degrade them).
+
+  Consistency checks on the report: baselines byte-identical across
+  experiments; Always UP Brier = share of DOWN days and log loss =
+  0.465217 x -ln(1e-15); R2 consistent with MSE (same target variance for
+  both baselines); every accuracy x 2,300 is an integer; scalers fitted
+  inside each training fold.
+
+  Determinism: re-running A/B/C in memory on the byte-identical rebuilt
+  store reproduced every metric, period and status exactly (section 11.5).
+
+Limitations of this result:
+
+  1. No model qualified in any experiment or track; adding sentiment and
+     events made every candidate worse. This extends, and does not
+     overturn, the earlier technical-only finding of no signal.
+  2. sentiment_features_v1 is cumulative: its counts grow from ~0 to
+     28,992, so in every expanding walk-forward test fold they lie above
+     the training range (extrapolation). Likely contributor to the B/C
+     degradation (inferred, not separately tested). B therefore tests
+     these cumulative features, not news sentiment in general; windowed
+     or per-session sentiment features are untested.
+  3. Early folds train on ~130 rows; with 35 (B) or 58 (C) features that
+     is ~3.7 / ~2.2 rows per feature for an unregularised linear model
+     (inferred contributor).
+  4. Event labels are keyword rules_v1 output, not ground truth
+     (labels_are_ground_truth = false); 39% of articles are OTHER.
+  5. News relevance: an AAPL tag includes multi-ticker stories; only
+     headline + summary are used (--no-content).
+  6. Revision timing: 16,388 articles were revised after creation; the
+     lag was not measured. Availability = max(created_at, updated_at) is
+     leakage-safe but may delay late-revised articles (signal dilution).
+  7. Scope: one symbol (the harness is single-series), one-day horizon,
+     the harness's fixed linear candidates only (tree models are installed
+     but not default candidates), no tuning by design.
+  8. Traceability: the incremental report stores neither the feature-store
+     path/sha256 nor gate reasons or Diebold-Mariano p-values; reports are
+     named by UTC date, so a same-day rerun overwrites the file (worked
+     around with the _phase8_backfill copy).
+  9. Multiple comparisons: 3 experiments x 3 non-baseline candidates; moot
+     here because nothing qualified.
+ 10. FinBERT model-level determinism not verified (section 11.5).
 
 16. EXPERIMENT GATE
 
@@ -2082,8 +2304,10 @@ Tasks:
 2. Build event classifier         (baseline: keyword rules_v1)
 3. Generate event labels          (classifier output, not ground truth)
 4. Aggregate daily                (event_features_v1)
-5. Evaluate incremental value     (NOT done - needs human labels and the
-                                   central-harness feature evaluation)
+5. Evaluate incremental value     (central-harness evaluation done in
+                                   Phase 8, experiment C: no qualified
+                                   model, section 15.2; human-labelled
+                                   validation still NOT done)
 
 PHASE 7 — FINAL FEATURE STORE
 
@@ -2094,9 +2318,28 @@ Tasks:
 3. Event features                 (reused: event_features_v1)
 4. Versioned combined dataset     (feature_store_v1, section 15.1)
 5. Reproducible feature pipeline  (content hash, write-once)
-6. Incremental A/B/C evaluation   (runner done; current sample -> INSUFFICIENT_DATA)
+6. Incremental A/B/C evaluation   (runner done; Phase 7 sample ->
+                                   INSUFFICIENT_DATA; run in Phase 8)
 
-PHASE 8 — FINAL MODEL
+PHASE 8 — HISTORICAL NEWS BACKFILL (inserted 2026-10-01; later phases
+shift by one in the working roadmap)
+
+Status: COMPLETE (2026-10-01). No model qualified in A, B or C.
+
+Tasks:
+
+1. Resumable chunked ingestion   (section 11.5) - done, 119 chunks
+2. Backfill audit                (section 11.5) - done
+3. Resumable, revision-pinned FinBERT scoring (section 11.5) - done,
+   28,992 articles
+4. Rebuild events, daily features, feature store; rerun A/B/C if >= 252
+   sessions are covered          (sections 11.5, 15.2) - done, 2,431
+                                   evaluable rows; NO QUALIFIED MODEL
+5. Determinism                   downstream rebuild byte/bit-identical;
+                                   FinBERT model-level determinism NOT
+                                   verified (section 11.5)
+
+PHASE 8 (original numbering) — FINAL MODEL
 
 Tasks:
 

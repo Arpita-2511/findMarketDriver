@@ -1,0 +1,338 @@
+{
+  "evaluation": "feature_store_incremental",
+  "timestamp": "2026-10-01T05:41:58+00:00",
+  "rows_in_store": 2431,
+  "evaluable_rows": 2431,
+  "evaluable_period": [
+    "2017-01-26",
+    "2026-09-28"
+  ],
+  "config": {
+    "horizon": 1,
+    "n_splits": 20,
+    "gap": 1,
+    "min_rows": 252,
+    "candidates": [
+      "Mean Return",
+      "Zero Return",
+      "Linear Regression",
+      "Ridge",
+      "Always UP",
+      "Base Rate",
+      "Logistic Regression"
+    ]
+  },
+  "experiments": {
+    "A_technical": {
+      "families": [
+        "technical"
+      ],
+      "status": "RUN",
+      "n_features": 20,
+      "evaluation_period": {
+        "start": "2017-08-02",
+        "end": "2026-09-25",
+        "n_oos_rows": 2300
+      },
+      "qualification_result": {
+        "regression": "NO QUALIFIED MODEL",
+        "classification": "NO QUALIFIED MODEL"
+      },
+      "models": {
+        "Mean Return": {
+          "task": "regression",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "MAE": 0.013124881829138279,
+            "RMSE": 0.018901770866198726,
+            "R2": -0.0009370478329895349,
+            "MSE": 0.0003572769418782789
+          }
+        },
+        "Zero Return": {
+          "task": "regression",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "MAE": 0.013151536736887067,
+            "RMSE": 0.018927758716511832,
+            "R2": -0.003691296026005153,
+            "MSE": 0.0003582600500304897
+          }
+        },
+        "Linear Regression": {
+          "task": "regression",
+          "is_baseline": false,
+          "status": "NOT_QUALIFIED",
+          "metrics": {
+            "MAE": 0.013564211194370769,
+            "RMSE": 0.019347116650435016,
+            "R2": -0.04865897013905385,
+            "MSE": 0.0003743109226855398
+          }
+        },
+        "Ridge": {
+          "task": "regression",
+          "is_baseline": false,
+          "status": "NOT_QUALIFIED",
+          "metrics": {
+            "MAE": 0.013435814833763058,
+            "RMSE": 0.01912808919657946,
+            "R2": -0.02504976953013216,
+            "MSE": 0.0003658837963122998
+          }
+        },
+        "Always UP": {
+          "task": "classification",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "Accuracy": 0.5347826086956522,
+            "Balanced_Accuracy": 0.5,
+            "ROC_AUC": 0.5,
+            "Brier": 0.4652173913043478,
+            "Log_Loss": 16.068411439915103,
+            "Share_Predicted_UP": 1.0
+          }
+        },
+        "Base Rate": {
+          "task": "classification",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "Accuracy": 0.5347826086956522,
+            "Balanced_Accuracy": 0.5,
+            "ROC_AUC": 0.4823493655497303,
+            "Brier": 0.24904396926217492,
+            "Log_Loss": 0.6912367109299055,
+            "Share_Predicted_UP": 1.0
+          }
+        },
+        "Logistic Regression": {
+          "task": "classification",
+          "is_baseline": false,
+          "status": "NOT_QUALIFIED",
+          "metrics": {
+            "Accuracy": 0.5165217391304348,
+            "Balanced_Accuracy": 0.4962388876225211,
+            "ROC_AUC": 0.4840483245953955,
+            "Brier": 0.2576924388824997,
+            "Log_Loss": 0.7128258565740733,
+            "Share_Predicted_UP": 0.7913043478260869
+          }
+        }
+      }
+    },
+    "B_technical_sentiment": {
+      "families": [
+        "technical",
+        "sentiment"
+      ],
+      "status": "RUN",
+      "n_features": 35,
+      "evaluation_period": {
+        "start": "2017-08-02",
+        "end": "2026-09-25",
+        "n_oos_rows": 2300
+      },
+      "qualification_result": {
+        "regression": "NO QUALIFIED MODEL",
+        "classification": "NO QUALIFIED MODEL"
+      },
+      "models": {
+        "Mean Return": {
+          "task": "regression",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "MAE": 0.013124881829138279,
+            "RMSE": 0.018901770866198726,
+            "R2": -0.0009370478329895349,
+            "MSE": 0.0003572769418782789
+          }
+        },
+        "Zero Return": {
+          "task": "regression",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "MAE": 0.013151536736887067,
+            "RMSE": 0.018927758716511832,
+            "R2": -0.003691296026005153,
+            "MSE": 0.0003582600500304897
+          }
+        },
+        "Linear Regression": {
+          "task": "regression",
+          "is_baseline": false,
+          "status": "NOT_QUALIFIED",
+          "metrics": {
+            "MAE": 0.015167649092193484,
+            "RMSE": 0.020828924951648856,
+            "R2": -0.21544548899784766,
+            "MSE": 0.0004338441146414203
+          }
+        },
+        "Ridge": {
+          "task": "regression",
+          "is_baseline": false,
+          "status": "NOT_QUALIFIED",
+          "metrics": {
+            "MAE": 0.014436208127464293,
+            "RMSE": 0.019961504375856007,
+            "R2": -0.11631898908094107,
+            "MSE": 0.00039846165694731856
+          }
+        },
+        "Always UP": {
+          "task": "classification",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "Accuracy": 0.5347826086956522,
+            "Balanced_Accuracy": 0.5,
+            "ROC_AUC": 0.5,
+            "Brier": 0.4652173913043478,
+            "Log_Loss": 16.068411439915103,
+            "Share_Predicted_UP": 1.0
+          }
+        },
+        "Base Rate": {
+          "task": "classification",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "Accuracy": 0.5347826086956522,
+            "Balanced_Accuracy": 0.5,
+            "ROC_AUC": 0.4823493655497303,
+            "Brier": 0.24904396926217492,
+            "Log_Loss": 0.6912367109299055,
+            "Share_Predicted_UP": 1.0
+          }
+        },
+        "Logistic Regression": {
+          "task": "classification",
+          "is_baseline": false,
+          "status": "NOT_QUALIFIED",
+          "metrics": {
+            "Accuracy": 0.49217391304347824,
+            "Balanced_Accuracy": 0.48538864827900613,
+            "ROC_AUC": 0.4835400045589241,
+            "Brier": 0.27398755255143903,
+            "Log_Loss": 0.8095712515916472,
+            "Share_Predicted_UP": 0.5965217391304348
+          }
+        }
+      }
+    },
+    "C_technical_sentiment_events": {
+      "families": [
+        "technical",
+        "sentiment",
+        "events"
+      ],
+      "status": "RUN",
+      "n_features": 58,
+      "evaluation_period": {
+        "start": "2017-08-02",
+        "end": "2026-09-25",
+        "n_oos_rows": 2300
+      },
+      "qualification_result": {
+        "regression": "NO QUALIFIED MODEL",
+        "classification": "NO QUALIFIED MODEL"
+      },
+      "models": {
+        "Mean Return": {
+          "task": "regression",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "MAE": 0.013124881829138279,
+            "RMSE": 0.018901770866198726,
+            "R2": -0.0009370478329895349,
+            "MSE": 0.0003572769418782789
+          }
+        },
+        "Zero Return": {
+          "task": "regression",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "MAE": 0.013151536736887067,
+            "RMSE": 0.018927758716511832,
+            "R2": -0.003691296026005153,
+            "MSE": 0.0003582600500304897
+          }
+        },
+        "Linear Regression": {
+          "task": "regression",
+          "is_baseline": false,
+          "status": "NOT_QUALIFIED",
+          "metrics": {
+            "MAE": 0.01606042395907284,
+            "RMSE": 0.022147349526774395,
+            "R2": -0.3741852894638542,
+            "MSE": 0.0004905050910611141
+          }
+        },
+        "Ridge": {
+          "task": "regression",
+          "is_baseline": false,
+          "status": "NOT_QUALIFIED",
+          "metrics": {
+            "MAE": 0.014848538726050043,
+            "RMSE": 0.02066743794864308,
+            "R2": -0.19667181018668645,
+            "MSE": 0.0004271429913610121
+          }
+        },
+        "Always UP": {
+          "task": "classification",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "Accuracy": 0.5347826086956522,
+            "Balanced_Accuracy": 0.5,
+            "ROC_AUC": 0.5,
+            "Brier": 0.4652173913043478,
+            "Log_Loss": 16.068411439915103,
+            "Share_Predicted_UP": 1.0
+          }
+        },
+        "Base Rate": {
+          "task": "classification",
+          "is_baseline": true,
+          "status": "BASELINE",
+          "metrics": {
+            "Accuracy": 0.5347826086956522,
+            "Balanced_Accuracy": 0.5,
+            "ROC_AUC": 0.4823493655497303,
+            "Brier": 0.24904396926217492,
+            "Log_Loss": 0.6912367109299055,
+            "Share_Predicted_UP": 1.0
+          }
+        },
+        "Logistic Regression": {
+          "task": "classification",
+          "is_baseline": false,
+          "status": "NOT_QUALIFIED",
+          "metrics": {
+            "Accuracy": 0.4856521739130435,
+            "Balanced_Accuracy": 0.4803852290859357,
+            "ROC_AUC": 0.4803449585897729,
+            "Brier": 0.2800541077093209,
+            "Log_Loss": 0.8633652328726731,
+            "Share_Predicted_UP": 0.5743478260869566
+          }
+        }
+      }
+    }
+  },
+  "status": "RUN",
+  "comparison": {
+    "regression": "NO QUALIFIED MODEL in any experiment - no evidence that adding features helps",
+    "classification": "NO QUALIFIED MODEL in any experiment - no evidence that adding features helps"
+  }
+}

@@ -43,8 +43,13 @@ if str(PROJECT_ROOT) not in sys.path:
 from services.news_dataset import INTERVAL_RULE, build_canonical_dataset  # noqa: E402
 from services.news_provider import SORT_ORDERS, NewsProvider, NewsQuery  # noqa: E402
 from services.news_schema import NEWS_SCHEMA_VERSION, NewsValidationError, ensure_utc  # noqa: E402
-from services.news_service import RAW_NEWS_DIR, parse_cli_datetime, save_news_snapshot  # noqa: E402
-from training.build_dataset import file_sha256  # noqa: E402
+from services.news_service import (  # noqa: E402
+    RAW_NEWS_DIR,
+    load_news_snapshot,
+    parse_cli_datetime,
+    save_news_snapshot,
+)
+from training.build_dataset import file_sha256, meta_path_for  # noqa: E402
 
 DEFAULT_CHUNK_DAYS = 30
 SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9.\-]{0,9}$")
@@ -114,14 +119,45 @@ def chunk_intervals(start: datetime, end: datetime, chunk_days: int) -> list[tup
     return chunks
 
 
+def find_reusable_snapshot(raw_dir: Path, provider: str, query: NewsQuery) -> tuple[Path, dict] | None:
+    """
+    Phase 8 resume: an existing chunk snapshot is reusable only if its
+    metadata records the SAME provider and request (symbols, exact start/end,
+    sort, include_content, page_size). A snapshot without metadata (write
+    interrupted) is ignored. Among matches the newest retrieval wins (the UTC
+    stamp in the name sorts chronologically). The chosen snapshot is
+    hash-verified; corruption raises instead of being silently refetched.
+    """
+    pattern = f"{provider}_{'-'.join(query.symbols)}_{query.start:%Y%m%d}_{query.end:%Y%m%d}_*.jsonl"
+    wanted = query.describe()
+    matches = []
+    for path in sorted(Path(raw_dir).glob(pattern)):
+        meta_file = meta_path_for(path)
+        if not meta_file.is_file():
+            continue
+        meta = json.loads(meta_file.read_text(encoding="utf-8"))
+        request = meta.get("request") or {}
+        if meta.get("provider") == provider and all(request.get(k) == v for k, v in wanted.items()):
+            matches.append(path)
+    if not matches:
+        return None
+    _, meta = load_news_snapshot(matches[-1])              # sha256 + row count verified
+    return matches[-1], meta
+
+
 def run_historical_ingestion(provider: NewsProvider, config: IngestionConfig, *,
                              raw_dir: Path = RAW_NEWS_DIR,
-                             clock: Callable[[], datetime] | None = None) -> Path:
+                             clock: Callable[[], datetime] | None = None,
+                             resume: bool = False) -> Path:
     """
     Fetch every chunk through `provider`, store one verified snapshot per
     chunk, then write the run manifest. Any error propagates unchanged
     (NewsProviderError / NewsAuthError / NewsPaginationError /
     NewsValidationError) and no manifest is written.
+
+    resume=True (Phase 8): chunks with a matching, hash-verified snapshot
+    from an earlier (possibly failed) run are reused instead of refetched;
+    the manifest marks them "reused".
     """
     if provider.name != config.provider:
         raise ValueError(f"provider '{provider.name}' does not match config provider '{config.provider}'")
@@ -139,19 +175,25 @@ def run_historical_ingestion(provider: NewsProvider, config: IngestionConfig, *,
     for a, b in chunk_intervals(config.start, config.end, config.chunk_days):
         query = NewsQuery(symbols=config.symbols, start=a, end=b, sort=config.sort,
                           include_content=config.include_content, page_size=config.page_size)
-        result = provider.fetch_historical(query, max_pages=config.max_pages)
-        snapshot = save_news_snapshot(result, query, raw_dir)
-        p = result.provenance
+        reused = find_reusable_snapshot(raw_dir, config.provider, query) if resume else None
+        if reused is not None:
+            snapshot, p = reused
+            rows = p["rows"]
+        else:
+            result = provider.fetch_historical(query, max_pages=config.max_pages)
+            snapshot = save_news_snapshot(result, query, raw_dir)
+            p, rows = result.provenance, len(result.articles)
         chunks.append({
             "start": a.isoformat(),
             "end": b.isoformat(),
             "snapshot": snapshot.name,
             "sha256": file_sha256(snapshot),
-            "rows": len(result.articles),
+            "rows": rows,
             "pages": p.get("pages"),
             "n_raw_articles": p.get("n_raw_articles"),
             "n_duplicates_removed": p.get("n_duplicates_removed"),
             "n_conflicting_duplicates": p.get("n_conflicting_duplicates"),
+            "reused": reused is not None,
         })
 
     manifest = {
@@ -168,6 +210,7 @@ def run_historical_ingestion(provider: NewsProvider, config: IngestionConfig, *,
             "n_raw_articles": sum(c["n_raw_articles"] or 0 for c in chunks),
             "n_snapshot_rows": sum(c["rows"] for c in chunks),
             "n_provider_duplicates_removed": sum(c["n_duplicates_removed"] or 0 for c in chunks),
+            "n_reused_chunks": sum(1 for c in chunks if c["reused"]),
         },
     }
     with open(manifest_path, "w", encoding="utf-8", newline="\n") as f:
@@ -206,13 +249,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-content", action="store_true", help="headlines/summaries only")
     parser.add_argument("--page-size", type=int, default=None)
     parser.add_argument("--max-pages", type=int, default=None, help="per chunk")
+    parser.add_argument("--resume", action="store_true",
+                        help="reuse matching, hash-verified chunk snapshots from earlier runs")
     args = parser.parse_args(argv)
 
     config = IngestionConfig(provider=args.provider, symbols=tuple(args.symbols), start=args.start,
                              end=args.end, chunk_days=args.chunk_days,
                              include_content=not args.no_content, page_size=args.page_size,
                              max_pages=args.max_pages)
-    manifest_path = run_historical_ingestion(create_provider(config.provider), config)
+    manifest_path = run_historical_ingestion(create_provider(config.provider), config, resume=args.resume)
     dataset_path, meta = build_canonical_dataset(manifest_path)
 
     rel = lambda p: p.relative_to(PROJECT_ROOT) if p.is_relative_to(PROJECT_ROOT) else p  # noqa: E731
