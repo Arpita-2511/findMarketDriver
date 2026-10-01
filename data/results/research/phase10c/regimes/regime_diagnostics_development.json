@@ -1,0 +1,2234 @@
+{
+  "development_rows": 1928,
+  "expected_family_size": 2178,
+  "horizons": {
+    "1": {
+      "eligible_states": {
+        "R1_aapl_vol": {
+          "HIGH_VOL": true,
+          "LOW_VOL": true
+        },
+        "R2_spy_vol": {
+          "HIGH_SPY_VOL": true,
+          "LOW_SPY_VOL": true
+        },
+        "R3_spy_trend": {
+          "NEGATIVE_TREND": true,
+          "POSITIVE_TREND": true
+        },
+        "R4_spy_return_20": {
+          "NEGATIVE_20D_RETURN": true,
+          "POSITIVE_20D_RETURN": true
+        },
+        "R5_spy_vol_x_trend": {
+          "HIGH_SPY_VOL_NEGATIVE_TREND": true,
+          "HIGH_SPY_VOL_POSITIVE_TREND": true,
+          "LOW_SPY_VOL_NEGATIVE_TREND": false,
+          "LOW_SPY_VOL_POSITIVE_TREND": true
+        }
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "n_test": 91,
+          "n_train": 106,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 55,
+              "LOW_VOL": 36
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 35,
+              "LOW_SPY_VOL": 56
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 9,
+              "POSITIVE_TREND": 82
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 18,
+              "POSITIVE_20D_RETURN": 73
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 7,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 28,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 2,
+              "LOW_SPY_VOL_POSITIVE_TREND": 54
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.010146753738186891,
+            "R2_spy_vol": 0.004432003238069223
+          }
+        },
+        {
+          "fold": 2,
+          "n_test": 91,
+          "n_train": 197,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 54,
+              "LOW_VOL": 37
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 48,
+              "LOW_SPY_VOL": 43
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 23,
+              "POSITIVE_TREND": 68
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 24,
+              "POSITIVE_20D_RETURN": 67
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 23,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 25,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 43
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.010446950946956975,
+            "R2_spy_vol": 0.0043527770118352935
+          }
+        },
+        {
+          "fold": 3,
+          "n_test": 91,
+          "n_train": 288,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 49,
+              "LOW_VOL": 42
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 28,
+              "POSITIVE_TREND": 63
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 27,
+              "POSITIVE_20D_RETURN": 64
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 28,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 63,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.010779370200961959,
+            "R2_spy_vol": 0.004360498409791694
+          }
+        },
+        {
+          "fold": 4,
+          "n_test": 91,
+          "n_train": 379,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 83,
+              "LOW_VOL": 8
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 49,
+              "LOW_SPY_VOL": 42
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 44,
+              "POSITIVE_TREND": 47
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 37,
+              "POSITIVE_20D_RETURN": 54
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 44,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 5,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 42
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.010836914421522589,
+            "R2_spy_vol": 0.004885167146877472
+          }
+        },
+        {
+          "fold": 5,
+          "n_test": 91,
+          "n_train": 470,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 61,
+              "LOW_VOL": 30
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 86,
+              "LOW_SPY_VOL": 5
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 22,
+              "POSITIVE_TREND": 69
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 20,
+              "POSITIVE_20D_RETURN": 71
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 22,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 64,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 5
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.012573733920837814,
+            "R2_spy_vol": 0.0049262831035508355
+          }
+        },
+        {
+          "fold": 6,
+          "n_test": 91,
+          "n_train": 561,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 66,
+              "LOW_VOL": 25
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 63,
+              "LOW_SPY_VOL": 28
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 37,
+              "POSITIVE_TREND": 54
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 43,
+              "POSITIVE_20D_RETURN": 48
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 37,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 26,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 28
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.013249516322581985,
+            "R2_spy_vol": 0.005324412097320282
+          }
+        },
+        {
+          "fold": 7,
+          "n_test": 91,
+          "n_train": 652,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 22,
+              "LOW_VOL": 69
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 41,
+              "LOW_SPY_VOL": 50
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 5,
+              "POSITIVE_TREND": 86
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 13,
+              "POSITIVE_20D_RETURN": 78
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 5,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 36,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 50
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.013595552697764583,
+            "R2_spy_vol": 0.0053908636957018235
+          }
+        },
+        {
+          "fold": 8,
+          "n_test": 91,
+          "n_train": 743,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 84,
+              "LOW_VOL": 7
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 85,
+              "LOW_SPY_VOL": 6
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 42,
+              "POSITIVE_TREND": 49
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 34,
+              "POSITIVE_20D_RETURN": 57
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 42,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 43,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 6
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01330862960908595,
+            "R2_spy_vol": 0.0053826572663021105
+          }
+        },
+        {
+          "fold": 9,
+          "n_test": 91,
+          "n_train": 834,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 81,
+              "LOW_VOL": 10
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 85,
+              "LOW_SPY_VOL": 6
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 8,
+              "POSITIVE_TREND": 83
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 22,
+              "POSITIVE_20D_RETURN": 69
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 8,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 77,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 6
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.013821041949930519,
+            "R2_spy_vol": 0.0057606304800878255
+          }
+        },
+        {
+          "fold": 10,
+          "n_test": 91,
+          "n_train": 925,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 88,
+              "LOW_VOL": 3
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 81,
+              "LOW_SPY_VOL": 10
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 9,
+              "POSITIVE_TREND": 82
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 5,
+              "POSITIVE_20D_RETURN": 86
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 9,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 72,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 10
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014113009864508436,
+            "R2_spy_vol": 0.006244443866390205
+          }
+        },
+        {
+          "fold": 11,
+          "n_test": 91,
+          "n_train": 1016,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 58,
+              "LOW_VOL": 33
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 66,
+              "LOW_SPY_VOL": 25
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 2,
+              "POSITIVE_TREND": 89
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 14,
+              "POSITIVE_20D_RETURN": 77
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 1,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 65,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 1,
+              "LOW_SPY_VOL_POSITIVE_TREND": 24
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014749650044150662,
+            "R2_spy_vol": 0.0066525755520741355
+          }
+        },
+        {
+          "fold": 12,
+          "n_test": 91,
+          "n_train": 1107,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 0,
+              "LOW_VOL": 91
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 37,
+              "LOW_SPY_VOL": 54
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 15,
+              "POSITIVE_TREND": 76
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 20,
+              "POSITIVE_20D_RETURN": 71
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 12,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 25,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 3,
+              "LOW_SPY_VOL_POSITIVE_TREND": 51
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015084391455081605,
+            "R2_spy_vol": 0.006829550308069059
+          }
+        },
+        {
+          "fold": 13,
+          "n_test": 91,
+          "n_train": 1198,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 68,
+              "LOW_VOL": 23
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 75,
+              "LOW_SPY_VOL": 16
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 45,
+              "POSITIVE_TREND": 46
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 55,
+              "POSITIVE_20D_RETURN": 36
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 45,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 30,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 16
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014332289915466144,
+            "R2_spy_vol": 0.006762235431241369
+          }
+        },
+        {
+          "fold": 14,
+          "n_test": 91,
+          "n_train": 1289,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 91,
+              "LOW_VOL": 0
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 65,
+              "POSITIVE_TREND": 26
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 55,
+              "POSITIVE_20D_RETURN": 36
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 65,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 26,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014536059872958987,
+            "R2_spy_vol": 0.0070285101452068465
+          }
+        },
+        {
+          "fold": 15,
+          "n_test": 91,
+          "n_train": 1380,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 83,
+              "LOW_VOL": 8
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 44,
+              "POSITIVE_TREND": 47
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 41,
+              "POSITIVE_20D_RETURN": 50
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 44,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 47,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01540414926675153,
+            "R2_spy_vol": 0.0075009973490369405
+          }
+        },
+        {
+          "fold": 16,
+          "n_test": 91,
+          "n_train": 1471,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 50,
+              "LOW_VOL": 41
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 89,
+              "LOW_SPY_VOL": 2
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 33,
+              "POSITIVE_TREND": 58
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 41,
+              "POSITIVE_20D_RETURN": 50
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 33,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 56,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 2
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01575625040578366,
+            "R2_spy_vol": 0.008269440293579663
+          }
+        },
+        {
+          "fold": 17,
+          "n_test": 91,
+          "n_train": 1562,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 1,
+              "LOW_VOL": 90
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 10,
+              "LOW_SPY_VOL": 81
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 10,
+              "POSITIVE_TREND": 81
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 21,
+              "POSITIVE_20D_RETURN": 70
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 0,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 10,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 10,
+              "LOW_SPY_VOL_POSITIVE_TREND": 71
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01580209410644764,
+            "R2_spy_vol": 0.008747545377592494
+          }
+        },
+        {
+          "fold": 18,
+          "n_test": 91,
+          "n_train": 1653,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 17,
+              "LOW_VOL": 74
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 19,
+              "LOW_SPY_VOL": 72
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 40,
+              "POSITIVE_TREND": 51
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 36,
+              "POSITIVE_20D_RETURN": 55
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 6,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 13,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 34,
+              "LOW_SPY_VOL_POSITIVE_TREND": 38
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015481076389225022,
+            "R2_spy_vol": 0.008465949063290042
+          }
+        },
+        {
+          "fold": 19,
+          "n_test": 91,
+          "n_train": 1744,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 23,
+              "LOW_VOL": 68
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 13,
+              "LOW_SPY_VOL": 78
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 14,
+              "POSITIVE_TREND": 77
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 19,
+              "POSITIVE_20D_RETURN": 72
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 3,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 10,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 11,
+              "LOW_SPY_VOL_POSITIVE_TREND": 67
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01518306617797797,
+            "R2_spy_vol": 0.008217014334360336
+          }
+        },
+        {
+          "fold": 20,
+          "n_test": 91,
+          "n_train": 1835,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 58,
+              "LOW_VOL": 33
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 47,
+              "LOW_SPY_VOL": 44
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 13,
+              "POSITIVE_TREND": 78
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 14,
+              "POSITIVE_20D_RETURN": 77
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 13,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 34,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 44
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014935625689841033,
+            "R2_spy_vol": 0.007908608360496599
+          }
+        }
+      ],
+      "labelled_rows": 1927,
+      "n_eligible_states": 11,
+      "oos_rows": 1820,
+      "pooled_oos_state_counts": {
+        "R1_aapl_vol": {
+          "HIGH_VOL": 1092,
+          "LOW_VOL": 728
+        },
+        "R2_spy_vol": {
+          "HIGH_SPY_VOL": 1202,
+          "LOW_SPY_VOL": 618
+        },
+        "R3_spy_trend": {
+          "NEGATIVE_TREND": 508,
+          "POSITIVE_TREND": 1312
+        },
+        "R4_spy_return_20": {
+          "NEGATIVE_20D_RETURN": 559,
+          "POSITIVE_20D_RETURN": 1261
+        },
+        "R5_spy_vol_x_trend": {
+          "HIGH_SPY_VOL_NEGATIVE_TREND": 447,
+          "HIGH_SPY_VOL_POSITIVE_TREND": 755,
+          "LOW_SPY_VOL_NEGATIVE_TREND": 61,
+          "LOW_SPY_VOL_POSITIVE_TREND": 557
+        }
+      }
+    },
+    "3": {
+      "eligible_states": {
+        "R1_aapl_vol": {
+          "HIGH_VOL": true,
+          "LOW_VOL": true
+        },
+        "R2_spy_vol": {
+          "HIGH_SPY_VOL": true,
+          "LOW_SPY_VOL": true
+        },
+        "R3_spy_trend": {
+          "NEGATIVE_TREND": true,
+          "POSITIVE_TREND": true
+        },
+        "R4_spy_return_20": {
+          "NEGATIVE_20D_RETURN": true,
+          "POSITIVE_20D_RETURN": true
+        },
+        "R5_spy_vol_x_trend": {
+          "HIGH_SPY_VOL_NEGATIVE_TREND": true,
+          "HIGH_SPY_VOL_POSITIVE_TREND": true,
+          "LOW_SPY_VOL_NEGATIVE_TREND": false,
+          "LOW_SPY_VOL_POSITIVE_TREND": true
+        }
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "n_test": 91,
+          "n_train": 102,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 64,
+              "LOW_VOL": 27
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 37,
+              "LOW_SPY_VOL": 54
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 9,
+              "POSITIVE_TREND": 82
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 19,
+              "POSITIVE_20D_RETURN": 72
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 7,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 30,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 2,
+              "LOW_SPY_VOL_POSITIVE_TREND": 52
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.00959790796159075,
+            "R2_spy_vol": 0.0044205496748445094
+          }
+        },
+        {
+          "fold": 2,
+          "n_test": 91,
+          "n_train": 193,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 57,
+              "LOW_VOL": 34
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 42,
+              "LOW_SPY_VOL": 49
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 21,
+              "POSITIVE_TREND": 70
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 22,
+              "POSITIVE_20D_RETURN": 69
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 21,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 21,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 49
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.010349852402295615,
+            "R2_spy_vol": 0.004378834324654101
+          }
+        },
+        {
+          "fold": 3,
+          "n_test": 91,
+          "n_train": 284,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 49,
+              "LOW_VOL": 42
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 30,
+              "POSITIVE_TREND": 61
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 29,
+              "POSITIVE_20D_RETURN": 62
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 30,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 61,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.010771536840646462,
+            "R2_spy_vol": 0.004352312701035289
+          }
+        },
+        {
+          "fold": 4,
+          "n_test": 91,
+          "n_train": 375,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 83,
+              "LOW_VOL": 8
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 50,
+              "LOW_SPY_VOL": 41
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 42,
+              "POSITIVE_TREND": 49
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 35,
+              "POSITIVE_20D_RETURN": 56
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 42,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 8,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 41
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.010836914421522589,
+            "R2_spy_vol": 0.004772427770546973
+          }
+        },
+        {
+          "fold": 5,
+          "n_test": 91,
+          "n_train": 466,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 63,
+              "LOW_VOL": 28
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 88,
+              "LOW_SPY_VOL": 3
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 24,
+              "POSITIVE_TREND": 67
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 22,
+              "POSITIVE_20D_RETURN": 69
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 24,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 64,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 3
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01255131649176518,
+            "R2_spy_vol": 0.004920571533931717
+          }
+        },
+        {
+          "fold": 6,
+          "n_test": 91,
+          "n_train": 557,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 64,
+              "LOW_VOL": 27
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 61,
+              "LOW_SPY_VOL": 30
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 37,
+              "POSITIVE_TREND": 54
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 43,
+              "POSITIVE_20D_RETURN": 48
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 37,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 24,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 30
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.013295436352911838,
+            "R2_spy_vol": 0.005329487486734247
+          }
+        },
+        {
+          "fold": 7,
+          "n_test": 91,
+          "n_train": 648,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 24,
+              "LOW_VOL": 67
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 43,
+              "LOW_SPY_VOL": 48
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 5,
+              "POSITIVE_TREND": 86
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 13,
+              "POSITIVE_20D_RETURN": 78
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 5,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 38,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 48
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.013575543761967207,
+            "R2_spy_vol": 0.0053853665429815945
+          }
+        },
+        {
+          "fold": 8,
+          "n_test": 91,
+          "n_train": 739,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 82,
+              "LOW_VOL": 9
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 83,
+              "LOW_SPY_VOL": 8
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 42,
+              "POSITIVE_TREND": 49
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 34,
+              "POSITIVE_20D_RETURN": 57
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 42,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 41,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 8
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.013324174934367734,
+            "R2_spy_vol": 0.005388075819661079
+          }
+        },
+        {
+          "fold": 9,
+          "n_test": 91,
+          "n_train": 830,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 81,
+              "LOW_VOL": 10
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 85,
+              "LOW_SPY_VOL": 6
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 7,
+              "POSITIVE_TREND": 84
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 20,
+              "POSITIVE_20D_RETURN": 71
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 7,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 78,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 6
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.013795577864958483,
+            "R2_spy_vol": 0.005745047758784325
+          }
+        },
+        {
+          "fold": 10,
+          "n_test": 91,
+          "n_train": 921,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 88,
+              "LOW_VOL": 3
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 84,
+              "LOW_SPY_VOL": 7
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 10,
+              "POSITIVE_TREND": 81
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 7,
+              "POSITIVE_20D_RETURN": 84
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 10,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 74,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 7
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01409819243901869,
+            "R2_spy_vol": 0.006179250041374661
+          }
+        },
+        {
+          "fold": 11,
+          "n_test": 91,
+          "n_train": 1012,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 60,
+              "LOW_VOL": 31
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 69,
+              "LOW_SPY_VOL": 22
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 2,
+              "POSITIVE_TREND": 89
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 14,
+              "POSITIVE_20D_RETURN": 77
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 1,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 68,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 1,
+              "LOW_SPY_VOL_POSITIVE_TREND": 21
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014738779581544303,
+            "R2_spy_vol": 0.0066161645868019385
+          }
+        },
+        {
+          "fold": 12,
+          "n_test": 91,
+          "n_train": 1103,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 0,
+              "LOW_VOL": 91
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 35,
+              "LOW_SPY_VOL": 56
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 15,
+              "POSITIVE_TREND": 76
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 20,
+              "POSITIVE_20D_RETURN": 71
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 12,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 23,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 3,
+              "LOW_SPY_VOL_POSITIVE_TREND": 53
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01512016329997595,
+            "R2_spy_vol": 0.006897775853209166
+          }
+        },
+        {
+          "fold": 13,
+          "n_test": 91,
+          "n_train": 1194,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 66,
+              "LOW_VOL": 25
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 73,
+              "LOW_SPY_VOL": 18
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 43,
+              "POSITIVE_TREND": 48
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 53,
+              "POSITIVE_20D_RETURN": 38
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 43,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 30,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 18
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014347260782703358,
+            "R2_spy_vol": 0.006766614466560799
+          }
+        },
+        {
+          "fold": 14,
+          "n_test": 91,
+          "n_train": 1285,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 91,
+              "LOW_VOL": 0
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 67,
+              "POSITIVE_TREND": 24
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 57,
+              "POSITIVE_20D_RETURN": 34
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 67,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 24,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014466618381086697,
+            "R2_spy_vol": 0.00702827692616923
+          }
+        },
+        {
+          "fold": 15,
+          "n_test": 91,
+          "n_train": 1376,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 83,
+              "LOW_VOL": 8
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 44,
+              "POSITIVE_TREND": 47
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 41,
+              "POSITIVE_20D_RETURN": 50
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 44,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 47,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015394251810965135,
+            "R2_spy_vol": 0.007496937011938064
+          }
+        },
+        {
+          "fold": 16,
+          "n_test": 91,
+          "n_train": 1467,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 52,
+              "LOW_VOL": 39
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 33,
+              "POSITIVE_TREND": 58
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 41,
+              "POSITIVE_20D_RETURN": 50
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 33,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 58,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015736263771549252,
+            "R2_spy_vol": 0.008235684333626085
+          }
+        },
+        {
+          "fold": 17,
+          "n_test": 91,
+          "n_train": 1558,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 1,
+              "LOW_VOL": 90
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 10,
+              "LOW_SPY_VOL": 81
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 8,
+              "POSITIVE_TREND": 83
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 19,
+              "POSITIVE_20D_RETURN": 72
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 0,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 10,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 8,
+              "LOW_SPY_VOL_POSITIVE_TREND": 73
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015810204199208085,
+            "R2_spy_vol": 0.008747545377592494
+          }
+        },
+        {
+          "fold": 18,
+          "n_test": 91,
+          "n_train": 1649,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 18,
+              "LOW_VOL": 73
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 19,
+              "LOW_SPY_VOL": 72
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 42,
+              "POSITIVE_TREND": 49
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 38,
+              "POSITIVE_20D_RETURN": 53
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 6,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 13,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 36,
+              "LOW_SPY_VOL_POSITIVE_TREND": 36
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015487712307909613,
+            "R2_spy_vol": 0.008481865392085593
+          }
+        },
+        {
+          "fold": 19,
+          "n_test": 91,
+          "n_train": 1740,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 21,
+              "LOW_VOL": 70
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 13,
+              "LOW_SPY_VOL": 78
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 14,
+              "POSITIVE_TREND": 77
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 19,
+              "POSITIVE_20D_RETURN": 72
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 3,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 10,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 11,
+              "LOW_SPY_VOL_POSITIVE_TREND": 67
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015210662848386142,
+            "R2_spy_vol": 0.008226801544235636
+          }
+        },
+        {
+          "fold": 20,
+          "n_test": 91,
+          "n_train": 1831,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 60,
+              "LOW_VOL": 31
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 45,
+              "LOW_SPY_VOL": 46
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 13,
+              "POSITIVE_TREND": 78
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 14,
+              "POSITIVE_20D_RETURN": 77
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 13,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 32,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 46
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014928307890097605,
+            "R2_spy_vol": 0.007919498367212176
+          }
+        }
+      ],
+      "labelled_rows": 1925,
+      "n_eligible_states": 11,
+      "oos_rows": 1820,
+      "pooled_oos_state_counts": {
+        "R1_aapl_vol": {
+          "HIGH_VOL": 1107,
+          "LOW_VOL": 713
+        },
+        "R2_spy_vol": {
+          "HIGH_SPY_VOL": 1201,
+          "LOW_SPY_VOL": 619
+        },
+        "R3_spy_trend": {
+          "NEGATIVE_TREND": 508,
+          "POSITIVE_TREND": 1312
+        },
+        "R4_spy_return_20": {
+          "NEGATIVE_20D_RETURN": 560,
+          "POSITIVE_20D_RETURN": 1260
+        },
+        "R5_spy_vol_x_trend": {
+          "HIGH_SPY_VOL_NEGATIVE_TREND": 447,
+          "HIGH_SPY_VOL_POSITIVE_TREND": 754,
+          "LOW_SPY_VOL_NEGATIVE_TREND": 61,
+          "LOW_SPY_VOL_POSITIVE_TREND": 558
+        }
+      }
+    },
+    "5": {
+      "eligible_states": {
+        "R1_aapl_vol": {
+          "HIGH_VOL": true,
+          "LOW_VOL": true
+        },
+        "R2_spy_vol": {
+          "HIGH_SPY_VOL": true,
+          "LOW_SPY_VOL": true
+        },
+        "R3_spy_trend": {
+          "NEGATIVE_TREND": true,
+          "POSITIVE_TREND": true
+        },
+        "R4_spy_return_20": {
+          "NEGATIVE_20D_RETURN": true,
+          "POSITIVE_20D_RETURN": true
+        },
+        "R5_spy_vol_x_trend": {
+          "HIGH_SPY_VOL_NEGATIVE_TREND": true,
+          "HIGH_SPY_VOL_POSITIVE_TREND": true,
+          "LOW_SPY_VOL_NEGATIVE_TREND": false,
+          "LOW_SPY_VOL_POSITIVE_TREND": true
+        }
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "n_test": 91,
+          "n_train": 98,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 66,
+              "LOW_VOL": 25
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 39,
+              "LOW_SPY_VOL": 52
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 9,
+              "POSITIVE_TREND": 82
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 21,
+              "POSITIVE_20D_RETURN": 70
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 7,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 32,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 2,
+              "LOW_SPY_VOL_POSITIVE_TREND": 50
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.00935491803717758,
+            "R2_spy_vol": 0.004443788728843679
+          }
+        },
+        {
+          "fold": 2,
+          "n_test": 91,
+          "n_train": 189,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 60,
+              "LOW_VOL": 31
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 37,
+              "LOW_SPY_VOL": 54
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 19,
+              "POSITIVE_TREND": 72
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 21,
+              "POSITIVE_20D_RETURN": 70
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 19,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 18,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 54
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.010329972831271399,
+            "R2_spy_vol": 0.00438973340244943
+          }
+        },
+        {
+          "fold": 3,
+          "n_test": 91,
+          "n_train": 280,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 50,
+              "LOW_VOL": 41
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 32,
+              "POSITIVE_TREND": 59
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 30,
+              "POSITIVE_20D_RETURN": 61
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 32,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 59,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.010771536840646462,
+            "R2_spy_vol": 0.004350977444359875
+          }
+        },
+        {
+          "fold": 4,
+          "n_test": 91,
+          "n_train": 371,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 82,
+              "LOW_VOL": 9
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 54,
+              "LOW_SPY_VOL": 37
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 40,
+              "POSITIVE_TREND": 51
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 33,
+              "POSITIVE_20D_RETURN": 58
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 40,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 14,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 37
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.010935513075927548,
+            "R2_spy_vol": 0.004670457319921977
+          }
+        },
+        {
+          "fold": 5,
+          "n_test": 91,
+          "n_train": 462,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 68,
+              "LOW_VOL": 23
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 90,
+              "LOW_SPY_VOL": 1
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 26,
+              "POSITIVE_TREND": 65
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 24,
+              "POSITIVE_20D_RETURN": 67
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 26,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 64,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 1
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.012438342618832234,
+            "R2_spy_vol": 0.004881953096200703
+          }
+        },
+        {
+          "fold": 6,
+          "n_test": 91,
+          "n_train": 553,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 62,
+              "LOW_VOL": 29
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 59,
+              "LOW_SPY_VOL": 32
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 35,
+              "POSITIVE_TREND": 56
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 42,
+              "POSITIVE_20D_RETURN": 49
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 35,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 24,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 32
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.0133233756174104,
+            "R2_spy_vol": 0.005324412097320282
+          }
+        },
+        {
+          "fold": 7,
+          "n_test": 91,
+          "n_train": 644,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 26,
+              "LOW_VOL": 65
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 46,
+              "LOW_SPY_VOL": 45
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 7,
+              "POSITIVE_TREND": 84
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 14,
+              "POSITIVE_20D_RETURN": 77
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 7,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 39,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 45
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.013563282741146564,
+            "R2_spy_vol": 0.005379721476536519
+          }
+        },
+        {
+          "fold": 8,
+          "n_test": 91,
+          "n_train": 735,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 80,
+              "LOW_VOL": 11
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 81,
+              "LOW_SPY_VOL": 10
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 42,
+              "POSITIVE_TREND": 49
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 34,
+              "POSITIVE_20D_RETURN": 57
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 42,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 39,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 10
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.013338063421795434,
+            "R2_spy_vol": 0.005391765271503801
+          }
+        },
+        {
+          "fold": 9,
+          "n_test": 91,
+          "n_train": 826,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 81,
+              "LOW_VOL": 10
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 85,
+              "LOW_SPY_VOL": 6
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 7,
+              "POSITIVE_TREND": 84
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 18,
+              "POSITIVE_20D_RETURN": 73
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 7,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 78,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 6
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01377737132139429,
+            "R2_spy_vol": 0.00573593336452426
+          }
+        },
+        {
+          "fold": 10,
+          "n_test": 91,
+          "n_train": 917,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 88,
+              "LOW_VOL": 3
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 84,
+              "LOW_SPY_VOL": 7
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 10,
+              "POSITIVE_TREND": 81
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 9,
+              "POSITIVE_20D_RETURN": 82
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 10,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 74,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 7
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01408363536416698,
+            "R2_spy_vol": 0.006136892740710317
+          }
+        },
+        {
+          "fold": 11,
+          "n_test": 91,
+          "n_train": 1008,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 63,
+              "LOW_VOL": 28
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 72,
+              "LOW_SPY_VOL": 19
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 2,
+              "POSITIVE_TREND": 89
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 14,
+              "POSITIVE_20D_RETURN": 77
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 1,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 71,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 1,
+              "LOW_SPY_VOL_POSITIVE_TREND": 18
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014705864956599335,
+            "R2_spy_vol": 0.006607423952362298
+          }
+        },
+        {
+          "fold": 12,
+          "n_test": 91,
+          "n_train": 1099,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 0,
+              "LOW_VOL": 91
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 35,
+              "LOW_SPY_VOL": 56
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 15,
+              "POSITIVE_TREND": 76
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 20,
+              "POSITIVE_20D_RETURN": 71
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 12,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 23,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 3,
+              "LOW_SPY_VOL_POSITIVE_TREND": 53
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015139022329935544,
+            "R2_spy_vol": 0.006910192127247802
+          }
+        },
+        {
+          "fold": 13,
+          "n_test": 91,
+          "n_train": 1190,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 64,
+              "LOW_VOL": 27
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 71,
+              "LOW_SPY_VOL": 20
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 41,
+              "POSITIVE_TREND": 50
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 51,
+              "POSITIVE_20D_RETURN": 40
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 41,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 30,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 20
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.014364191863118173,
+            "R2_spy_vol": 0.006757191338005147
+          }
+        },
+        {
+          "fold": 14,
+          "n_test": 91,
+          "n_train": 1281,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 91,
+              "LOW_VOL": 0
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 69,
+              "POSITIVE_TREND": 22
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 59,
+              "POSITIVE_20D_RETURN": 32
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 69,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 22,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01442162219488834,
+            "R2_spy_vol": 0.007008109697059638
+          }
+        },
+        {
+          "fold": 15,
+          "n_test": 91,
+          "n_train": 1372,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 84,
+              "LOW_VOL": 7
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 44,
+              "POSITIVE_TREND": 47
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 41,
+              "POSITIVE_20D_RETURN": 50
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 44,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 47,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015344409291011416,
+            "R2_spy_vol": 0.007472200394885824
+          }
+        },
+        {
+          "fold": 16,
+          "n_test": 91,
+          "n_train": 1463,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 54,
+              "LOW_VOL": 37
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 91,
+              "LOW_SPY_VOL": 0
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 33,
+              "POSITIVE_TREND": 58
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 41,
+              "POSITIVE_20D_RETURN": 50
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 33,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 58,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 0
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015713491692244955,
+            "R2_spy_vol": 0.00822372884394925
+          }
+        },
+        {
+          "fold": 17,
+          "n_test": 91,
+          "n_train": 1554,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 1,
+              "LOW_VOL": 90
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 11,
+              "LOW_SPY_VOL": 80
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 6,
+              "POSITIVE_TREND": 85
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 17,
+              "POSITIVE_20D_RETURN": 74
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 0,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 11,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 6,
+              "LOW_SPY_VOL_POSITIVE_TREND": 74
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01582101348018531,
+            "R2_spy_vol": 0.008720590860112785
+          }
+        },
+        {
+          "fold": 18,
+          "n_test": 91,
+          "n_train": 1645,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 19,
+              "LOW_VOL": 72
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 19,
+              "LOW_SPY_VOL": 72
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 44,
+              "POSITIVE_TREND": 47
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 40,
+              "POSITIVE_20D_RETURN": 51
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 6,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 13,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 38,
+              "LOW_SPY_VOL_POSITIVE_TREND": 34
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015494664581693421,
+            "R2_spy_vol": 0.008485224083367564
+          }
+        },
+        {
+          "fold": 19,
+          "n_test": 91,
+          "n_train": 1736,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 19,
+              "LOW_VOL": 72
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 13,
+              "LOW_SPY_VOL": 78
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 14,
+              "POSITIVE_TREND": 77
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 19,
+              "POSITIVE_20D_RETURN": 72
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 3,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 10,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 11,
+              "LOW_SPY_VOL_POSITIVE_TREND": 67
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.015242613980750027,
+            "R2_spy_vol": 0.00823431847377379
+          }
+        },
+        {
+          "fold": 20,
+          "n_test": 91,
+          "n_train": 1827,
+          "state_counts": {
+            "R1_aapl_vol": {
+              "HIGH_VOL": 62,
+              "LOW_VOL": 29
+            },
+            "R2_spy_vol": {
+              "HIGH_SPY_VOL": 43,
+              "LOW_SPY_VOL": 48
+            },
+            "R3_spy_trend": {
+              "NEGATIVE_TREND": 13,
+              "POSITIVE_TREND": 78
+            },
+            "R4_spy_return_20": {
+              "NEGATIVE_20D_RETURN": 14,
+              "POSITIVE_20D_RETURN": 77
+            },
+            "R5_spy_vol_x_trend": {
+              "HIGH_SPY_VOL_NEGATIVE_TREND": 13,
+              "HIGH_SPY_VOL_POSITIVE_TREND": 30,
+              "LOW_SPY_VOL_NEGATIVE_TREND": 0,
+              "LOW_SPY_VOL_POSITIVE_TREND": 48
+            }
+          },
+          "thresholds": {
+            "R1_aapl_vol": 0.01490433177174175,
+            "R2_spy_vol": 0.007908608360496599
+          }
+        }
+      ],
+      "labelled_rows": 1923,
+      "n_eligible_states": 11,
+      "oos_rows": 1820,
+      "pooled_oos_state_counts": {
+        "R1_aapl_vol": {
+          "HIGH_VOL": 1120,
+          "LOW_VOL": 700
+        },
+        "R2_spy_vol": {
+          "HIGH_SPY_VOL": 1203,
+          "LOW_SPY_VOL": 617
+        },
+        "R3_spy_trend": {
+          "NEGATIVE_TREND": 508,
+          "POSITIVE_TREND": 1312
+        },
+        "R4_spy_return_20": {
+          "NEGATIVE_20D_RETURN": 562,
+          "POSITIVE_20D_RETURN": 1258
+        },
+        "R5_spy_vol_x_trend": {
+          "HIGH_SPY_VOL_NEGATIVE_TREND": 447,
+          "HIGH_SPY_VOL_POSITIVE_TREND": 756,
+          "LOW_SPY_VOL_NEGATIVE_TREND": 61,
+          "LOW_SPY_VOL_POSITIVE_TREND": 556
+        }
+      }
+    }
+  },
+  "scope": "development rows only; uses regime variables and fold structure only (no target values, no models)",
+  "variables": {
+    "regime_aapl_vol_20": {
+      "count": 1928,
+      "finite": 1928,
+      "max": 0.06800420900765175,
+      "mean": 0.01687066288869205,
+      "median": 0.015007446868375754,
+      "min": 0.005769794840312079,
+      "missing": 0,
+      "quantiles": {
+        "p01": 0.006858748457789035,
+        "p05": 0.008410833473324454,
+        "p25": 0.011491111050102518,
+        "p50": 0.015007446868375754,
+        "p75": 0.020267477067514056,
+        "p95": 0.03107293875172617,
+        "p99": 0.05437126144755644
+      },
+      "skew": 2.4687364634668807,
+      "std": 0.008136976629031916
+    },
+    "regime_spy_vol_20": {
+      "count": 1928,
+      "finite": 1928,
+      "max": 0.058701065672917774,
+      "mean": 0.009651840083860056,
+      "median": 0.007918993360355755,
+      "min": 0.0020098205709399275,
+      "missing": 0,
+      "quantiles": {
+        "p01": 0.0028452632230666682,
+        "p05": 0.003707815419420476,
+        "p25": 0.005516238297811614,
+        "p50": 0.007918993360355755,
+        "p75": 0.012142294828135093,
+        "p95": 0.01864604285731883,
+        "p99": 0.04623522588963969
+      },
+      "skew": 3.6549389646985877,
+      "std": 0.006745725148213802
+    },
+    "spy_close_to_sma_50": {
+      "count": 1928,
+      "finite": 1928,
+      "max": 1.132510690533605,
+      "mean": 1.013502872785888,
+      "median": 1.0208895245311713,
+      "min": 0.725955611367357,
+      "missing": 0,
+      "quantiles": {
+        "p01": 0.8809919045760711,
+        "p05": 0.9445343087876352,
+        "p25": 0.9977915356943827,
+        "p50": 1.0208895245311713,
+        "p75": 1.0378248369954775,
+        "p95": 1.0581639237899794,
+        "p99": 1.0838096729162077
+      },
+      "skew": -1.9340476081713356,
+      "std": 0.03933624293592261
+    },
+    "spy_return_20": {
+      "count": 1928,
+      "finite": 1928,
+      "max": 0.23072536837317292,
+      "mean": 0.011890821328000066,
+      "median": 0.01878170033100135,
+      "min": -0.30986735110526653,
+      "missing": 0,
+      "quantiles": {
+        "p01": -0.12048823369254413,
+        "p05": -0.06553236657555188,
+        "p25": -0.007355247400365611,
+        "p50": 0.01878170033100135,
+        "p75": 0.037424981707759375,
+        "p95": 0.06930237474173137,
+        "p99": 0.1097619286496199
+      },
+      "skew": -1.3790446617151546,
+      "std": 0.046657618175094714
+    }
+  }
+}

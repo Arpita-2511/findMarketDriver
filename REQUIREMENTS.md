@@ -1776,6 +1776,56 @@ single volatility estimator; inherited limitations (cumulative sentiment,
 keyword event labels, single symbol, fixed parameters, FinBERT model-level
 determinism not verified); development rerun determinism not verified.
 
+PHASE 10C — Market-Regime-Conditioned Research (AAPL only; research - no
+           production model, API or UI)
+
+Status: DEVELOPMENT COMPLETE (2026-10-01) — NEGATIVE RESULT: 0 qualified
+        regime-conditioned comparisons; Phase-10C confirmation holdout
+        NOT_APPLICABLE (not read) (details: ARCHITECTURE.md 15.5)
+
+[x] Regime definitions frozen before any result: R1 AAPL 20-session
+    volatility (training-fold median), R2 SPY 20-session simple-return
+    volatility (training-fold median), R3 SPY trend (spy_close_to_sma_50 >=
+    1.0), R4 spy_return_20 >= 0, R5 SPY volatility x trend (12 states)
+[x] Regime leakage tests implemented and passing (future AAPL/SPY prices,
+    training-only thresholds, frozen-threshold labels, no target columns,
+    target-independent labels, unchanged folds and gap)
+[x] Training-fold threshold leakage prevented (final audit: all 360 fold
+    thresholds equal the median of that fold's training rows)
+[x] Minimum sample rule frozen: < 100 pooled OOS rows -> INSUFFICIENT_DATA
+[x] Multiple-comparison family frozen: Holm across all eligible
+    regime-conditioned comparisons; qualification requires gate_v1 within
+    the state, >= 100 rows, raw p < 0.05 and Holm p < 0.05
+[x] 198 base experiments registered (matrix sha256
+    ffd3591d69927f5f275e9e1e5ef583ab6866a8d8a056d0ecfe25a81e2422783d);
+    2,376 comparisons
+[x] Unit tests: 20 new (tests/unit/test_regimes.py,
+    test_phase10c_research.py); full suite green
+[x] Development evaluation 2017-02-01..2024-09-30 with gate_v1 unchanged —
+    2,376 comparisons; 198 INSUFFICIENT_DATA (R5 LOW_SPY_VOL_NEGATIVE_TREND,
+    61 rows); 2,178 in the Holm family; raw p < 0.05: 0; Holm p < 0.05: 0;
+    gate_v1 passes: 0; qualified: 0
+[x] Confirmation holdout not run (no development qualifier) — registry
+    records NOT_APPLICABLE
+[x] Final read-only audit: 18 / 18 checks; unconditional reference
+    bit-identical to Phase 10A
+[ ] Development rerun determinism — NOT verified for the full Phase 10C run
+[ ] Separate per-regime models — not part of Phase 10C (not authorized)
+
+Scoped conclusion: for these pre-registered AAPL regime definitions, features,
+horizons and fixed models, regime conditioning revealed no statistically
+reliable out-of-sample performance under gate_v1 with Holm correction. This
+does not establish the absence of predictive signal in general.
+
+Recorded limitations: Diebold-Mariano / Newey-West on non-consecutive
+regime-filtered observations is an approximation retained for gate_v1
+comparability; one model per fold for all regimes; one untestable state;
+unbalanced volatility states from expanding-window medians; the development
+period has been used by Phase 9, 10A, 10B and 10C; inherited limitations
+(single symbol, fixed parameters, cumulative sentiment, keyword event labels,
+FinBERT model-level determinism not verified); development rerun determinism
+not verified.
+
 PHASE 8 (original numbering) — Production Model
 
 Status: NOT STARTED

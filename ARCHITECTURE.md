@@ -1925,6 +1925,137 @@ Limitations:
      occur inside the recording context (inferred: it fires only when the
      captured warning-filter list is empty; not tested directly).
 
+15.5 Phase 10C market-regime-conditioned research - development stage (AAPL, 2026-10-01)
+
+Research question: do predictive relationships emerge conditionally under
+observable market regimes even though no unconditional AAPL model qualified
+in Phases 9, 10A or 10B? Hypothesis (tested, not assumed): explicitly
+pre-registered regime conditioning may reveal statistically reliable
+out-of-sample performance that is absent in the unconditional evaluation.
+
+  code       training/regimes.py, training/phase10c_research.py (no existing
+             module changed; reuses Phase 9 / 10A components)
+  registry   data/results/research/phase10c/registry.json
+             matrix sha256   ffd3591d69927f5f275e9e1e5ef583ab6866a8d8a056d0ecfe25a81e2422783d
+             registry sha256 184c5efe8e2e6637a602154ea1ae1225b459a922a6137e1921d6864639248c27
+             (status COMPLETE)
+  run files  data/results/research/phase10c/experiments/dev_{A..F}_h{1,3,5}.json
+             (18, write-once, sha256 in the registry; folds, fold metrics,
+             per-fold regime thresholds and state counts, every state's
+             metrics and gate results for all candidates and baselines, the
+             unconditional reference, inputs, matrix hash, warnings)
+  regimes    data/results/research/phase10c/regimes/regime_diagnostics_development.json
+  commands   python -m training.phase10c_research freeze | regime-diagnostics |
+             develop | holdout --confirm | status
+
+Design (everything except regime conditioning is the frozen Phase 10A design):
+  target     Phase 10A excess return: future_excess_return_h and
+             excess_direction_h (training/excess_targets.py)
+  matrix     6 feature sets (A 20, B 35, C 43, D 58, E 29, F 64) x horizons
+             1, 3, 5 x 11 models (Phase 9 fixed parameters, seed 42, no
+             tuning) = 198 base experiments (108 regression, 90
+             classification); 18 walk-forward runs
+  regimes    (all computed from information available at D 16:30 New York)
+    R1 AAPL volatility   regime_aapl_vol_20 = sample std (ddof 1) of 20 AAPL
+                         simple daily returns ending at D (equals the technical
+                         `Volatility` feature, max diff 1.2e-16);
+                         LOW_VOL if <= training-fold median else HIGH_VOL
+    R2 SPY volatility    regime_spy_vol_20 = sample std (ddof 1) of 20 SPY
+                         simple daily returns ending at D (not the log-return
+                         market_context feature); training-fold median ->
+                         LOW_SPY_VOL / HIGH_SPY_VOL
+    R3 SPY trend         spy_close_to_sma_50 (SPY close / 50-session mean)
+                         >= 1.0 -> POSITIVE_TREND else NEGATIVE_TREND (fixed)
+    R4 SPY 20d return    spy_return_20 >= 0 -> POSITIVE_20D_RETURN else
+                         NEGATIVE_20D_RETURN (fixed)
+    R5 SPY vol x trend   R2 state x R3 state (4 states)
+    = 12 states. Fold-fitted thresholds: median over the TRAINING rows of each
+    walk-forward fold only; validation rows labelled with that frozen
+    threshold; ties (== median) -> LOW.
+  evaluation ONE model per training fold (harness walk_forward,
+             TimeSeriesSplit(20), gap = horizon); its out-of-sample
+             predictions are split by regime state; for each state the
+             unchanged pooled_metrics and qualify (gate_v1) run on exactly the
+             state's rows for all candidates and baselines - "gate_v1 logic
+             unchanged; evaluation population is the pre-registered
+             regime-conditioned validation population".
+  sample     a state with < 100 pooled OOS rows -> INSUFFICIENT_DATA, no test
+  family     all eligible regime-conditioned comparisons (at most 198 x 12 =
+             2,376); Holm across the complete family, fixed before results
+  qualifies  gate_v1 QUALIFIED within the state AND >= 100 rows AND raw DM
+             p < 0.05 AND Holm-adjusted p < 0.05
+  periods    development 2017-02-01 .. 2024-09-30 (1,928 rows; 1,820 pooled
+             OOS rows per run); confirmation holdout 2024-10-01 .. 2026-09-25
+             (not pristine) only for qualifiers with --confirm
+
+Leakage controls: regime variables use bars dated <= D only (unit tests:
+future AAPL / SPY prices leave every regime variable at D unchanged);
+thresholds use training rows only (changing validation values has no
+effect); labels use the frozen threshold; regime labels are independent of
+targets; no target column is a regime input and no regime variable is a
+model feature; folds and gap identical to Phase 10A. Final audit: regime
+variables recomputed from raw closes dated <= D match; every one of the 360
+fold thresholds equals the median of that fold's training rows and the state
+labels reproduce.
+
+Regime diagnostics (development, before any model; nearly identical for
+h = 1/3/5): R1 LOW 728 / HIGH 1,092; R2 LOW 618 / HIGH 1,202; R3 POSITIVE
+1,312 / NEGATIVE 508; R4 POSITIVE 1,261 / NEGATIVE 559; R5 LOW_POS 557 /
+LOW_NEG 61 / HIGH_POS 755 / HIGH_NEG 447 (h = 1). The volatility states are
+skewed to HIGH because each threshold is the median of the earlier training
+window and volatility rose over the sample (frozen rule, not adjusted).
+
+Development result (18 runs, about 10 min, exit 0, 0 warnings): NEGATIVE.
+  comparisons             2,376 (198 base experiments x 12 states)
+  insufficient data       198 - the single state R5 LOW_SPY_VOL_NEGATIVE_TREND
+                          (61 pooled OOS rows at every horizon)
+  Holm family             2,178 eligible comparisons (198 x 11 states)
+  raw p < 0.05            0 (smallest 0.0703; only one below 0.10)
+  Holm-adjusted p < 0.05  0 (smallest Holm p 1.0000)
+  gate_v1 passes          0 (also 0 before Holm)
+  fully qualified         0 -> NO DEVELOPMENT QUALIFIERS
+  Descriptive only (not a signal, not ranked): 26 of 2,178 comparisons beat
+  their reference baseline on the primary metric within the state (22
+  regression, 4 classification; 21 at h = 1), all NOT_QUALIFIED with raw
+  p >= 0.070 and Holm p = 1.0000 (largest gap MSE -0.739% for
+  p10c_A_h1_rf_regressor in R4 POSITIVE_20D_RETURN, p = 0.0703).
+  Unconditional reference (not in the family): 198 / 198 NOT_QUALIFIED and
+  bit-identical to the Phase 10A development results.
+  Confirmation: NOT_APPLICABLE - no development qualifier; the Phase-10C
+  confirmation holdout was not read and no holdout file exists.
+
+Conclusion (scoped): for these pre-registered AAPL regime definitions,
+features, horizons and fixed models, regime conditioning revealed no
+statistically reliable out-of-sample performance under gate_v1 with Holm
+correction. This is not a statement about predictive signal in general.
+
+Final audit (read-only, 18 / 18): artifacts present and hash-verified;
+inputs and matrix unchanged; family 2,178 / insufficient 198 / single
+insufficient state confirmed; Holm recomputed; gate_v1 re-applied from the
+artifacts reproduces all 2,178 statuses; no raw or Holm p < 0.05; holdout
+not read; regime variables and fold thresholds independently recomputed;
+unconditional reference == Phase 10A; no warnings.
+
+Statistical methodology and limitations:
+  1. DM regime-subset limitation: within regime-conditioned subsets,
+     observations are not necessarily consecutive in calendar/session time.
+     The existing Newey-West correction therefore treats the pooled
+     regime-filtered sequence as consecutive observations. This approximation
+     is retained to preserve gate_v1 comparability with Phases 9-10B.
+  2. One model is trained per fold on all regimes; separate per-regime models
+     were not part of Phase 10C.
+  3. One fixed state (R5 LOW_SPY_VOL_NEGATIVE_TREND) had too few rows to test.
+  4. Median thresholds come from earlier training windows, so the volatility
+     states are unbalanced in the out-of-sample period.
+  5. The development period has now been used by Phase 9, 10A, 10B and 10C;
+     Holm is applied within Phase 10C only.
+  6. Inherited: single symbol; fixed parameters only; cumulative sentiment
+     features; keyword event labels; FinBERT model-level determinism not
+     verified (section 11.5).
+  7. DEVELOPMENT RERUN DETERMINISM NOT VERIFIED for the full Phase 10C run
+     (frame, matrix and development-target construction verified identical at
+     freeze; the unconditional reference reproduced Phase 10A bit for bit).
+
 16. EXPERIMENT GATE
 
 Every new feature group must pass the same evaluation harness.
@@ -2639,6 +2770,23 @@ Tasks:
 4. Development evaluation              (<= 2024-09-30, gate_v1) - done,
                                          NO DEVELOPMENT QUALIFIERS
 5. Confirmation holdout                - not applicable; not read
+
+PHASE 10C — MARKET-REGIME-CONDITIONED RESEARCH (AAPL only; research, no
+production model / API)
+
+Status: DEVELOPMENT COMPLETE (2026-10-01) - NEGATIVE RESULT: 0 qualified
+        regime-conditioned comparisons; Phase-10C confirmation holdout
+        NOT_APPLICABLE (not read)
+
+Tasks:
+
+1. Regime variables and fold-fitted thresholds (section 15.5) - done
+2. Pre-register matrix, regimes, sample rule, Holm family - frozen
+3. Regime diagnostics (development only) - done
+4. Development evaluation (2,376 comparisons, 2,178 eligible) - done,
+   NO DEVELOPMENT QUALIFIERS
+5. Final audit                          - done, 18 / 18
+6. Confirmation holdout                - not applicable; not read
 
 PHASE 8 (original numbering) — FINAL MODEL
 
