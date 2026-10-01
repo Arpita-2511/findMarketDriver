@@ -1731,6 +1731,51 @@ Multiple-comparison adjustments are reported for information and never
 replace the gate. A confirmation holdout is evaluated only for development
 qualifiers, once each; with no qualifiers it is not evaluated.
 
+PHASE 10B — Volatility-Normalized Excess-Return Research (AAPL only;
+           research - no production model, API or UI)
+
+Status: DEVELOPMENT COMPLETE (2026-10-01) — 0 development qualifiers under
+        gate_v1; Phase-10B confirmation holdout NOT_APPLICABLE (not read)
+        (details: ARCHITECTURE.md 15.4)
+
+[x] Target frozen before any result: normalized_excess_return_h =
+    future_excess_return_h / volatility_D; normalized_excess_direction_h =
+    1 if > 0 else 0 (h = 1, 3, 5)
+[x] Volatility estimator frozen: sample std (ddof = 1) of the 20 daily
+    excess simple returns ending at D; closes dated <= D only; target
+    denominator only, never a feature
+[x] Leakage tests pass (target and direction arithmetic, window boundaries,
+    prediction-time cutoff, future-data mutation, insufficient history,
+    no target columns in feature sets)
+[x] 198 experiments pre-registered (frozen Phase 10A feature sets A-F with
+    F = 64 distinct, 3 horizons, 6 regression + 5 classification models;
+    108 + 90); matrix sha256
+    101dd0fd888b28b101a510adecf4d4ef11ea25500e3540cefa457900548bffd3
+[x] Unit tests: 24 new (tests/unit/test_normalized_targets.py,
+    test_phase10b_research.py); full suite 605 passed, 10 deselected
+[x] Target diagnostics on development rows only
+[x] Development evaluation 2017-02-01..2024-09-30, TimeSeriesSplit(20),
+    gap = horizon, gate_v1 unchanged — 198 / 198 completed; 0 qualifiers;
+    raw p < 0.05: 0; Holm p < 0.05: 0 (informational)
+[x] Confirmation holdout not run (no development qualifier) — registry
+    records NOT_APPLICABLE
+[x] Read-only audit: 23 / 23 checks; the 90 classification results are
+    bit-identical to Phase 10A (label-identical by construction; no new
+    evidence)
+[ ] Development rerun determinism — NOT verified for the full Phase 10B run
+[ ] Alternative volatility estimators — not tested (out of scope)
+
+Scoped conclusion: for these 198 pre-registered AAPL configurations,
+volatility normalization produced no significant out-of-sample improvement
+under gate_v1. This does not establish the absence of predictive signal in
+general.
+
+Recorded limitations: classification half label-identical to Phase 10A; the
+development period has been used by Phase 9, 10A and 10B (594 tests);
+single volatility estimator; inherited limitations (cumulative sentiment,
+keyword event labels, single symbol, fixed parameters, FinBERT model-level
+determinism not verified); development rerun determinism not verified.
+
 PHASE 8 (original numbering) — Production Model
 
 Status: NOT STARTED

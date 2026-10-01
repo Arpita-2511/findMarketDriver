@@ -1797,6 +1797,134 @@ Limitations:
      parameters only (no tuning by design); FinBERT model-level determinism
      not verified (section 11.5).
 
+15.4 Phase 10B volatility-normalized excess-return research - development stage (AAPL, 2026-10-01)
+
+Objective: test whether normalizing AAPL's future excess return over SPY by
+its prediction-time realized volatility gives a target on which the
+existing features show significant out-of-sample improvement over the
+baselines. A target-reformulation experiment; every other element is the
+frozen Phase 10A design (Phase 10A: excess-return research, matrix
+fbd763e7980232bb1bf7409616f8dbbb0af9e8b0c70857a680cb89aad1da6a45, 0 development
+qualifiers, holdout NOT_APPLICABLE; commit 91998ab).
+
+  code       training/normalized_targets.py, training/phase10b_research.py
+             (no existing module changed; reuses Phase 9 / 10A components)
+  registry   data/results/research/phase10b/registry.json
+             matrix sha256   101dd0fd888b28b101a510adecf4d4ef11ea25500e3540cefa457900548bffd3
+             registry sha256 b1372fe6f8faff2edac38fa6192a67efde74fdbbafbf51f71bd37833f892f812
+             (status COMPLETE)
+  run files  data/results/research/phase10b/experiments/dev_{A..F}_h{1,3,5}.json
+             (18, write-once, sha256 in the registry; each also records the
+             input hashes, matrix hash and recorded warnings)
+  targets    data/results/research/phase10b/targets/target_diagnostics_development.json
+  commands   python -m training.phase10b_research freeze | target-diagnostics |
+             develop | holdout --confirm | status
+
+Target (fixed before any Phase 10B result):
+  future_excess_return_h(D) = (Close[D+h]/Close[D] - 1) - (SPY_Close[D+h]/SPY_Close[D] - 1)
+                              (Phase 10A numerator, training/excess_targets.py)
+  x_j          = (Close[j]/Close[j-1] - 1) - (SPY_Close[j]/SPY_Close[j-1] - 1)
+                 daily excess simple return of AAPL session j
+  volatility_D = sample std (ddof = 1) of x_j for the 20 sessions j = D-19 .. D
+                 (20-session window and ddof = 1 as the technical `Volatility`
+                 and spy_volatility_20; simple returns as the Phase 10A target;
+                 computed on the full hash-verified AAPL and SPY snapshots on
+                 AAPL sessions; no horizon scaling - a constant factor per
+                 horizon cannot change a gate_v1 decision)
+  normalized_excess_return_h(D)    = future_excess_return_h(D) / volatility_D
+  normalized_excess_direction_h(D) = 1 if normalized_excess_return_h(D) > 0 else 0
+  Insufficient history (< 20 daily excess returns ending at D) or a
+  non-positive / non-finite volatility raises; rows are never dropped or
+  filled. The volatility is a target denominator only, never a feature.
+
+Matrix: the frozen Phase 10A feature sets A technical (20), B + sentiment
+(35), C technical + events (43), D technical + sentiment + events (58),
+E technical + market context (29), F technical + sentiment window + events
++ market context (64 distinct; sw_count_1 dropped, event__article_count kept)
+x horizons 1, 3, 5 x 11 models (6 regression: Linear Regression, Ridge, RF
+Regressor, HistGradientBoosting Regressor, XGBoost Regressor, LightGBM
+Regressor; 5 classification: Logistic Regression, Random Forest,
+HistGradientBoosting, XGBoost, LightGBM; Phase 9 fixed parameters, seed 42,
+no tuning) = 198 pre-registered experiments (108 regression, 90
+classification). Baselines keep their harness names (Mean Return, Zero
+Return, Base Rate, Always UP), applied to the normalized targets.
+
+Evaluation: development 2017-02-01 .. 2024-09-30 (1,928 rows; labelled
+1,927 / 1,925 / 1,923 for h = 1/3/5); TimeSeriesSplit(20), gap = horizon,
+1,820 pooled out-of-sample rows per run (h = 1: 2017-07-06 .. 2024-09-27);
+gate_v1 unchanged (evaluation_harness.validate_dataset, walk_forward,
+pooled_metrics, qualify; only the target construction differs); Holm
+adjustment informational. Confirmation holdout 2024-10-01 .. 2026-09-25
+(not pristine) - only for development qualifiers with --confirm.
+
+Leakage controls: volatility uses closes dated <= D only (unit tests:
+changing later prices leaves it unchanged; the last row's volatility never
+reaches a label); development frame cut at 2024-09-30 before targets are
+built; every fold has exactly h sessions between training end and test
+start; the last development label uses the 2024-09-30 close; no target,
+price or volatility column in any feature set; all 8 input hashes (store
+73966443..., sentiment records d3f40991..., sentiment daily e25e7d9d...,
+events 50a44ae0..., news cc974e83..., AAPL 141aba8f..., SPY bc827c76...,
+QQQ 106509ba...) verified at freeze and at development.
+
+Target diagnostics (development rows only): volatility mean 0.0114 (range
+0.0028 .. 0.0269); normalized target std 1.18 / 2.14 / 2.75 (h = 1/3/5), all
+finite; positive direction 51.84 / 53.56 / 54.24 %; all spot checks match.
+
+Development result (18 runs, 16 min, exit 0; 0 warnings recorded):
+  0 development qualifiers under gate_v1 (0 / 108 regression, 0 / 90
+  classification); raw p < 0.05: 0 (smallest raw p 0.528; none < 0.10);
+  Holm-adjusted p: 1.0000 for all 198.
+  Baselines (identical across feature sets):
+    h  Mean MSE   Zero MSE   Base Rate log loss   Always UP accuracy
+    1  1.40152    1.40264    0.693401             0.5198
+    3  4.53294    4.54220    0.692616             0.5346
+    5  7.50522    7.53820    0.693789             0.5374
+  No experiment beat its reference baseline on the primary metric (0 / 198).
+  Descriptive only: the RF Regressor came closest at h = 1 (C +0.03%,
+  A +0.10% MSE vs Mean Return; p 0.528 / 0.580). Compared descriptively with
+  Phase 10A's regression experiments (same features, models, folds), the
+  relative MSE gap was smaller in 54 / 108 pairs (median 15.37% vs 15.50%):
+  normalization produced no improvement that passes the gate.
+  Holdout: NOT_APPLICABLE - no development qualifier; the Phase-10B
+  confirmation holdout was not read and no holdout file exists.
+
+Classification experiments: volatility > 0, so normalized_excess_direction_h
+equals Phase 10A's excess_direction_h; with the same rows, folds, features
+and fixed models the 90 classification results are label-identical to
+Phase 10A and add no new evidence. The audit confirmed they reproduced Phase
+10A bit for bit (this verifies deterministic reruns for those 90
+configurations only).
+
+Conclusion (scoped): for these 198 pre-registered AAPL configurations,
+normalizing the excess return by its 20-session prediction-time volatility
+produced no significant out-of-sample improvement under gate_v1. This is not
+a statement about predictive signal in general.
+
+Audit: read-only audit 23 / 23 checks (completeness, registry == run files,
+gate_v1 re-applied reproduces all 198 statuses, raw p == 1 - Phi(DM), Holm
+recomputed, cutoff and gap per fold, input and artifact hashes,
+classification identical to Phase 10A).
+
+Limitations:
+  1. The 90 classification experiments are label-identical to Phase 10A by
+     construction and add no new evidence; only the 108 regression
+     experiments test the normalization.
+  2. The development period has now been used by Phase 9, Phase 10A and
+     Phase 10B (594 pre-registered tests); Holm is applied within Phase 10B
+     only.
+  3. One volatility estimator (20-session excess-return realized volatility);
+     alternatives (AAPL-only volatility, EWMA, other windows) are untested.
+  4. Inherited: sentiment_features_v1 is cumulative; event labels are keyword
+     rules, not ground truth; single symbol; fixed parameters only; FinBERT
+     model-level determinism not verified (section 11.5).
+  5. DEVELOPMENT RERUN DETERMINISM NOT VERIFIED for the full Phase 10B run
+     (frame, matrix and development-target construction were verified
+     identical at freeze).
+  6. 0 warnings were recorded; Phase 9's scikit-learn UserWarning did not
+     occur inside the recording context (inferred: it fires only when the
+     captured warning-filter list is empty; not tested directly).
+
 16. EXPERIMENT GATE
 
 Every new feature group must pass the same evaluation harness.
@@ -2496,6 +2624,21 @@ Tasks:
 5. Confirmation holdout                (2024-10-01 .. 2026-09-25) - not
                                          applicable; not evaluated
 6. Explainability of a qualified model - not applicable (none qualified)
+
+PHASE 10B — VOLATILITY-NORMALIZED EXCESS-RETURN RESEARCH (AAPL only;
+research, no production model / API)
+
+Status: DEVELOPMENT COMPLETE (2026-10-01) - 0 development qualifiers;
+        Phase-10B confirmation holdout NOT_APPLICABLE (not read)
+
+Tasks:
+
+1. Normalized target + prediction-time volatility (section 15.4) - done
+2. Pre-register the experiment matrix  - frozen, 198 experiments
+3. Target diagnostics (development only) - done
+4. Development evaluation              (<= 2024-09-30, gate_v1) - done,
+                                         NO DEVELOPMENT QUALIFIERS
+5. Confirmation holdout                - not applicable; not read
 
 PHASE 8 (original numbering) — FINAL MODEL
 

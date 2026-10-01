@@ -1,0 +1,417 @@
+{
+  "development_rows": 1928,
+  "horizons": {
+    "1": {
+      "all_spot_checks_match": true,
+      "direction_equals_excess_direction": true,
+      "future_excess_return": {
+        "count": 1927,
+        "finite": 1927,
+        "max": 0.09678626629706555,
+        "mean": 0.0006250929339859875,
+        "median": 0.00037767975821800803,
+        "min": -0.07574462923116332,
+        "missing": 0,
+        "quantiles": {
+          "p01": -0.03252294511167218,
+          "p05": -0.017400602328588432,
+          "p25": -0.005777109615598464,
+          "p50": 0.00037767975821800803,
+          "p75": 0.006601418368456291,
+          "p95": 0.01989441698002654,
+          "p99": 0.03554308694776814
+        },
+        "skew": 0.42197390246532646,
+        "std": 0.012118069837666097
+      },
+      "holdout_structural": {
+        "first_date": "2024-10-01",
+        "holdout_rows": 498,
+        "labelled_rows": 498,
+        "last_labelled_date": "2026-09-25"
+      },
+      "labelled_rows": 1927,
+      "last_label_close_date": "2024-09-30",
+      "normalized_excess_direction": {
+        "n_down": 928,
+        "n_rows": 1927,
+        "n_up": 999,
+        "n_zero_return_labelled_down": 0,
+        "non_positive_pct": 48.157758173326414,
+        "positive_pct": 51.842241826673586,
+        "rule": "direction = 1 (UP) if future_return > 0 else 0 (DOWN); zero -> DOWN; no dead zone",
+        "target_version": "direction_v1",
+        "up_share": 0.5184224182667359
+      },
+      "normalized_excess_return": {
+        "count": 1927,
+        "finite": 1927,
+        "max": 10.320905639754342,
+        "mean": 0.06563898583600947,
+        "median": 0.03794973260675608,
+        "min": -7.33184314343931,
+        "missing": 0,
+        "quantiles": {
+          "p01": -3.0157977065076613,
+          "p05": -1.667738288259848,
+          "p25": -0.5533971386058154,
+          "p50": 0.03794973260675608,
+          "p75": 0.6027931323058258,
+          "p95": 1.8644702939220328,
+          "p99": 3.6727818971294393
+        },
+        "skew": 0.7348368888862088,
+        "std": 1.1833165001835524
+      },
+      "spot_checks": [
+        {
+          "date": "2017-02-01",
+          "excess": -0.0023679963713940655,
+          "label_close_date": "2017-02-02",
+          "matches": true,
+          "normalized": -0.16667275137958443,
+          "row": 0,
+          "volatility": 0.014207459538488898
+        },
+        {
+          "date": "2017-02-02",
+          "excess": -0.002613453765559548,
+          "label_close_date": "2017-02-03",
+          "matches": true,
+          "normalized": -0.18614258672440429,
+          "row": 1,
+          "volatility": 0.014040063649856384
+        },
+        {
+          "date": "2018-12-31",
+          "excess": 0.00010056599484986606,
+          "label_close_date": "2019-01-02",
+          "matches": true,
+          "normalized": 0.008186119292222845,
+          "row": 481,
+          "volatility": 0.012284941284133002
+        },
+        {
+          "date": "2020-11-27",
+          "excess": 0.02552667687719068,
+          "label_close_date": "2020-11-30",
+          "matches": true,
+          "normalized": 1.46889667255386,
+          "row": 963,
+          "volatility": 0.017378129690231628
+        },
+        {
+          "date": "2022-10-27",
+          "excess": 0.05176162801347162,
+          "label_close_date": "2022-10-28",
+          "matches": true,
+          "normalized": 5.830662955987551,
+          "row": 1445,
+          "volatility": 0.008877485871536653
+        },
+        {
+          "date": "2024-09-26",
+          "excess": 0.0026371550410821953,
+          "label_close_date": "2024-09-27",
+          "matches": true,
+          "normalized": 0.22043733346986213,
+          "row": 1925,
+          "volatility": 0.011963286797073978
+        },
+        {
+          "date": "2024-09-27",
+          "excess": 0.018864806040339355,
+          "label_close_date": "2024-09-30",
+          "matches": true,
+          "normalized": 1.6500976821519058,
+          "row": 1926,
+          "volatility": 0.011432538960807223
+        }
+      ],
+      "target": "normalized_excess_return_1d",
+      "unlabelled_tail_rows": 1
+    },
+    "3": {
+      "all_spot_checks_match": true,
+      "direction_equals_excess_direction": true,
+      "future_excess_return": {
+        "count": 1925,
+        "finite": 1925,
+        "max": 0.13493977527672119,
+        "mean": 0.0018320937741568598,
+        "median": 0.00158603910013011,
+        "min": -0.08910715345198261,
+        "missing": 0,
+        "quantiles": {
+          "p01": -0.05629604466310326,
+          "p05": -0.03191866349705064,
+          "p25": -0.009553844105886111,
+          "p50": 0.00158603910013011,
+          "p75": 0.012700163402535658,
+          "p95": 0.03549096949404328,
+          "p99": 0.0624874169233834
+        },
+        "skew": 0.3359947376235869,
+        "std": 0.021409062823076853
+      },
+      "holdout_structural": {
+        "first_date": "2024-10-01",
+        "holdout_rows": 498,
+        "labelled_rows": 496,
+        "last_labelled_date": "2026-09-23"
+      },
+      "labelled_rows": 1925,
+      "last_label_close_date": "2024-09-30",
+      "normalized_excess_direction": {
+        "n_down": 894,
+        "n_rows": 1925,
+        "n_up": 1031,
+        "n_zero_return_labelled_down": 0,
+        "non_positive_pct": 46.44155844155844,
+        "positive_pct": 53.55844155844156,
+        "rule": "direction = 1 (UP) if future_return > 0 else 0 (DOWN); zero -> DOWN; no dead zone",
+        "target_version": "direction_v1",
+        "up_share": 0.5355844155844156
+      },
+      "normalized_excess_return": {
+        "count": 1925,
+        "finite": 1925,
+        "max": 14.472026909973952,
+        "mean": 0.1915303312935926,
+        "median": 0.14463727758880296,
+        "min": -11.329423884247712,
+        "missing": 0,
+        "quantiles": {
+          "p01": -5.752494514177291,
+          "p05": -3.0181873746716232,
+          "p25": -0.8930302781122573,
+          "p50": 0.14463727758880296,
+          "p75": 1.2232603936123585,
+          "p95": 3.3877888804421836,
+          "p99": 6.722724446485417
+        },
+        "skew": 0.4598246632348324,
+        "std": 2.1372555128268056
+      },
+      "spot_checks": [
+        {
+          "date": "2017-02-01",
+          "excess": 0.0062058555333144305,
+          "label_close_date": "2017-02-06",
+          "matches": true,
+          "normalized": 0.43680261882867794,
+          "row": 0,
+          "volatility": 0.014207459538488898
+        },
+        {
+          "date": "2017-02-02",
+          "excess": 0.018204168600485904,
+          "label_close_date": "2017-02-07",
+          "matches": true,
+          "normalized": 1.2965873271288277,
+          "row": 1,
+          "volatility": 0.014040063649856384
+        },
+        {
+          "date": "2018-12-31",
+          "excess": -0.06998228970531162,
+          "label_close_date": "2019-01-04",
+          "matches": true,
+          "normalized": -5.696591305299881,
+          "row": 481,
+          "volatility": 0.012284941284133002
+        },
+        {
+          "date": "2020-11-25",
+          "excess": 0.048392949286182985,
+          "label_close_date": "2020-12-01",
+          "matches": true,
+          "normalized": 2.591055913083884,
+          "row": 962,
+          "volatility": 0.018676922038546644
+        },
+        {
+          "date": "2022-10-25",
+          "excess": 0.011666641000228406,
+          "label_close_date": "2022-10-28",
+          "matches": true,
+          "normalized": 1.0235135864109084,
+          "row": 1443,
+          "volatility": 0.01139861859688555
+        },
+        {
+          "date": "2024-09-24",
+          "excess": 0.0015496393832938882,
+          "label_close_date": "2024-09-27",
+          "matches": true,
+          "normalized": 0.1293981942429355,
+          "row": 1923,
+          "volatility": 0.011975741951889649
+        },
+        {
+          "date": "2024-09-25",
+          "excess": 0.022762430553261437,
+          "label_close_date": "2024-09-30",
+          "matches": true,
+          "normalized": 1.9044837095941844,
+          "row": 1924,
+          "volatility": 0.011952021662664552
+        }
+      ],
+      "target": "normalized_excess_return_3d",
+      "unlabelled_tail_rows": 3
+    },
+    "5": {
+      "all_spot_checks_match": true,
+      "direction_equals_excess_direction": true,
+      "future_excess_return": {
+        "count": 1923,
+        "finite": 1923,
+        "max": 0.15213080941359935,
+        "mean": 0.0030166679044231325,
+        "median": 0.002205994891192109,
+        "min": -0.08932206484631144,
+        "missing": 0,
+        "quantiles": {
+          "p01": -0.06899458655378614,
+          "p05": -0.04065229199141257,
+          "p25": -0.01199337451451793,
+          "p50": 0.002205994891192109,
+          "p75": 0.0181354746392296,
+          "p95": 0.04617219722348301,
+          "p99": 0.07825253460123062
+        },
+        "skew": 0.3663839743493064,
+        "std": 0.027644101715145458
+      },
+      "holdout_structural": {
+        "first_date": "2024-10-01",
+        "holdout_rows": 498,
+        "labelled_rows": 494,
+        "last_labelled_date": "2026-09-21"
+      },
+      "labelled_rows": 1923,
+      "last_label_close_date": "2024-09-30",
+      "normalized_excess_direction": {
+        "n_down": 880,
+        "n_rows": 1923,
+        "n_up": 1043,
+        "n_zero_return_labelled_down": 0,
+        "non_positive_pct": 45.761830473218936,
+        "positive_pct": 54.238169526781064,
+        "rule": "direction = 1 (UP) if future_return > 0 else 0 (DOWN); zero -> DOWN; no dead zone",
+        "target_version": "direction_v1",
+        "up_share": 0.5423816952678107
+      },
+      "normalized_excess_return": {
+        "count": 1923,
+        "finite": 1923,
+        "max": 13.470433593100744,
+        "mean": 0.3194245292922538,
+        "median": 0.21556018375639494,
+        "min": -11.018111721329143,
+        "missing": 0,
+        "quantiles": {
+          "p01": -6.940214943568128,
+          "p05": -3.9207824399990705,
+          "p25": -1.1377393146647403,
+          "p50": 0.21556018375639494,
+          "p75": 1.7041874268436716,
+          "p95": 4.570816457516446,
+          "p99": 9.246968992091812
+        },
+        "skew": 0.3675350925550533,
+        "std": 2.7529662593820774
+      },
+      "spot_checks": [
+        {
+          "date": "2017-02-01",
+          "excess": 0.018436413137521424,
+          "label_close_date": "2017-02-08",
+          "matches": true,
+          "normalized": 1.2976572685339012,
+          "row": 0,
+          "volatility": 0.014207459538488898
+        },
+        {
+          "date": "2017-02-02",
+          "excess": 0.02230767363136099,
+          "label_close_date": "2017-02-09",
+          "matches": true,
+          "normalized": 1.5888584402243202,
+          "row": 1,
+          "volatility": 0.014040063649856384
+        },
+        {
+          "date": "2018-12-28",
+          "excess": -0.07988784191183185,
+          "label_close_date": "2019-01-07",
+          "matches": true,
+          "normalized": -6.500499237521122,
+          "row": 480,
+          "volatility": 0.012289493313177588
+        },
+        {
+          "date": "2020-11-24",
+          "excess": 0.058852248231744175,
+          "label_close_date": "2020-12-02",
+          "matches": true,
+          "normalized": 3.169179700144745,
+          "row": 961,
+          "volatility": 0.01857018339132244
+        },
+        {
+          "date": "2022-10-24",
+          "excess": 0.006655221519047183,
+          "label_close_date": "2022-10-31",
+          "matches": true,
+          "normalized": 0.572402800218859,
+          "row": 1442,
+          "volatility": 0.011626815096820892
+        },
+        {
+          "date": "2024-09-20",
+          "excess": -0.007463216346729307,
+          "label_close_date": "2024-09-27",
+          "matches": true,
+          "normalized": -0.6314696543795485,
+          "row": 1921,
+          "volatility": 0.011818804427050895
+        },
+        {
+          "date": "2024-09-23",
+          "excess": 0.021654295112781163,
+          "label_close_date": "2024-09-30",
+          "matches": true,
+          "normalized": 1.8019470968951394,
+          "row": 1922,
+          "volatility": 0.01201716473812843
+        }
+      ],
+      "target": "normalized_excess_return_5d",
+      "unlabelled_tail_rows": 5
+    }
+  },
+  "scope": "development rows only (<= development end); holdout: structural counts only",
+  "target_columns_in_any_feature_set": [],
+  "volatility": {
+    "count": 1928,
+    "finite": 1928,
+    "max": 0.02692961179995826,
+    "mean": 0.011368422247096001,
+    "median": 0.010573261468603871,
+    "min": 0.002835848977601901,
+    "missing": 0,
+    "quantiles": {
+      "p01": 0.00455902275591896,
+      "p05": 0.006067052484565784,
+      "p25": 0.008199660583472303,
+      "p50": 0.010573261468603871,
+      "p75": 0.01376029809388441,
+      "p95": 0.019264769970391095,
+      "p99": 0.02508436969586742
+    },
+    "skew": 0.9768997150884131,
+    "std": 0.004229686540630679
+  }
+}
