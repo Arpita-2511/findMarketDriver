@@ -2120,12 +2120,45 @@ Frozen decisions:
              qualifier
   staging    11A: A, E (prices only); 11B: B, C, D, F (multi-symbol news) -
              runs regardless of 11A
-  AAPL       included; per-stock A/E checked for equivalence with Phase 10A
-             (reproducibility check only)
+  AAPL       included; per-stock A/E compared with Phase 10A as a
+             reproducibility check only (wording amended - see below)
 
-Deferred to Phase 11.1 (not yet facts): price downloads and session checks,
-verification of every corporate-action event and its provider adjustment,
-affected-row counts and per-stock eligibility.
+Amendment 01 (data/results/research/phase11/amendment_01_reproducibility.json,
+training/phase11_reproducibility.py): the Phase 11.0 registry
+(design_registry.json, design sha256 266daadd...) remains immutable and was
+not edited. The amendment replaces ONLY the AAPL / Phase 10A reproducibility-
+check wording ("checked for equivalence ... where data and design are
+mathematically identical"), because the canonical Phase 11.1 price batch
+differs from the Phase 10 snapshots by about 1e-6 relative (provider
+re-adjustment at retrieval), so bit-identical equivalence is impossible.
+  input      Phase 11 uses the canonical Phase 11.1 price batch
+             (data/processed/phase11/market/, verification report
+             price_verification.json)
+  prices     AAPL, SPY and QQQ vs the Phase 10 snapshots on every common date:
+             |relative close difference| <= 1e-5 and |absolute daily-return
+             difference| <= 1e-5
+  results    the 66 AAPL A/E comparisons (2 feature sets x 3 horizons x 11
+             models) vs the matching Phase 10A experiments: identical gate_v1
+             status, primary metric (MSE / log loss) within 0.5% relative, raw
+             DM p-value within 0.02
+  outcome    REPRODUCED_WITHIN_TOLERANCE or REPRODUCIBILITY_CHECK_FAILED (every
+             difference reported); a failure does not modify the Phase 11
+             methodology or results
+All other Phase 11 design decisions are unchanged.
+
+Phase 11.1 status (complete; data and integrity verification only): price
+acquisition and session validation are complete (one yfinance batch, 29
+securities + SPY + QQQ, 2016-01-04 .. 2026-09-29). No missing sessions were
+found. All 29 securities passed the >= 1,800 development-row requirement (1,927 /
+1,925 / 1,923 labelled development rows for h = 1/3/5). No corporate-action
+rows required exclusion: every documented event was determined properly
+adjusted (or no adjustment required) under the frozen Phase 11.1 rule, including
+RTX/UTX continuity across the 2020-04-03 merger and the Carrier/Otis adjustment.
+The canonical Phase 11.1 price batch (data/processed/phase11/market/) is now the
+input for Phase 11A. Detailed observations are recorded in
+data/results/research/phase11/price_verification.json; the AAPL / Phase 10A
+reproducibility amendment is recorded separately in
+amendment_01_reproducibility.json. Phase 11A has NOT started.
 
 16. EXPERIMENT GATE
 

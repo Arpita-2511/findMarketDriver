@@ -1,0 +1,4276 @@
+{
+  "FROZEN_DESIGN": {
+    "affected_row_semantics": {
+      "ema_note": "EMA-based features (Close_to_EMA_12/26, MACD_*) have exponentially decaying memory beyond 50 sessions; the residual influence of an unadjusted event older than 50 sessions is a recorded limitation, not an exclusion criterion",
+      "event_session": "E = the first trading session (of the stock's own calendar) whose price reflects the event, i.e. the discontinuity sits in the session-E return Close[E]/Close[E-1]-1",
+      "excluded_rows": "D in [E-h, E+49] (session indices), per horizon h",
+      "lookback": "row D's features span the event iff E lies in the last 50 sessions ending at D: D in [E, E+49] (session indices)",
+      "target": "row D's h-session target Close[D+h]/Close[D]-1 spans the event iff D < E <= D+h: D in [E-h, E-1]",
+      "timing": "session-based semantics of Phases 9-10: prediction timestamp D 16:30 America/New_York, gap = h"
+    },
+    "commit": "38dfd1f",
+    "continuations": {
+      "UTX": {
+        "basis": "legal/security continuation: United Technologies was the legal survivor of the Raytheon merger completed 2020-04-03 and was renamed Raytheon Technologies (ticker RTX, later RTX Corporation)",
+        "condition": "Phase 11.1 must verify whether the provider's adjusted RTX history correctly accounts for the Carrier/Otis distributions and related corporate actions; if not, the general event-span exclusion rule applies; no other ticker is substituted",
+        "research_ticker": "RTX"
+      }
+    },
+    "design_sha256": "266daaddba0e8cb18163b4ec9db7eadabe2d5ab574bf410e043a7d28d3247650",
+    "excluded": {
+      "DD": "the 2016 DJIA member DD (E.I. du Pont de Nemours) does not have a single continuous listed security series covering the full research interval; today's DD successor security is NOT substituted and NO synthetic shareholder-return series is constructed"
+    },
+    "intervals": {
+      "confirmation": [
+        "2024-10-01",
+        "2026-09-25"
+      ],
+      "confirmation_note": "confirmation holdout, not pristine for AAPL; evaluated only for development qualifiers with explicit authorization; otherwise never read",
+      "development": [
+        "2017-02-01",
+        "2024-09-30"
+      ],
+      "research_frame": [
+        "2017-02-01",
+        "2026-09-28"
+      ]
+    },
+    "min_development_rows": 1800,
+    "universe": [
+      "AAPL",
+      "AXP",
+      "BA",
+      "CAT",
+      "CSCO",
+      "CVX",
+      "DIS",
+      "GE",
+      "GS",
+      "HD",
+      "IBM",
+      "INTC",
+      "JNJ",
+      "JPM",
+      "KO",
+      "MCD",
+      "MMM",
+      "MRK",
+      "MSFT",
+      "NKE",
+      "PFE",
+      "PG",
+      "RTX",
+      "TRV",
+      "UNH",
+      "V",
+      "VZ",
+      "WMT",
+      "XOM"
+    ]
+  },
+  "PHASE_11_1_IMPLEMENTATION": {
+    "adjustment_rule": {
+      "abnormal_move": "z(s) = (r_adj(s) - r_SPY(s)) / sample std (ddof=1) of the stock's excess returns over the 60 sessions before s; abnormal iff |z| > 4; r = Close[s]/Close[s-1] - 1 on adjusted closes",
+      "additional_provider_actions": "every other provider split record is tested with the split rule",
+      "event_session": "E = first session of the stock on or after the documented public date",
+      "exchange_offer (non-pro-rata)": "NO_ADJUSTMENT_REQUIRED (no distribution to all holders); z reported if a date is known",
+      "merger_continuity": "CONTINUOUS iff every reference session in [E-60, E+60] is present (no adjustment needed for the survivor)",
+      "otherwise": "NOT_PROPERLY_ADJUSTED -> frozen exclusion D in [E-h, E+49] (session indices) at E and at every record session; prices never repaired, no splicing, no substitution",
+      "provider_record": "a Stock_Splits value not in {0, 1}, or a Dividends value > 3 x the median of the stock's positive dividends, within sessions [E-3, E+3]",
+      "spin_off / distribution": "PROPERLY_ADJUSTED iff a provider record exists AND |z| <= 4 at E and at every record session",
+      "split / reverse split": "PROPERLY_ADJUSTED iff a split record exists in the window AND |z| <= 4 at E and the record session"
+    },
+    "documented_events": [
+      {
+        "evidence": "Wikipedia 'RTX Corporation': merger completed April 3, 2020; UTC the legal survivor, ticker RTX",
+        "id": "RTX_merger_2020",
+        "member": "UTX",
+        "public_date": "2020-04-03",
+        "symbol": "RTX",
+        "type": "merger_continuity"
+      },
+      {
+        "evidence": "Wikipedia 'Carrier Global': separation completed April 2020; 'Otis Worldwide': Otis common stock began trading on the NYSE April 3, 2020",
+        "id": "RTX_carrier_otis_2020",
+        "member": "UTX",
+        "public_date": "2020-04-03",
+        "symbol": "RTX",
+        "type": "spin_off"
+      },
+      {
+        "evidence": "Wikipedia 'Wabtec': GE Transportation merger completed February 25, 2019; GE shareholders own 24.3% of the merged company (distribution to GE shareholders)",
+        "id": "GE_wabtec_2019",
+        "public_date": "2019-02-25",
+        "symbol": "GE",
+        "type": "spin_off"
+      },
+      {
+        "evidence": "Wikipedia 'General Electric': reverse stock split 1-for-8 (announced / completed July 30, 2021)",
+        "id": "GE_reverse_split_2021",
+        "public_date": "2021-07-30",
+        "symbol": "GE",
+        "type": "reverse_split"
+      },
+      {
+        "evidence": "Wikipedia 'GE HealthCare': spin-off completed and trading began January 4, 2023",
+        "id": "GE_healthcare_2023",
+        "public_date": "2023-01-04",
+        "symbol": "GE",
+        "type": "spin_off"
+      },
+      {
+        "evidence": "Wikipedia 'GE Vernova' / 'General Electric': spin-off, GE Vernova listed April 2, 2024",
+        "id": "GE_vernova_2024",
+        "public_date": "2024-04-02",
+        "symbol": "GE",
+        "type": "spin_off"
+      },
+      {
+        "evidence": "Wikipedia 'Solventum': spin-off completed April 1, 2024; 3M retained about 19.9%",
+        "id": "MMM_solventum_2024",
+        "public_date": "2024-04-01",
+        "symbol": "MMM",
+        "type": "spin_off"
+      },
+      {
+        "evidence": "Wikipedia 'Organon & Co.': spinoff completed, Organon publicly traded June 3, 2021",
+        "id": "MRK_organon_2021",
+        "public_date": "2021-06-03",
+        "symbol": "MRK",
+        "type": "spin_off"
+      },
+      {
+        "evidence": "Wikipedia 'Kyndryl': separation completed and NYSE trading began November 4, 2021",
+        "id": "IBM_kyndryl_2021",
+        "public_date": "2021-11-04",
+        "symbol": "IBM",
+        "type": "spin_off"
+      },
+      {
+        "evidence": "Wikipedia 'Viatris': on November 16, 2020 Upjohn merged with Mylan in a Reverse Morris Trust transaction (RMT structure implies a distribution of Upjohn to Pfizer shareholders - inference)",
+        "id": "PFE_upjohn_viatris_2020",
+        "public_date": "2020-11-16",
+        "symbol": "PFE",
+        "type": "spin_off"
+      },
+      {
+        "evidence": "Wikipedia 'Kenvue': IPO May 4, 2023; exchange offer launched July 24, 2023 letting J&J holders exchange all, some or none of their shares (non-pro-rata split-off); completion date not stated",
+        "id": "JNJ_kenvue_2023",
+        "public_date": null,
+        "symbol": "JNJ",
+        "type": "exchange_offer"
+      }
+    ],
+    "download": {
+      "calls": [
+        "Ticker.history(auto_adjust=True, actions=True)",
+        "Ticker.history(auto_adjust=False, actions=True)"
+      ],
+      "end_exclusive": "2026-09-30",
+      "interval": "1d",
+      "passes": 2,
+      "provider": "yfinance (Yahoo Finance)",
+      "repair": false,
+      "start": "2016-01-01"
+    },
+    "frame_end": "2026-09-28",
+    "missing_session_rule": "missing reference session m -> rows with reference index in [m-h, m+49] excluded (implementation of the frozen 'rows needing a missing session are excluded')",
+    "reference_calendar": "SPY",
+    "retrieved_at_utc": [
+      "2026-10-02T00:22:04+00:00",
+      "2026-10-02T00:22:33+00:00"
+    ],
+    "warm_up": {
+      "basis": "max(MIN_HISTORY_ROWS - 1 = 80, lookback 50)",
+      "download_start": "2016-01-01",
+      "required_prior_sessions": 80
+    },
+    "yfinance_version": "1.5.1"
+  },
+  "PHASE_11_1_OBSERVATIONS": {
+    "benchmarks": {
+      "QQQ": {
+        "adjusted_close_available": true,
+        "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+        "chronological": true,
+        "duplicate_dates": 0,
+        "duplicate_ohlc_rows": 0,
+        "extra_sessions_not_in_reference": [
+          "2026-09-29"
+        ],
+        "first_date": "2016-01-04",
+        "high_low_inconsistent_rows": 0,
+        "inf_values": 0,
+        "last_date": "2026-09-29",
+        "missing_sessions": [],
+        "n_missing_sessions": 0,
+        "nan_values": 0,
+        "non_positive_prices": 0,
+        "reference_sessions_in_range": 2699,
+        "rows": 2700,
+        "zero_volume_rows": 0
+      },
+      "SPY": {
+        "adjusted_close_available": true,
+        "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+        "chronological": true,
+        "duplicate_dates": 0,
+        "duplicate_ohlc_rows": 0,
+        "extra_sessions_not_in_reference": [
+          "2026-09-29"
+        ],
+        "first_date": "2016-01-04",
+        "high_low_inconsistent_rows": 0,
+        "inf_values": 0,
+        "last_date": "2026-09-29",
+        "missing_sessions": [],
+        "n_missing_sessions": 0,
+        "nan_values": 0,
+        "non_positive_prices": 0,
+        "reference_sessions_in_range": 2699,
+        "rows": 2700,
+        "zero_volume_rows": 0
+      }
+    },
+    "determinism": {
+      "all_identical_across_passes": true,
+      "normalization_idempotent": true,
+      "per_symbol": {
+        "AAPL": {
+          "identical": true,
+          "pass1_sha256": "e4f48991f876d8e85fe85fc434065603dd1f2e4e4db2c69f45082a25d4f0cde8",
+          "pass2_sha256": "e4f48991f876d8e85fe85fc434065603dd1f2e4e4db2c69f45082a25d4f0cde8"
+        },
+        "AXP": {
+          "identical": true,
+          "pass1_sha256": "8bc3d8ad48ebec9b62597747c8be2bcac3bbabd4a6803b3303f897ae4164d595",
+          "pass2_sha256": "8bc3d8ad48ebec9b62597747c8be2bcac3bbabd4a6803b3303f897ae4164d595"
+        },
+        "BA": {
+          "identical": true,
+          "pass1_sha256": "7044cd8aabc21c169d0463c6ca344c7ed4b2951daa3a135fb19c24e26a7af4a9",
+          "pass2_sha256": "7044cd8aabc21c169d0463c6ca344c7ed4b2951daa3a135fb19c24e26a7af4a9"
+        },
+        "CAT": {
+          "identical": true,
+          "pass1_sha256": "b12fb147c4ff4dfe1b876d085fa54efb61da224048afb7aead2b37342b143613",
+          "pass2_sha256": "b12fb147c4ff4dfe1b876d085fa54efb61da224048afb7aead2b37342b143613"
+        },
+        "CSCO": {
+          "identical": true,
+          "pass1_sha256": "efeb080e4f61f7fba80298a52c68cc7282748d00ccba3ac5f3651ffb8c9362d6",
+          "pass2_sha256": "efeb080e4f61f7fba80298a52c68cc7282748d00ccba3ac5f3651ffb8c9362d6"
+        },
+        "CVX": {
+          "identical": true,
+          "pass1_sha256": "54923b10212d812b8883bbf22df5624a7afb51b03b76faf2a3befd251bece528",
+          "pass2_sha256": "54923b10212d812b8883bbf22df5624a7afb51b03b76faf2a3befd251bece528"
+        },
+        "DIS": {
+          "identical": true,
+          "pass1_sha256": "0e9f427edef2c0b50e934164d062da5561b40083b7fc72a9044fe67fe7b4f4b1",
+          "pass2_sha256": "0e9f427edef2c0b50e934164d062da5561b40083b7fc72a9044fe67fe7b4f4b1"
+        },
+        "GE": {
+          "identical": true,
+          "pass1_sha256": "7bef823a1de64511d6e39e2ba7758b2585bdcc7673aa196828223e3283ae799d",
+          "pass2_sha256": "7bef823a1de64511d6e39e2ba7758b2585bdcc7673aa196828223e3283ae799d"
+        },
+        "GS": {
+          "identical": true,
+          "pass1_sha256": "c41dfc3e587f397aa00015aa79fe8a7f488fb996d5144c0c6c979a8cfd0cb20a",
+          "pass2_sha256": "c41dfc3e587f397aa00015aa79fe8a7f488fb996d5144c0c6c979a8cfd0cb20a"
+        },
+        "HD": {
+          "identical": true,
+          "pass1_sha256": "ed54b7287f9296b1ce5980ef35678a8d1cf437b57efd245147168f248a855994",
+          "pass2_sha256": "ed54b7287f9296b1ce5980ef35678a8d1cf437b57efd245147168f248a855994"
+        },
+        "IBM": {
+          "identical": true,
+          "pass1_sha256": "fffaaef90fbc287f0f786d26cd14de617518d2dc8fd9894afed06bc2c5ef4b90",
+          "pass2_sha256": "fffaaef90fbc287f0f786d26cd14de617518d2dc8fd9894afed06bc2c5ef4b90"
+        },
+        "INTC": {
+          "identical": true,
+          "pass1_sha256": "3beeb58f36117ced7f8b76be213e18cdfc0892b58a947275d144784a75d54b0d",
+          "pass2_sha256": "3beeb58f36117ced7f8b76be213e18cdfc0892b58a947275d144784a75d54b0d"
+        },
+        "JNJ": {
+          "identical": true,
+          "pass1_sha256": "7f7592c70b6715374a123e0a7d31e654e8d20bb0406e6f25990ac4ef0264d492",
+          "pass2_sha256": "7f7592c70b6715374a123e0a7d31e654e8d20bb0406e6f25990ac4ef0264d492"
+        },
+        "JPM": {
+          "identical": true,
+          "pass1_sha256": "0b988a00747533632a27f6b8f42e42f505059be7f062cca3feff8269010d5aaf",
+          "pass2_sha256": "0b988a00747533632a27f6b8f42e42f505059be7f062cca3feff8269010d5aaf"
+        },
+        "KO": {
+          "identical": true,
+          "pass1_sha256": "e5f77664d929cd05c4823d861691887b39dd8778a8580da64f3aba57dc4994e1",
+          "pass2_sha256": "e5f77664d929cd05c4823d861691887b39dd8778a8580da64f3aba57dc4994e1"
+        },
+        "MCD": {
+          "identical": true,
+          "pass1_sha256": "81cbcbd9f0d591131f38e21e1fa452704755070d2f5655cdcc6b498061d1fe84",
+          "pass2_sha256": "81cbcbd9f0d591131f38e21e1fa452704755070d2f5655cdcc6b498061d1fe84"
+        },
+        "MMM": {
+          "identical": true,
+          "pass1_sha256": "b701831e5135e8078ec21f00822c4ef1d21cc5692bcef1831f7de3c1855d574d",
+          "pass2_sha256": "b701831e5135e8078ec21f00822c4ef1d21cc5692bcef1831f7de3c1855d574d"
+        },
+        "MRK": {
+          "identical": true,
+          "pass1_sha256": "223a8dcd8c9e12ecd2772b36b5fcc93e8414b40b344613578fff48674e6f52a8",
+          "pass2_sha256": "223a8dcd8c9e12ecd2772b36b5fcc93e8414b40b344613578fff48674e6f52a8"
+        },
+        "MSFT": {
+          "identical": true,
+          "pass1_sha256": "2c01bcaaa826892583c604689959871de263cbd2979ca5166a1b1f121d8969f3",
+          "pass2_sha256": "2c01bcaaa826892583c604689959871de263cbd2979ca5166a1b1f121d8969f3"
+        },
+        "NKE": {
+          "identical": true,
+          "pass1_sha256": "62cd8b165cb4a1ff0818a58267ef909a9d93002383b02e28973c07e326a43853",
+          "pass2_sha256": "62cd8b165cb4a1ff0818a58267ef909a9d93002383b02e28973c07e326a43853"
+        },
+        "PFE": {
+          "identical": true,
+          "pass1_sha256": "c16b557caa1bfe06dd656d12c3179a5274b7e772d9552a7ae6b9d5827d967ee2",
+          "pass2_sha256": "c16b557caa1bfe06dd656d12c3179a5274b7e772d9552a7ae6b9d5827d967ee2"
+        },
+        "PG": {
+          "identical": true,
+          "pass1_sha256": "b55ba786222f437d5972552417b9dcfe517c65db25e9ff678b2e9ba3f913afcd",
+          "pass2_sha256": "b55ba786222f437d5972552417b9dcfe517c65db25e9ff678b2e9ba3f913afcd"
+        },
+        "QQQ": {
+          "identical": true,
+          "pass1_sha256": "21e35e61c336a8d9a8bf6af098e41b4fee76baf7a6ff3a1afa1e333417e18def",
+          "pass2_sha256": "21e35e61c336a8d9a8bf6af098e41b4fee76baf7a6ff3a1afa1e333417e18def"
+        },
+        "RTX": {
+          "identical": true,
+          "pass1_sha256": "4e01f25f74132f141a766764f204191b596b56a3404c99ace339df695ad445b7",
+          "pass2_sha256": "4e01f25f74132f141a766764f204191b596b56a3404c99ace339df695ad445b7"
+        },
+        "SPY": {
+          "identical": true,
+          "pass1_sha256": "7f98ebe79429026c94fddfd40e647104950104162faf88e815926556d4baec49",
+          "pass2_sha256": "7f98ebe79429026c94fddfd40e647104950104162faf88e815926556d4baec49"
+        },
+        "TRV": {
+          "identical": true,
+          "pass1_sha256": "2e29b2dc89e3ba4c8c461e4428a3eec7623ceb1e01eb139f36527c4a0f35d962",
+          "pass2_sha256": "2e29b2dc89e3ba4c8c461e4428a3eec7623ceb1e01eb139f36527c4a0f35d962"
+        },
+        "UNH": {
+          "identical": true,
+          "pass1_sha256": "0ef6d1f0b572c7f9e5cdd2275a96f54365294f4e25f4c5270e981e74d9dbd279",
+          "pass2_sha256": "0ef6d1f0b572c7f9e5cdd2275a96f54365294f4e25f4c5270e981e74d9dbd279"
+        },
+        "V": {
+          "identical": true,
+          "pass1_sha256": "e9c6cad35f8e3f8f3cc9fb7d7937ca6802910b1ad4f2361331d4ac1b51b7c03d",
+          "pass2_sha256": "e9c6cad35f8e3f8f3cc9fb7d7937ca6802910b1ad4f2361331d4ac1b51b7c03d"
+        },
+        "VZ": {
+          "identical": true,
+          "pass1_sha256": "91e809c6ccf79815e99b6b4ce613d844b696cb06c69b41b75572aa37e18c07f5",
+          "pass2_sha256": "91e809c6ccf79815e99b6b4ce613d844b696cb06c69b41b75572aa37e18c07f5"
+        },
+        "WMT": {
+          "identical": true,
+          "pass1_sha256": "fcd2d015a48fa8315c453e160e8e2ce4bf1375dbc84c79148151ea280b7e3ee5",
+          "pass2_sha256": "fcd2d015a48fa8315c453e160e8e2ce4bf1375dbc84c79148151ea280b7e3ee5"
+        },
+        "XOM": {
+          "identical": true,
+          "pass1_sha256": "4e9ef6628e29a28b99a2599dddbf1860f25f96ff1d4679a53efa3c8495f094b3",
+          "pass2_sha256": "4e9ef6628e29a28b99a2599dddbf1860f25f96ff1d4679a53efa3c8495f094b3"
+        }
+      }
+    },
+    "events": [
+      {
+        "E": "2020-08-31",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "provider Stock_Splits record 4.0 on 2020-08-31 (not linked to a documented event)",
+        "exclusion_sessions": [],
+        "id": "AAPL_provider_split_2020-08-31",
+        "provider_records_in_window": [
+          {
+            "date": "2020-08-31",
+            "kind": "split",
+            "value": 4.0
+          }
+        ],
+        "public_date": "2020-08-31",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2020-08-31": {
+            "adjusted": 0.0339118952767854,
+            "spy": -0.0036223554871858132,
+            "unadjusted_close": 0.03391214827961697
+          }
+        },
+        "symbol": "AAPL",
+        "type": "split",
+        "z": {
+          "2020-08-31": 2.014629231768017
+        }
+      },
+      {
+        "E": "2019-02-25",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "Wikipedia 'Wabtec': GE Transportation merger completed February 25, 2019; GE shareholders own 24.3% of the merged company (distribution to GE shareholders)",
+        "exclusion_sessions": [],
+        "id": "GE_wabtec_2019",
+        "provider_records_in_window": [
+          {
+            "date": "2019-02-26",
+            "kind": "split",
+            "value": 1.04
+          }
+        ],
+        "public_date": "2019-02-25",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2019-02-25": {
+            "adjusted": 0.06391375418448675,
+            "spy": 0.0013614379038524582,
+            "unadjusted_close": 0.06391350039161248
+          },
+          "2019-02-26": {
+            "adjusted": 0.024620807011406676,
+            "spy": -0.0007156106943240204,
+            "unadjusted_close": 0.024621098985820877
+          }
+        },
+        "symbol": "GE",
+        "type": "spin_off",
+        "z": {
+          "2019-02-25": 2.040911883679044,
+          "2019-02-26": 0.8057244948181642
+        }
+      },
+      {
+        "E": "2021-07-30",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "Wikipedia 'General Electric': reverse stock split 1-for-8 (announced / completed July 30, 2021)",
+        "exclusion_sessions": [],
+        "id": "GE_reverse_split_2021",
+        "provider_records_in_window": [
+          {
+            "date": "2021-08-02",
+            "kind": "split",
+            "value": 0.125
+          }
+        ],
+        "public_date": "2021-07-30",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2021-07-30": {
+            "adjusted": -0.025582983803564163,
+            "spy": -0.004856369182112297,
+            "unadjusted_close": -0.02558310214881243
+          },
+          "2021-08-02": {
+            "adjusted": -0.028957561327319414,
+            "spy": -0.0020981547987080074,
+            "unadjusted_close": -0.02895756409912409
+          }
+        },
+        "symbol": "GE",
+        "type": "reverse_split",
+        "z": {
+          "2021-07-30": -1.185324361430361,
+          "2021-08-02": -1.5217957115466525
+        }
+      },
+      {
+        "E": "2023-01-04",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "Wikipedia 'GE HealthCare': spin-off completed and trading began January 4, 2023",
+        "exclusion_sessions": [],
+        "id": "GE_healthcare_2023",
+        "provider_records_in_window": [
+          {
+            "date": "2023-01-04",
+            "kind": "split",
+            "value": 1.281
+          }
+        ],
+        "public_date": "2023-01-04",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2023-01-04": {
+            "adjusted": 0.058204363981174234,
+            "spy": 0.00772038610080128,
+            "unadjusted_close": 0.058204279936263204
+          }
+        },
+        "symbol": "GE",
+        "type": "spin_off",
+        "z": {
+          "2023-01-04": 3.558306751236013
+        }
+      },
+      {
+        "E": "2024-04-02",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "Wikipedia 'GE Vernova' / 'General Electric': spin-off, GE Vernova listed April 2, 2024",
+        "exclusion_sessions": [],
+        "id": "GE_vernova_2024",
+        "provider_records_in_window": [
+          {
+            "date": "2024-04-02",
+            "kind": "split",
+            "value": 1.253
+          }
+        ],
+        "public_date": "2024-04-02",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2024-04-02": {
+            "adjusted": -0.0248804991660313,
+            "spy": -0.006357800039808792,
+            "unadjusted_close": -0.02488077173087977
+          }
+        },
+        "symbol": "GE",
+        "type": "spin_off",
+        "z": {
+          "2024-04-02": -1.641844072876313
+        }
+      },
+      {
+        "E": "2021-11-04",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "Wikipedia 'Kyndryl': separation completed and NYSE trading began November 4, 2021",
+        "exclusion_sessions": [],
+        "id": "IBM_kyndryl_2021",
+        "provider_records_in_window": [
+          {
+            "date": "2021-11-04",
+            "kind": "split",
+            "value": 1.046
+          }
+        ],
+        "public_date": "2021-11-04",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2021-11-04": {
+            "adjusted": -0.005670540847101502,
+            "spy": 0.00471257802662195,
+            "unadjusted_close": -0.005670609613602551
+          }
+        },
+        "symbol": "IBM",
+        "type": "spin_off",
+        "z": {
+          "2021-11-04": -0.6953347158132595
+        }
+      },
+      {
+        "E": null,
+        "determination": "NO_ADJUSTMENT_REQUIRED",
+        "evidence": "Wikipedia 'Kenvue': IPO May 4, 2023; exchange offer launched July 24, 2023 letting J&J holders exchange all, some or none of their shares (non-pro-rata split-off); completion date not stated",
+        "exclusion_sessions": [],
+        "id": "JNJ_kenvue_2023",
+        "provider_records_in_window": [],
+        "public_date": null,
+        "reason": "non-pro-rata exchange offer: no distribution to all holders, no price adjustment expected",
+        "returns": {},
+        "symbol": "JNJ",
+        "type": "exchange_offer",
+        "z": {}
+      },
+      {
+        "E": "2024-04-01",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "Wikipedia 'Solventum': spin-off completed April 1, 2024; 3M retained about 19.9%",
+        "exclusion_sessions": [],
+        "id": "MMM_solventum_2024",
+        "provider_records_in_window": [
+          {
+            "date": "2024-04-01",
+            "kind": "split",
+            "value": 1.196
+          }
+        ],
+        "public_date": "2024-04-01",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2024-04-01": {
+            "adjusted": 0.06012952151293405,
+            "spy": -0.0017399874438354113,
+            "unadjusted_close": 0.06012927439568827
+          }
+        },
+        "symbol": "MMM",
+        "type": "spin_off",
+        "z": {
+          "2024-04-01": 2.9987271511008537
+        }
+      },
+      {
+        "E": "2021-06-03",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "Wikipedia 'Organon & Co.': spinoff completed, Organon publicly traded June 3, 2021",
+        "exclusion_sessions": [],
+        "id": "MRK_organon_2021",
+        "provider_records_in_window": [
+          {
+            "date": "2021-06-03",
+            "kind": "split",
+            "value": 1.048
+          }
+        ],
+        "public_date": "2021-06-03",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2021-06-03": {
+            "adjusted": 0.020926462334904583,
+            "spy": -0.003711387599404259,
+            "unadjusted_close": 0.020926419559905485
+          }
+        },
+        "symbol": "MRK",
+        "type": "spin_off",
+        "z": {
+          "2021-06-03": 1.9317897721520079
+        }
+      },
+      {
+        "E": "2020-11-16",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "Wikipedia 'Viatris': on November 16, 2020 Upjohn merged with Mylan in a Reverse Morris Trust transaction (RMT structure implies a distribution of Upjohn to Pfizer shareholders - inference)",
+        "exclusion_sessions": [],
+        "id": "PFE_upjohn_viatris_2020",
+        "provider_records_in_window": [
+          {
+            "date": "2020-11-17",
+            "kind": "split",
+            "value": 1.054
+          }
+        ],
+        "public_date": "2020-11-16",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2020-11-16": {
+            "adjusted": -0.03340244553519289,
+            "spy": 0.012482498417893062,
+            "unadjusted_close": -0.033402343744306506
+          },
+          "2020-11-17": {
+            "adjusted": 0.01757736920490771,
+            "spy": -0.005378234054160713,
+            "unadjusted_close": 0.017577301632812015
+          }
+        },
+        "symbol": "PFE",
+        "type": "spin_off",
+        "z": {
+          "2020-11-16": -2.936853034421775,
+          "2020-11-17": 1.3770845499099307
+        }
+      },
+      {
+        "E": "2020-04-03",
+        "determination": "CONTINUOUS",
+        "evidence": "Wikipedia 'RTX Corporation': merger completed April 3, 2020; UTC the legal survivor, ticker RTX",
+        "exclusion_sessions": [],
+        "id": "RTX_merger_2020",
+        "member": "UTX",
+        "provider_records_in_window": [
+          {
+            "date": "2020-04-03",
+            "kind": "split",
+            "value": 1.589
+          }
+        ],
+        "public_date": "2020-04-03",
+        "reason": "121 reference sessions around E, 0 missing",
+        "returns": {
+          "2020-04-03": {
+            "adjusted": -0.07756350964075742,
+            "spy": -0.014454279435799355,
+            "unadjusted_close": -0.07756343436181479
+          }
+        },
+        "symbol": "RTX",
+        "type": "merger_continuity",
+        "z": {
+          "2020-04-03": -2.0483414860296754
+        }
+      },
+      {
+        "E": "2020-04-03",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "Wikipedia 'Carrier Global': separation completed April 2020; 'Otis Worldwide': Otis common stock began trading on the NYSE April 3, 2020",
+        "exclusion_sessions": [],
+        "id": "RTX_carrier_otis_2020",
+        "member": "UTX",
+        "provider_records_in_window": [
+          {
+            "date": "2020-04-03",
+            "kind": "split",
+            "value": 1.589
+          }
+        ],
+        "public_date": "2020-04-03",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2020-04-03": {
+            "adjusted": -0.07756350964075742,
+            "spy": -0.014454279435799355,
+            "unadjusted_close": -0.07756343436181479
+          }
+        },
+        "symbol": "RTX",
+        "type": "spin_off",
+        "z": {
+          "2020-04-03": -2.0483414860296754
+        }
+      },
+      {
+        "E": "2024-02-26",
+        "determination": "PROPERLY_ADJUSTED",
+        "evidence": "provider Stock_Splits record 3.0 on 2024-02-26 (not linked to a documented event)",
+        "exclusion_sessions": [],
+        "id": "WMT_provider_split_2024-02-26",
+        "provider_records_in_window": [
+          {
+            "date": "2024-02-26",
+            "kind": "split",
+            "value": 3.0
+          }
+        ],
+        "public_date": "2024-02-26",
+        "reason": "provider record in window and no abnormal adjusted move",
+        "returns": {
+          "2024-02-26": {
+            "adjusted": 0.018455145695149833,
+            "spy": -0.0036624274081829,
+            "unadjusted_close": 0.018455194940350417
+          }
+        },
+        "symbol": "WMT",
+        "type": "split",
+        "z": {
+          "2024-02-26": 2.249105621931379
+        }
+      }
+    ],
+    "per_stock": {
+      "AAPL": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [
+          {
+            "E": "2020-08-31",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "provider Stock_Splits record 4.0 on 2020-08-31 (not linked to a documented event)",
+            "exclusion_sessions": [],
+            "id": "AAPL_provider_split_2020-08-31",
+            "provider_records_in_window": [
+              {
+                "date": "2020-08-31",
+                "kind": "split",
+                "value": 4.0
+              }
+            ],
+            "public_date": "2020-08-31",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2020-08-31": {
+                "adjusted": 0.0339118952767854,
+                "spy": -0.0036223554871858132,
+                "unadjusted_close": 0.03391214827961697
+              }
+            },
+            "symbol": "AAPL",
+            "type": "split",
+            "z": {
+              "2020-08-31": 2.014629231768017
+            }
+          }
+        ],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [],
+        "provider_records": [
+          {
+            "date": "2020-08-31",
+            "kind": "split",
+            "value": 4.0
+          }
+        ],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "AXP": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.19238573778124057,
+            "date": "2020-03-13",
+            "excess_return": 0.10689913895265302,
+            "z": 9.181915816331719
+          },
+          {
+            "adjusted_return": 0.2138793880103873,
+            "date": "2020-11-09",
+            "excess_return": 0.20131379584987585,
+            "z": 13.12892700698915
+          },
+          {
+            "adjusted_return": 0.08922154953073846,
+            "date": "2022-01-25",
+            "excess_return": 0.10143039323224257,
+            "z": 6.527533360076494
+          },
+          {
+            "adjusted_return": 0.10540157513913462,
+            "date": "2023-01-27",
+            "excess_return": 0.10310368624205091,
+            "z": 10.848381347279721
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "BA": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": -0.1815072666673756,
+            "date": "2020-03-11",
+            "excess_return": -0.13275876462242986,
+            "z": -6.989139132081449
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "CAT": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.1163461083627102,
+            "date": "2025-10-29",
+            "excess_return": 0.11586571216425146,
+            "z": 7.943923450270475
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "CSCO": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": -0.11185034871239086,
+            "date": "2020-08-13",
+            "excess_return": -0.11004272582263375,
+            "z": -8.026673327523316
+          },
+          {
+            "adjusted_return": -0.13730360221092786,
+            "date": "2022-05-19",
+            "excess_return": -0.13117920498305302,
+            "z": -12.450593552247952
+          },
+          {
+            "adjusted_return": -0.12321718868855025,
+            "date": "2026-02-12",
+            "excess_return": -0.10776836913154852,
+            "z": -9.070898876169517
+          },
+          {
+            "adjusted_return": 0.13409242640184305,
+            "date": "2026-05-14",
+            "excess_return": 0.12619817691708146,
+            "z": 7.848324057701638
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "CVX": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": -0.22124790437508657,
+            "date": "2020-03-18",
+            "excess_return": -0.1706150459206991,
+            "z": -10.996522115158319
+          },
+          {
+            "adjusted_return": 0.11595221314712512,
+            "date": "2020-11-09",
+            "excess_return": 0.10338662098661366,
+            "z": 6.816390052723625
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "DIS": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.11543730157781384,
+            "date": "2019-04-12",
+            "excess_return": 0.10867129172792489,
+            "z": 10.9915648806463
+          },
+          {
+            "adjusted_return": 0.11870400844057682,
+            "date": "2020-11-09",
+            "excess_return": 0.10613841628006537,
+            "z": 8.183741515330254
+          },
+          {
+            "adjusted_return": 0.1359492866257097,
+            "date": "2020-12-11",
+            "excess_return": 0.1371217595068045,
+            "z": 7.139442375844919
+          },
+          {
+            "adjusted_return": -0.13163163470664918,
+            "date": "2022-11-09",
+            "excess_return": -0.11102974937334342,
+            "z": -12.301008919992288
+          },
+          {
+            "adjusted_return": 0.11498906489764105,
+            "date": "2024-02-08",
+            "excess_return": 0.11454735637591251,
+            "z": 8.808428257256624
+          },
+          {
+            "adjusted_return": 0.10762721769837524,
+            "date": "2025-05-07",
+            "excess_return": 0.10342168431571186,
+            "z": 8.055432324039366
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "GE": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [
+          {
+            "E": "2019-02-25",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "Wikipedia 'Wabtec': GE Transportation merger completed February 25, 2019; GE shareholders own 24.3% of the merged company (distribution to GE shareholders)",
+            "exclusion_sessions": [],
+            "id": "GE_wabtec_2019",
+            "provider_records_in_window": [
+              {
+                "date": "2019-02-26",
+                "kind": "split",
+                "value": 1.04
+              }
+            ],
+            "public_date": "2019-02-25",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2019-02-25": {
+                "adjusted": 0.06391375418448675,
+                "spy": 0.0013614379038524582,
+                "unadjusted_close": 0.06391350039161248
+              },
+              "2019-02-26": {
+                "adjusted": 0.024620807011406676,
+                "spy": -0.0007156106943240204,
+                "unadjusted_close": 0.024621098985820877
+              }
+            },
+            "symbol": "GE",
+            "type": "spin_off",
+            "z": {
+              "2019-02-25": 2.040911883679044,
+              "2019-02-26": 0.8057244948181642
+            }
+          },
+          {
+            "E": "2021-07-30",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "Wikipedia 'General Electric': reverse stock split 1-for-8 (announced / completed July 30, 2021)",
+            "exclusion_sessions": [],
+            "id": "GE_reverse_split_2021",
+            "provider_records_in_window": [
+              {
+                "date": "2021-08-02",
+                "kind": "split",
+                "value": 0.125
+              }
+            ],
+            "public_date": "2021-07-30",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2021-07-30": {
+                "adjusted": -0.025582983803564163,
+                "spy": -0.004856369182112297,
+                "unadjusted_close": -0.02558310214881243
+              },
+              "2021-08-02": {
+                "adjusted": -0.028957561327319414,
+                "spy": -0.0020981547987080074,
+                "unadjusted_close": -0.02895756409912409
+              }
+            },
+            "symbol": "GE",
+            "type": "reverse_split",
+            "z": {
+              "2021-07-30": -1.185324361430361,
+              "2021-08-02": -1.5217957115466525
+            }
+          },
+          {
+            "E": "2023-01-04",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "Wikipedia 'GE HealthCare': spin-off completed and trading began January 4, 2023",
+            "exclusion_sessions": [],
+            "id": "GE_healthcare_2023",
+            "provider_records_in_window": [
+              {
+                "date": "2023-01-04",
+                "kind": "split",
+                "value": 1.281
+              }
+            ],
+            "public_date": "2023-01-04",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2023-01-04": {
+                "adjusted": 0.058204363981174234,
+                "spy": 0.00772038610080128,
+                "unadjusted_close": 0.058204279936263204
+              }
+            },
+            "symbol": "GE",
+            "type": "spin_off",
+            "z": {
+              "2023-01-04": 3.558306751236013
+            }
+          },
+          {
+            "E": "2024-04-02",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "Wikipedia 'GE Vernova' / 'General Electric': spin-off, GE Vernova listed April 2, 2024",
+            "exclusion_sessions": [],
+            "id": "GE_vernova_2024",
+            "provider_records_in_window": [
+              {
+                "date": "2024-04-02",
+                "kind": "split",
+                "value": 1.253
+              }
+            ],
+            "public_date": "2024-04-02",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2024-04-02": {
+                "adjusted": -0.0248804991660313,
+                "spy": -0.006357800039808792,
+                "unadjusted_close": -0.02488077173087977
+              }
+            },
+            "symbol": "GE",
+            "type": "spin_off",
+            "z": {
+              "2024-04-02": -1.641844072876313
+            }
+          }
+        ],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": -0.11295652876641349,
+            "date": "2019-08-15",
+            "excess_return": -0.11559836783491073,
+            "z": -7.9517739169113595
+          },
+          {
+            "adjusted_return": 0.1031543991924575,
+            "date": "2020-01-29",
+            "excess_return": 0.10398071759795047,
+            "z": 6.195675383054378
+          }
+        ],
+        "provider_records": [
+          {
+            "date": "2016-02-25",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 1.102261
+          },
+          {
+            "date": "2016-06-16",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 1.102261
+          },
+          {
+            "date": "2016-09-15",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 1.102261
+          },
+          {
+            "date": "2016-12-22",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 1.150185
+          },
+          {
+            "date": "2017-02-23",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 1.150185
+          },
+          {
+            "date": "2017-06-15",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 1.150185
+          },
+          {
+            "date": "2017-09-15",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 1.150185
+          },
+          {
+            "date": "2017-12-26",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 0.575092
+          },
+          {
+            "date": "2018-02-23",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 0.575092
+          },
+          {
+            "date": "2018-06-15",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 0.575092
+          },
+          {
+            "date": "2018-09-14",
+            "kind": "large_dividend",
+            "median_positive_dividend": 0.1719235,
+            "value": 0.575092
+          },
+          {
+            "date": "2019-02-26",
+            "kind": "split",
+            "value": 1.04
+          },
+          {
+            "date": "2021-08-02",
+            "kind": "split",
+            "value": 0.125
+          },
+          {
+            "date": "2023-01-04",
+            "kind": "split",
+            "value": 1.281
+          },
+          {
+            "date": "2024-04-02",
+            "kind": "split",
+            "value": 1.253
+          }
+        ],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "GS": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.13097769871592235,
+            "date": "2024-11-06",
+            "excess_return": 0.10611218488790053,
+            "z": 8.962333315057402
+          }
+        ],
+        "provider_records": [
+          {
+            "date": "2025-08-29",
+            "kind": "large_dividend",
+            "median_positive_dividend": 1.25,
+            "value": 4.0
+          },
+          {
+            "date": "2025-12-02",
+            "kind": "large_dividend",
+            "median_positive_dividend": 1.25,
+            "value": 4.0
+          },
+          {
+            "date": "2026-03-02",
+            "kind": "large_dividend",
+            "median_positive_dividend": 1.25,
+            "value": 4.5
+          },
+          {
+            "date": "2026-06-01",
+            "kind": "large_dividend",
+            "median_positive_dividend": 1.25,
+            "value": 4.5
+          },
+          {
+            "date": "2026-09-01",
+            "kind": "large_dividend",
+            "median_positive_dividend": 1.25,
+            "value": 5.0
+          }
+        ],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "HD": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "IBM": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [
+          {
+            "E": "2021-11-04",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "Wikipedia 'Kyndryl': separation completed and NYSE trading began November 4, 2021",
+            "exclusion_sessions": [],
+            "id": "IBM_kyndryl_2021",
+            "provider_records_in_window": [
+              {
+                "date": "2021-11-04",
+                "kind": "split",
+                "value": 1.046
+              }
+            ],
+            "public_date": "2021-11-04",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2021-11-04": {
+                "adjusted": -0.005670540847101502,
+                "spy": 0.00471257802662195,
+                "unadjusted_close": -0.005670609613602551
+              }
+            },
+            "symbol": "IBM",
+            "type": "spin_off",
+            "z": {
+              "2021-11-04": -0.6953347158132595
+            }
+          }
+        ],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.12964175019904634,
+            "date": "2025-01-30",
+            "excess_return": 0.12427478377963364,
+            "z": 11.521894547154472
+          },
+          {
+            "adjusted_return": -0.1314746233312285,
+            "date": "2026-02-23",
+            "excess_return": -0.12126323920376114,
+            "z": -6.332978499380956
+          },
+          {
+            "adjusted_return": -0.25207595513952263,
+            "date": "2026-07-14",
+            "excess_return": -0.2556265930562094,
+            "z": -7.1579889761749635
+          }
+        ],
+        "provider_records": [
+          {
+            "date": "2021-11-04",
+            "kind": "split",
+            "value": 1.046
+          }
+        ],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "INTC": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.19521306513213,
+            "date": "2020-03-13",
+            "excess_return": 0.10972646630354244,
+            "z": 6.898089110617796
+          },
+          {
+            "adjusted_return": -0.16241720843191287,
+            "date": "2020-07-24",
+            "excess_return": -0.15597674986040022,
+            "z": -12.104617308440327
+          },
+          {
+            "adjusted_return": -0.10575137581139515,
+            "date": "2020-10-23",
+            "excess_return": -0.10914632089774068,
+            "z": -11.228261022146695
+          },
+          {
+            "adjusted_return": -0.11678569917720538,
+            "date": "2021-10-22",
+            "excess_return": -0.11574941729846355,
+            "z": -15.81061115080566
+          },
+          {
+            "adjusted_return": -0.08562061460295212,
+            "date": "2022-07-29",
+            "excess_return": -0.10019937306542825,
+            "z": -8.711868326138825
+          },
+          {
+            "adjusted_return": -0.11907162441308106,
+            "date": "2024-01-26",
+            "excess_return": -0.11780123551728228,
+            "z": -6.505988393077561
+          },
+          {
+            "adjusted_return": -0.2605851455985698,
+            "date": "2024-08-02",
+            "excess_return": -0.2419670239124514,
+            "z": -13.62506583038217
+          },
+          {
+            "adjusted_return": 0.22771084992605384,
+            "date": "2025-09-18",
+            "excess_return": 0.22303847943546384,
+            "z": 7.502687255646254
+          },
+          {
+            "adjusted_return": 0.2359988383395475,
+            "date": "2026-04-24",
+            "excess_return": 0.2282495087805938,
+            "z": 6.247494474716633
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "JNJ": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [
+          {
+            "E": null,
+            "determination": "NO_ADJUSTMENT_REQUIRED",
+            "evidence": "Wikipedia 'Kenvue': IPO May 4, 2023; exchange offer launched July 24, 2023 letting J&J holders exchange all, some or none of their shares (non-pro-rata split-off); completion date not stated",
+            "exclusion_sessions": [],
+            "id": "JNJ_kenvue_2023",
+            "provider_records_in_window": [],
+            "public_date": null,
+            "reason": "non-pro-rata exchange offer: no distribution to all holders, no price adjustment expected",
+            "returns": {},
+            "symbol": "JNJ",
+            "type": "exchange_offer",
+            "z": {}
+          }
+        ],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "JPM": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.13539252825629955,
+            "date": "2020-11-09",
+            "excess_return": 0.1228269360957881,
+            "z": 7.6569446875630085
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "KO": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "MCD": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "MMM": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [
+          {
+            "E": "2024-04-01",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "Wikipedia 'Solventum': spin-off completed April 1, 2024; 3M retained about 19.9%",
+            "exclusion_sessions": [],
+            "id": "MMM_solventum_2024",
+            "provider_records_in_window": [
+              {
+                "date": "2024-04-01",
+                "kind": "split",
+                "value": 1.196
+              }
+            ],
+            "public_date": "2024-04-01",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2024-04-01": {
+                "adjusted": 0.06012952151293405,
+                "spy": -0.0017399874438354113,
+                "unadjusted_close": 0.06012927439568827
+              }
+            },
+            "symbol": "MMM",
+            "type": "spin_off",
+            "z": {
+              "2024-04-01": 2.9987271511008537
+            }
+          }
+        ],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": -0.1294501866129666,
+            "date": "2019-04-25",
+            "excess_return": -0.12883406563514255,
+            "z": -18.212594065958665
+          },
+          {
+            "adjusted_return": -0.1103498449071122,
+            "date": "2024-01-23",
+            "excess_return": -0.11326632958412663,
+            "z": -10.906704783629957
+          },
+          {
+            "adjusted_return": 0.22990601283140366,
+            "date": "2024-07-26",
+            "excess_return": 0.21870621925390754,
+            "z": 14.64764534293037
+          }
+        ],
+        "provider_records": [
+          {
+            "date": "2024-04-01",
+            "kind": "split",
+            "value": 1.196
+          }
+        ],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "MRK": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [
+          {
+            "E": "2021-06-03",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "Wikipedia 'Organon & Co.': spinoff completed, Organon publicly traded June 3, 2021",
+            "exclusion_sessions": [],
+            "id": "MRK_organon_2021",
+            "provider_records_in_window": [
+              {
+                "date": "2021-06-03",
+                "kind": "split",
+                "value": 1.048
+              }
+            ],
+            "public_date": "2021-06-03",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2021-06-03": {
+                "adjusted": 0.020926462334904583,
+                "spy": -0.003711387599404259,
+                "unadjusted_close": 0.020926419559905485
+              }
+            },
+            "symbol": "MRK",
+            "type": "spin_off",
+            "z": {
+              "2021-06-03": 1.9317897721520079
+            }
+          }
+        ],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": -0.09863041219013868,
+            "date": "2021-11-05",
+            "excess_return": -0.10209997914242441,
+            "z": -6.1709949102086545
+          }
+        ],
+        "provider_records": [
+          {
+            "date": "2021-06-03",
+            "kind": "split",
+            "value": 1.048
+          }
+        ],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "MSFT": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.15506739165511707,
+            "date": "2026-07-30",
+            "excess_return": 0.13830164796174138,
+            "z": 6.495658567601671
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "NKE": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.10964817529448245,
+            "date": "2017-06-30",
+            "excess_return": 0.10778366961090491,
+            "z": 10.879690037876058
+          },
+          {
+            "adjusted_return": 0.11129757269169427,
+            "date": "2018-06-29",
+            "excess_return": 0.10985827979798213,
+            "z": 11.082617036890687
+          },
+          {
+            "adjusted_return": 0.08761849156614243,
+            "date": "2020-09-23",
+            "excess_return": 0.11080948219956754,
+            "z": 8.763937668597988
+          },
+          {
+            "adjusted_return": 0.15531419874444508,
+            "date": "2021-06-25",
+            "excess_return": 0.15176206825926375,
+            "z": 14.339847795646895
+          },
+          {
+            "adjusted_return": -0.12808135377853558,
+            "date": "2022-09-30",
+            "excess_return": -0.11261786097138937,
+            "z": -9.462793224295481
+          },
+          {
+            "adjusted_return": -0.11825658778937598,
+            "date": "2023-12-22",
+            "excess_return": -0.12026624121983476,
+            "z": -7.98101349624534
+          },
+          {
+            "adjusted_return": -0.19980905896895795,
+            "date": "2024-06-28",
+            "excess_return": -0.19587373772979033,
+            "z": -15.090633846249665
+          },
+          {
+            "adjusted_return": 0.15190275232425754,
+            "date": "2025-06-27",
+            "excess_return": 0.14693432669943562,
+            "z": 6.159231847457322
+          },
+          {
+            "adjusted_return": -0.15505486799199353,
+            "date": "2026-04-01",
+            "excess_return": -0.16258939270155015,
+            "z": -10.13966146071763
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "PFE": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [
+          {
+            "E": "2020-11-16",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "Wikipedia 'Viatris': on November 16, 2020 Upjohn merged with Mylan in a Reverse Morris Trust transaction (RMT structure implies a distribution of Upjohn to Pfizer shareholders - inference)",
+            "exclusion_sessions": [],
+            "id": "PFE_upjohn_viatris_2020",
+            "provider_records_in_window": [
+              {
+                "date": "2020-11-17",
+                "kind": "split",
+                "value": 1.054
+              }
+            ],
+            "public_date": "2020-11-16",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2020-11-16": {
+                "adjusted": -0.03340244553519289,
+                "spy": 0.012482498417893062,
+                "unadjusted_close": -0.033402343744306506
+              },
+              "2020-11-17": {
+                "adjusted": 0.01757736920490771,
+                "spy": -0.005378234054160713,
+                "unadjusted_close": 0.017577301632812015
+              }
+            },
+            "symbol": "PFE",
+            "type": "spin_off",
+            "z": {
+              "2020-11-16": -2.936853034421775,
+              "2020-11-17": 1.3770845499099307
+            }
+          }
+        ],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.10855169205773851,
+            "date": "2021-11-05",
+            "excess_return": 0.10508212510545278,
+            "z": 7.700811154420778
+          }
+        ],
+        "provider_records": [
+          {
+            "date": "2020-11-17",
+            "kind": "split",
+            "value": 1.054
+          }
+        ],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "PG": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "RTX": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [
+          {
+            "E": "2020-04-03",
+            "determination": "CONTINUOUS",
+            "evidence": "Wikipedia 'RTX Corporation': merger completed April 3, 2020; UTC the legal survivor, ticker RTX",
+            "exclusion_sessions": [],
+            "id": "RTX_merger_2020",
+            "member": "UTX",
+            "provider_records_in_window": [
+              {
+                "date": "2020-04-03",
+                "kind": "split",
+                "value": 1.589
+              }
+            ],
+            "public_date": "2020-04-03",
+            "reason": "121 reference sessions around E, 0 missing",
+            "returns": {
+              "2020-04-03": {
+                "adjusted": -0.07756350964075742,
+                "spy": -0.014454279435799355,
+                "unadjusted_close": -0.07756343436181479
+              }
+            },
+            "symbol": "RTX",
+            "type": "merger_continuity",
+            "z": {
+              "2020-04-03": -2.0483414860296754
+            }
+          },
+          {
+            "E": "2020-04-03",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "Wikipedia 'Carrier Global': separation completed April 2020; 'Otis Worldwide': Otis common stock began trading on the NYSE April 3, 2020",
+            "exclusion_sessions": [],
+            "id": "RTX_carrier_otis_2020",
+            "member": "UTX",
+            "provider_records_in_window": [
+              {
+                "date": "2020-04-03",
+                "kind": "split",
+                "value": 1.589
+              }
+            ],
+            "public_date": "2020-04-03",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2020-04-03": {
+                "adjusted": -0.07756350964075742,
+                "spy": -0.014454279435799355,
+                "unadjusted_close": -0.07756343436181479
+              }
+            },
+            "symbol": "RTX",
+            "type": "spin_off",
+            "z": {
+              "2020-04-03": -2.0483414860296754
+            }
+          }
+        ],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": -0.10215443178647188,
+            "date": "2023-07-25",
+            "excess_return": -0.10488449567114133,
+            "z": -10.715406051272833
+          },
+          {
+            "adjusted_return": -0.09808119392047743,
+            "date": "2025-04-22",
+            "excess_return": -0.12409896347268401,
+            "z": -7.282711261562555
+          }
+        ],
+        "provider_records": [
+          {
+            "date": "2020-04-03",
+            "kind": "split",
+            "value": 1.589
+          }
+        ],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "TRV": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "UNH": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": -0.22379671909003496,
+            "date": "2025-04-17",
+            "excess_return": -0.2252233197989444,
+            "z": -8.81664388897508
+          },
+          {
+            "adjusted_return": -0.19605281603632985,
+            "date": "2026-01-27",
+            "excess_return": -0.20003701881306235,
+            "z": -11.474484826009142
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "V": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "VZ": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.11831197691954243,
+            "date": "2026-01-30",
+            "excess_return": 0.12129451094433352,
+            "z": 9.291234926898145
+          }
+        ],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "WMT": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [
+          {
+            "E": "2024-02-26",
+            "determination": "PROPERLY_ADJUSTED",
+            "evidence": "provider Stock_Splits record 3.0 on 2024-02-26 (not linked to a documented event)",
+            "exclusion_sessions": [],
+            "id": "WMT_provider_split_2024-02-26",
+            "provider_records_in_window": [
+              {
+                "date": "2024-02-26",
+                "kind": "split",
+                "value": 3.0
+              }
+            ],
+            "public_date": "2024-02-26",
+            "reason": "provider record in window and no abnormal adjusted move",
+            "returns": {
+              "2024-02-26": {
+                "adjusted": 0.018455145695149833,
+                "spy": -0.0036624274081829,
+                "unadjusted_close": 0.018455194940350417
+              }
+            },
+            "symbol": "WMT",
+            "type": "split",
+            "z": {
+              "2024-02-26": 2.249105621931379
+            }
+          }
+        ],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [
+          {
+            "adjusted_return": 0.10898369981867195,
+            "date": "2017-11-16",
+            "excess_return": 0.10048281497569445,
+            "z": 9.741756103295884
+          },
+          {
+            "adjusted_return": -0.11375754392890414,
+            "date": "2022-05-17",
+            "excess_return": -0.13432796049632645,
+            "z": -8.501854479958324
+          }
+        ],
+        "provider_records": [
+          {
+            "date": "2024-02-26",
+            "kind": "split",
+            "value": 3.0
+          }
+        ],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      },
+      "XOM": {
+        "eligibility": {
+          "1": {
+            "confirmation": {
+              "final_rows": 498,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 498
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1927,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1927
+            }
+          },
+          "3": {
+            "confirmation": {
+              "final_rows": 496,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 496
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1925,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1925
+            }
+          },
+          "5": {
+            "confirmation": {
+              "final_rows": 494,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "potential_labelled_rows": 494
+            },
+            "development": {
+              "eligible": true,
+              "final_rows": 1923,
+              "lost_corporate_action": 0,
+              "lost_missing_data": 0,
+              "lost_warm_up": 0,
+              "minimum": 1800,
+              "potential_labelled_rows": 1923
+            }
+          },
+          "eligible_all_horizons": true
+        },
+        "events": [],
+        "exclusion_event_sessions": [],
+        "extreme_moves": [],
+        "provider_records": [],
+        "validation": {
+          "adjusted_close_available": true,
+          "auto_adjust_close_vs_adj_close_max_rel_diff": 0.0,
+          "chronological": true,
+          "duplicate_dates": 0,
+          "duplicate_ohlc_rows": 0,
+          "extra_sessions_not_in_reference": [
+            "2026-09-29"
+          ],
+          "first_date": "2016-01-04",
+          "high_low_inconsistent_rows": 0,
+          "inf_values": 0,
+          "last_date": "2026-09-29",
+          "missing_sessions": [],
+          "n_missing_sessions": 0,
+          "nan_values": 0,
+          "non_positive_prices": 0,
+          "reference_sessions_in_range": 2699,
+          "rows": 2700,
+          "zero_volume_rows": 0
+        }
+      }
+    },
+    "reference_calendar": {
+      "first": "2016-01-04",
+      "last": "2026-09-28",
+      "sessions_to_frame_end": 2699,
+      "symbol": "SPY"
+    },
+    "stocks_failing_min_rows": []
+  },
+  "artifacts": {
+    "AAPL": {
+      "path": "data/processed/phase11/market/AAPL_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "e4f48991f876d8e85fe85fc434065603dd1f2e4e4db2c69f45082a25d4f0cde8"
+    },
+    "AXP": {
+      "path": "data/processed/phase11/market/AXP_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "8bc3d8ad48ebec9b62597747c8be2bcac3bbabd4a6803b3303f897ae4164d595"
+    },
+    "BA": {
+      "path": "data/processed/phase11/market/BA_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "7044cd8aabc21c169d0463c6ca344c7ed4b2951daa3a135fb19c24e26a7af4a9"
+    },
+    "CAT": {
+      "path": "data/processed/phase11/market/CAT_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "b12fb147c4ff4dfe1b876d085fa54efb61da224048afb7aead2b37342b143613"
+    },
+    "CSCO": {
+      "path": "data/processed/phase11/market/CSCO_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "efeb080e4f61f7fba80298a52c68cc7282748d00ccba3ac5f3651ffb8c9362d6"
+    },
+    "CVX": {
+      "path": "data/processed/phase11/market/CVX_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "54923b10212d812b8883bbf22df5624a7afb51b03b76faf2a3befd251bece528"
+    },
+    "DIS": {
+      "path": "data/processed/phase11/market/DIS_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "0e9f427edef2c0b50e934164d062da5561b40083b7fc72a9044fe67fe7b4f4b1"
+    },
+    "GE": {
+      "path": "data/processed/phase11/market/GE_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "7bef823a1de64511d6e39e2ba7758b2585bdcc7673aa196828223e3283ae799d"
+    },
+    "GS": {
+      "path": "data/processed/phase11/market/GS_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "c41dfc3e587f397aa00015aa79fe8a7f488fb996d5144c0c6c979a8cfd0cb20a"
+    },
+    "HD": {
+      "path": "data/processed/phase11/market/HD_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "ed54b7287f9296b1ce5980ef35678a8d1cf437b57efd245147168f248a855994"
+    },
+    "IBM": {
+      "path": "data/processed/phase11/market/IBM_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "fffaaef90fbc287f0f786d26cd14de617518d2dc8fd9894afed06bc2c5ef4b90"
+    },
+    "INTC": {
+      "path": "data/processed/phase11/market/INTC_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "3beeb58f36117ced7f8b76be213e18cdfc0892b58a947275d144784a75d54b0d"
+    },
+    "JNJ": {
+      "path": "data/processed/phase11/market/JNJ_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "7f7592c70b6715374a123e0a7d31e654e8d20bb0406e6f25990ac4ef0264d492"
+    },
+    "JPM": {
+      "path": "data/processed/phase11/market/JPM_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "0b988a00747533632a27f6b8f42e42f505059be7f062cca3feff8269010d5aaf"
+    },
+    "KO": {
+      "path": "data/processed/phase11/market/KO_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "e5f77664d929cd05c4823d861691887b39dd8778a8580da64f3aba57dc4994e1"
+    },
+    "MCD": {
+      "path": "data/processed/phase11/market/MCD_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "81cbcbd9f0d591131f38e21e1fa452704755070d2f5655cdcc6b498061d1fe84"
+    },
+    "MMM": {
+      "path": "data/processed/phase11/market/MMM_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "b701831e5135e8078ec21f00822c4ef1d21cc5692bcef1831f7de3c1855d574d"
+    },
+    "MRK": {
+      "path": "data/processed/phase11/market/MRK_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "223a8dcd8c9e12ecd2772b36b5fcc93e8414b40b344613578fff48674e6f52a8"
+    },
+    "MSFT": {
+      "path": "data/processed/phase11/market/MSFT_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "2c01bcaaa826892583c604689959871de263cbd2979ca5166a1b1f121d8969f3"
+    },
+    "NKE": {
+      "path": "data/processed/phase11/market/NKE_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "62cd8b165cb4a1ff0818a58267ef909a9d93002383b02e28973c07e326a43853"
+    },
+    "PFE": {
+      "path": "data/processed/phase11/market/PFE_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "c16b557caa1bfe06dd656d12c3179a5274b7e772d9552a7ae6b9d5827d967ee2"
+    },
+    "PG": {
+      "path": "data/processed/phase11/market/PG_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "b55ba786222f437d5972552417b9dcfe517c65db25e9ff678b2e9ba3f913afcd"
+    },
+    "QQQ": {
+      "path": "data/processed/phase11/market/QQQ_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "21e35e61c336a8d9a8bf6af098e41b4fee76baf7a6ff3a1afa1e333417e18def"
+    },
+    "RTX": {
+      "path": "data/processed/phase11/market/RTX_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "4e01f25f74132f141a766764f204191b596b56a3404c99ace339df695ad445b7"
+    },
+    "SPY": {
+      "path": "data/processed/phase11/market/SPY_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "7f98ebe79429026c94fddfd40e647104950104162faf88e815926556d4baec49"
+    },
+    "TRV": {
+      "path": "data/processed/phase11/market/TRV_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "2e29b2dc89e3ba4c8c461e4428a3eec7623ceb1e01eb139f36527c4a0f35d962"
+    },
+    "UNH": {
+      "path": "data/processed/phase11/market/UNH_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "0ef6d1f0b572c7f9e5cdd2275a96f54365294f4e25f4c5270e981e74d9dbd279"
+    },
+    "V": {
+      "path": "data/processed/phase11/market/V_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "e9c6cad35f8e3f8f3cc9fb7d7937ca6802910b1ad4f2361331d4ac1b51b7c03d"
+    },
+    "VZ": {
+      "path": "data/processed/phase11/market/VZ_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "91e809c6ccf79815e99b6b4ce613d844b696cb06c69b41b75572aa37e18c07f5"
+    },
+    "WMT": {
+      "path": "data/processed/phase11/market/WMT_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "fcd2d015a48fa8315c453e160e8e2ce4bf1375dbc84c79148151ea280b7e3ee5"
+    },
+    "XOM": {
+      "path": "data/processed/phase11/market/XOM_1d_20160104_20260929.csv",
+      "rows": 2700,
+      "sha256": "4e9ef6628e29a28b99a2599dddbf1860f25f96ff1d4679a53efa3c8495f094b3"
+    }
+  },
+  "experiments_run": false,
+  "generated_at": "2026-10-02T00:22:47+00:00",
+  "git": {
+    "commit": "38dfd1f497826857330c296f276979db008748fb",
+    "uncommitted_changes": true
+  },
+  "models_trained": false,
+  "news_downloaded": false,
+  "phase": "11.1",
+  "report_version": "phase11_price_verification_v1"
+}

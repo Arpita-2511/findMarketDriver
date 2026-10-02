@@ -1,0 +1,45 @@
+{
+  "column_notes": {
+    "Adj_Close": "yfinance auto_adjust=False 'Adj Close'",
+    "Close_unadjusted": "yfinance auto_adjust=False 'Close' (Yahoo convention: split-adjusted, NOT dividend-adjusted)",
+    "Dividends": "provider-recorded cash distribution per share on that session (0 if none)",
+    "Open/High/Low/Close": "yfinance auto_adjust=True (split- and dividend-adjusted as of retrieval) - research prices",
+    "Stock_Splits": "provider-recorded split factor on that session (0 if none; <1 = reverse split)",
+    "Volume": "yfinance auto_adjust=True"
+  },
+  "columns": [
+    "Date",
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "Volume",
+    "Dividends",
+    "Stock_Splits",
+    "Close_unadjusted",
+    "Adj_Close"
+  ],
+  "download": {
+    "calls": [
+      "Ticker.history(auto_adjust=True, actions=True)",
+      "Ticker.history(auto_adjust=False, actions=True)"
+    ],
+    "end_exclusive": "2026-09-30",
+    "interval": "1d",
+    "passes": 2,
+    "provider": "yfinance (Yahoo Finance)",
+    "repair": false,
+    "start": "2016-01-01"
+  },
+  "file": "HD_1d_20160104_20260929.csv",
+  "first_date": "2016-01-04",
+  "frozen_design_sha256": "266daaddba0e8cb18163b4ec9db7eadabe2d5ab574bf410e043a7d28d3247650",
+  "hashed": "the CSV bytes exactly as written (normalized representation)",
+  "last_date": "2026-09-29",
+  "provider": "yfinance (Yahoo Finance)",
+  "retrieved_at_utc": "2026-10-02T00:22:04+00:00",
+  "rows": 2700,
+  "sha256": "ed54b7287f9296b1ce5980ef35678a8d1cf437b57efd245147168f248a855994",
+  "symbol": "HD",
+  "yfinance_version": "1.5.1"
+}

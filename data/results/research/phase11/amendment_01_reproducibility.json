@@ -1,0 +1,97 @@
+{
+  "amendment": "phase11_amendment_01_reproducibility_tolerance",
+  "amends": {
+    "design_sha256": "266daaddba0e8cb18163b4ec9db7eadabe2d5ab574bf410e043a7d28d3247650",
+    "field": "design.aapl_reproducibility",
+    "frozen_registry_edited": false,
+    "frozen_text": "AAPL per-stock A/E results must be checked for equivalence against Phase 10A where data and design are mathematically identical; a reproducibility check only"
+  },
+  "canonical_phase11_input": {
+    "directory": "data/processed/phase11/market",
+    "verification_report": "data/results/research/phase11/price_verification.json",
+    "verification_report_sha256": "c6afc03fec249e146c37c0b4f5c512835c1cda9d344229b8ac3f0ce7bd1b15b0"
+  },
+  "frozen_at": "2026-10-02T00:29:26+00:00",
+  "frozen_before_any_phase11a_result": true,
+  "git": {
+    "commit": "38dfd1f497826857330c296f276979db008748fb",
+    "uncommitted_changes": true
+  },
+  "phase10_reference_snapshots": {
+    "AAPL": {
+      "path": "data/raw/stocks/AAPL_1d_10y_20260929T205051Z.csv",
+      "sha256": "141aba8fc1aafca6ccfa3e4677ac7abb20754a8f02ec66468c9974aa67a36cbb"
+    },
+    "QQQ": {
+      "path": "data/raw/stocks/QQQ_1d_10y_20261001T104948Z.csv",
+      "sha256": "106509bae648328d18433f7e4e1755a9b554bd01b60a5996c0b758cb41172611"
+    },
+    "SPY": {
+      "path": "data/raw/stocks/SPY_1d_10y_20261001T104943Z.csv",
+      "sha256": "bc827c76bc61bee2271f01ca47edb92667bb95c5dad410477d3f05ff889b2f34"
+    }
+  },
+  "reason": "the canonical Phase 11.1 batch differs from the Phase 10 snapshots by ~1e-6 relative (provider re-adjustment at retrieval), so bit-identical equivalence with Phase 10A is impossible",
+  "status": "TIER1_PASS_TIER2_PENDING",
+  "tier1_observed": {
+    "AAPL": {
+      "common_dates": 2512,
+      "first": "2016-09-30",
+      "identical_closes": 760,
+      "last": "2026-09-29",
+      "max_abs_return_diff": 9.551989319511733e-07,
+      "max_rel_close_diff": 7.610066291574569e-07,
+      "pass": true
+    },
+    "QQQ": {
+      "common_dates": 2511,
+      "first": "2016-10-03",
+      "identical_closes": 730,
+      "last": "2026-09-29",
+      "max_abs_return_diff": 1.152979586693803e-06,
+      "max_rel_close_diff": 7.1015369762506e-07,
+      "pass": true
+    },
+    "SPY": {
+      "common_dates": 2511,
+      "first": "2016-10-03",
+      "identical_closes": 705,
+      "last": "2026-09-29",
+      "max_abs_return_diff": 1.4153225222912624e-06,
+      "max_rel_close_diff": 1.107071734396392e-06,
+      "pass": true
+    }
+  },
+  "tolerance": {
+    "outcome": "REPRODUCED_WITHIN_TOLERANCE if tier 1 and tier 2 pass, otherwise REPRODUCIBILITY_CHECK_FAILED with every difference reported; the outcome never alters the Phase 11 design, data or results",
+    "tier1_data": {
+      "max_abs_return_diff": 1e-05,
+      "max_rel_close_diff": 1e-05,
+      "rule": "every common date within both limits",
+      "symbols": [
+        "AAPL",
+        "SPY",
+        "QQQ"
+      ]
+    },
+    "tier2_results": {
+      "gate_status": "identical gate_v1 status for every comparison",
+      "max_abs_dm_p_diff": 0.02,
+      "max_rel_primary_metric_diff": 0.005,
+      "rule": "every comparison within all three limits",
+      "scope": "the 66 AAPL per-stock comparisons of feature sets A and E (2 x 3 horizons x 11 models) vs the matching Phase 10A development experiments (p10a_A_*, p10a_E_*)"
+    }
+  },
+  "unchanged": [
+    "research methodology",
+    "target",
+    "features",
+    "models",
+    "data",
+    "gate_v1",
+    "families",
+    "qualification",
+    "intervals",
+    "universe"
+  ]
+}
