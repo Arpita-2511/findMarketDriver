@@ -21,6 +21,7 @@ scipy==1.18.0
 joblib==1.5.3
 xgboost==3.3.0           # models/train_regression.py, save_all_models.py, training/ diagnostics
 lightgbm==4.7.0          # same scripts as xgboost
+threadpoolctl==3.7.0     # training/phase11a_research.py worker thread limits (already a scikit-learn dependency)
 
 # --- NLP (Phase 5A: FinBERT inference, CPU) ---
 # PyPI's Windows torch wheel is the CPU build; no CUDA is required.
