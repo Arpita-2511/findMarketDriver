@@ -70,6 +70,12 @@ MALFORMED_PCT_CEILING = 0.01
 MALFORMED_RUN_PCT_CAP = 0.002
 MISSING_ID_SENTINEL = "<missing>"
 
+# Phase 11B Amendment 05 (ADOPTED): the two cumulative run caps are evaluated once,
+# on final totals. Snapshot provenance keeps the Amendment 04 hash above.
+# data/results/research/phase11/11B/amendment_05_final_totals_run_cap.json
+RUN_CAP_POLICY_AMENDMENT_SHA256 = "d235cee6a679319bc918610d54b852f74af7c3ed36654fed1fbe4abecbaf86b1"
+RUN_CAP_EVALUATION = "final_totals"
+
 # Response fields mapped into the canonical schema; everything else is
 # kept in provider_metadata for provenance only.
 MAPPED_FIELDS = {"id", "headline", "summary", "content", "symbols", "source", "url",
@@ -83,6 +89,11 @@ def _rfc3339(dt: datetime) -> str:
 def malformed_policy() -> dict[str, Any]:
     return {"amendment_sha256": MALFORMED_POLICY_AMENDMENT_SHA256, "reasons": list(MALFORMED_REASONS),
             "abs_floor": MALFORMED_ABS_FLOOR, "pct_ceiling": MALFORMED_PCT_CEILING,
+            "run_pct_cap": MALFORMED_RUN_PCT_CAP}
+
+
+def run_cap_policy() -> dict[str, Any]:
+    return {"amendment_sha256": RUN_CAP_POLICY_AMENDMENT_SHA256, "evaluation": RUN_CAP_EVALUATION,
             "run_pct_cap": MALFORMED_RUN_PCT_CAP}
 
 

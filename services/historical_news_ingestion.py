@@ -45,6 +45,7 @@ from services.alpaca_news_provider import (  # noqa: E402
     MALFORMED_RUN_PCT_CAP,
     chunk_malformed_threshold,
     malformed_policy,
+    run_cap_policy,
 )
 from services.news_dataset import INTERVAL_RULE, build_canonical_dataset  # noqa: E402
 from services.news_provider import SORT_ORDERS, NewsProvider, NewsProviderError, NewsQuery  # noqa: E402
@@ -209,15 +210,20 @@ def malformed_totals(chunks: list[dict]) -> dict:
     }
 
 
-def _check_run_caps(chunks: list[dict]) -> None:
-    """Both run caps, evaluated after every chunk (the just-completed one included); strict '>'."""
+def _check_final_run_caps(chunks: list[dict]) -> None:
+    """
+    Amendment 05: both cumulative caps, evaluated once on the final totals of
+    the whole run, before the manifest is opened. Strict '>' on unrounded rates.
+    """
     t = malformed_totals(chunks)
-    for name, frac in (("cumulative", t["malformed_fraction"]),
-                       ("fresh-chunk", t["malformed_fraction_among_fresh_chunks"])):
+    caps = (("cumulative", t["n_malformed_excluded"], t["n_raw_records_fetched"], t["malformed_fraction"]),
+            ("fresh-chunk", t["n_malformed_excluded_among_fresh_chunks"],
+             t["n_raw_records_fetched_among_fresh_chunks"], t["malformed_fraction_among_fresh_chunks"]))
+    for name, bad, raw, frac in caps:
         if frac > MALFORMED_RUN_PCT_CAP:
             raise NewsProviderError(
-                f"malformed-record {name} run cap exceeded after chunk {chunks[-1]['start']} .. {chunks[-1]['end']}: "
-                f"{frac:.6f} > {MALFORMED_RUN_PCT_CAP}; no manifest written")
+                f"malformed-record {name} run cap exceeded on final totals: {bad}/{raw} = {frac!r} > "
+                f"{MALFORMED_RUN_PCT_CAP}; no manifest written")
 
 
 def run_historical_ingestion(provider: NewsProvider, config: IngestionConfig, *,
@@ -271,7 +277,7 @@ def run_historical_ingestion(provider: NewsProvider, config: IngestionConfig, *,
             "reused": reused is not None,
             **_malformed_entry(p, reused is not None),
         })
-        _check_run_caps(chunks)
+    _check_final_run_caps(chunks)
 
     manifest = {
         "run_id": run_id,
@@ -291,6 +297,7 @@ def run_historical_ingestion(provider: NewsProvider, config: IngestionConfig, *,
             **malformed_totals(chunks),
         },
         "malformed_policy": malformed_policy(),
+        "run_cap_policy": run_cap_policy(),
     }
     with open(manifest_path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(manifest, f, indent=2, sort_keys=True)

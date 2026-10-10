@@ -1,0 +1,135 @@
+{
+  "document_type": "phase_11b_amendment",
+  "amendment_id": "05",
+  "title": "Final-Totals Evaluation of Malformed-Record Run Caps",
+  "phase": "11B",
+  "status": "ADOPTED",
+  "proposed_date": "2026-10-10",
+  "approval_date": "2026-10-10",
+  "revision": 1,
+  "revision_history": [
+    {
+      "rev": 1,
+      "date": "2026-10-10",
+      "note": "Reviewed proposal adopted by the project owner without policy changes."
+    }
+  ],
+  "immutable_once_adopted": true,
+  "preserves_design_freeze": true,
+  "preserves_amendment_03": true,
+  "amends": "amendment_04 (timing of the two cumulative run caps only)",
+  "weakens_thresholds": false,
+  "adoption": {
+    "approved_by": "project owner",
+    "sha256_pinned_in": "services/alpaca_news_provider.py RUN_CAP_POLICY_AMENDMENT_SHA256 (echoed into the manifest run_cap_policy block and news_integrity_report.json; training/phase11b_ingest_closeout.py refuses to write a report if the live file differs)"
+  },
+  "applies_to": {
+    "design_freeze_sha256": "cf7a14fbce45dc466a66993ffb985f4623022bb33a320caae0d6947495436d5f",
+    "amendment_03_sha256": "0040483259cd3febea1feff6301fa545acaa8a21813006f62a06a50d49e02253",
+    "amendment_04_sha256": "fa05a3ec4bc7562b362ce09cfe3cd1ae4d7060f453642d7015d210acc8e6bb5a",
+    "amendment_04_file_is_not_edited": true
+  },
+  "trigger": {
+    "incident": "Resumed Phase 11B ingestion (commit 901b5e8) aborted after chunk 2018-02-25..2018-03-27: fresh-chunk run cap 1/490 = 0.0020408 > 0.002. Cumulative rate at that point 1/10158 = 0.0000984; per-chunk cap 1 <= max(10, 4.9) passed.",
+    "forensic_finding": "No implementation defect. Counting, category, provenance and strict comparison behaved as written. The single excluded record is article 11415383 (missing_or_blank_headline), the same record that triggered Amendment 04.",
+    "evidence_files": [
+      {
+        "file": "data/raw/news/alpaca_AAPL-AXP-BA-CAT-CSCO-CVX-DIS-GE-GS-HD-IBM-INTC-JNJ-JPM-KO-MCD-MMM-MRK-MSFT-NKE-PFE-PG-RTX-TRV-UNH-UTX-V-VZ-WMT-XOM_20180225_20180327_20261010T105923Z.jsonl",
+        "sha256": "0880f0ebe7c438e9a93f2aa7cab0beb0617e1394dc8b1b1f3c1b1b5014153cdc",
+        "rows": 489
+      },
+      {
+        "file": "data/raw/news/alpaca_AAPL-AXP-BA-CAT-CSCO-CVX-DIS-GE-GS-HD-IBM-INTC-JNJ-JPM-KO-MCD-MMM-MRK-MSFT-NKE-PFE-PG-RTX-TRV-UNH-UTX-V-VZ-WMT-XOM_20180225_20180327_20261010T105923Z.meta.json",
+        "n_raw_records_fetched": 490,
+        "n_malformed_excluded": 1,
+        "malformed_policy_amendment_sha256": "fa05a3ec4bc7562b362ce09cfe3cd1ae4d7060f453642d7015d210acc8e6bb5a"
+      }
+    ]
+  },
+  "problem": "Amendment 04 evaluates the cumulative and fresh-only 0.2% run caps after every chunk. Early in a run the denominator is small, so the decision depends on chunk order rather than on the data: the first fresh chunk must have at least 500 raw records to tolerate even one malformed record. A single sporadic provider defect therefore aborts the run deterministically, which contradicts Amendment 04's stated intent ('permit sporadic provider defects; abort immediately on systemic degradation') and makes the ingestion unable to complete. Resuming reproduces the abort immediately because the saved chunk is reused with its recorded counts.",
+  "policy_change": {
+    "unchanged": {
+      "reason_categories": [
+        "missing_or_blank_id",
+        "missing_or_blank_headline",
+        "missing_created_at",
+        "invalid_updated_at",
+        "invalid_symbols_type"
+      ],
+      "classification_order": [
+        "missing_or_blank_id",
+        "missing_or_blank_headline",
+        "missing_created_at",
+        "invalid_updated_at",
+        "invalid_symbols_type"
+      ],
+      "withdrawn_categories": [
+        "updated_before_created"
+      ],
+      "per_chunk_cap": "a chunk fails iff n_malformed_excluded > max(ABS_FLOOR, PCT_CEILING * n_raw_records_fetched); strict '>', no rounding",
+      "ABS_FLOOR": 10,
+      "PCT_CEILING": 0.01,
+      "per_chunk_cap_timing": "enforced immediately for each chunk: in the provider before the snapshot is written (fresh chunks), and on recorded or inferred counts when a chunk is reused",
+      "RUN_PCT_CAP": 0.002,
+      "run_cap_comparison": "strict '>' on unrounded real numbers; rate = numerator / max(1, denominator) for both the cumulative and the fresh-only cap",
+      "raw_record_counting": "len(page['news']) per response page, before classification, conversion, filtering or deduplication",
+      "exclusion_provenance": "per-record and per-chunk fields in the snapshot .meta.json only; never in the article JSONL",
+      "fresh_chunk_definition": "A chunk is FRESH when its malformed counts were measured under this amendment's policy: fetched in the current run (malformed_counts_source = 'measured_this_run') or reused from an earlier post-amendment run whose snapshot .meta.json records them (malformed_counts_source = 'recorded_in_snapshot_meta'). A chunk whose counts are inferred from the strict pre-amendment policy (malformed_counts_source = 'inferred_from_strict_pre_amendment_policy') is NOT fresh and contributes to neither the fresh numerator nor the fresh denominator, so inferred-zero chunks cannot dilute the fresh-data malformed rate.",
+      "inferred_zero_rule_for_pre_amendment_chunks": "unchanged, including the n_raw_articles == rows + n_duplicates_removed consistency requirement"
+    },
+    "changed": {
+      "run_cap_timing": "The cumulative whole-run cap and the fresh-only cumulative cap are evaluated exactly once, on the final totals, after every chunk of the configured interval has been fetched or reused and validated, and before the manifest file is opened for writing. They are no longer evaluated after each chunk.",
+      "superseded_text": "amendment_04.threshold.run_cap.rule_literal, .fresh_only_rule_literal, .when_the_check_runs and .known_consequence_small_denominators are superseded as to timing only; their thresholds, denominators and comparison rules remain in force."
+    },
+    "rationale": "Final-total evaluation judges the dataset that would actually be published, at the threshold already adopted, instead of an early prefix whose small denominator makes one sporadic defect decisive. No threshold is relaxed: a published dataset still satisfies cumulative <= 0.2% and fresh-only <= 0.2%. Dense degradation is still stopped immediately by the per-chunk cap (> 1%, or > 10 records in small chunks). The only property given up is early abort for slow, sub-1%-per-chunk degradation; that costs download time, not data quality, because nothing is published unless the final check passes.",
+    "note_on_cap_redundancy": "Inferred chunks contribute zero malformed records, so the cumulative rate can never exceed the fresh-only rate. Both caps are still evaluated (cumulative first) as defence in depth against a future change to the inferred-zero rule."
+  },
+  "fail_closed_requirements": {
+    "final_cap_breach": "run_historical_ingestion raises NewsProviderError naming the cap, the final numerator, denominator and unrounded rate. The manifest is never opened, so build_canonical_dataset is never called and no canonical dataset or integrity report can exist.",
+    "snapshots_after_breach": "Snapshots saved during the run stay on disk unchanged and hash-verifiable; they are not a dataset and cannot be mistaken for one without a manifest. A later --resume reuses them.",
+    "closeout": "training/phase11b_ingest_closeout.py recomputes final totals from the manifest's per-chunk entries and refuses to write a report if either final rate exceeds 0.2%, if the manifest's run_cap_policy block is missing or differs from the adopted policy, or if Amendment 04 or this file differs from its pinned SHA256.",
+    "gate_b": "_assert_t5_seal_real additionally requires report['run_cap_policy_amendment_sha256'] == live SHA256 of this file and report['run_cap_evaluation'] == 'final_totals', while keeping every Amendment 03 and Amendment 04 assertion."
+  },
+  "policy_hash_scheme": {
+    "snapshot_level_policy": "Per-record classification, raw counting and the per-chunk cap are unchanged, so snapshot provenance keeps Amendment 04's hash (MALFORMED_POLICY_AMENDMENT_SHA256 = fa05a3ec4bc7562b362ce09cfe3cd1ae4d7060f453642d7015d210acc8e6bb5a). Snapshots saved under Amendment 04, including chunk 2018-02-25..2018-03-27, remain valid for reuse without any allowlist. A snapshot carrying any other policy hash is still refused.",
+    "run_level_policy": "A new constant RUN_CAP_POLICY_AMENDMENT_SHA256 pins this file. The manifest gains a top-level block run_cap_policy = {amendment_sha256, evaluation: 'final_totals', run_pct_cap: 0.002}.",
+    "pin_update_timing": "RUN_CAP_POLICY_AMENDMENT_SHA256 is set only after this file is ADOPTED and its bytes are fixed."
+  },
+  "reuse_of_saved_chunks": {
+    "pre_amendment_chunks": "14 chunks 2017-01-01..2018-02-25: reused via the inferred-zero rule (raw 9,668, malformed 0); not fresh.",
+    "chunk_2018_02_25_2018_03_27": "Reused via find_reusable_snapshot with its recorded counts (raw 490, excluded 1, rows 489) and its recorded sha256; classified fresh (recorded_in_snapshot_meta); never refetched, never modified.",
+    "no_snapshot_is_edited_deleted_or_renamed": true
+  },
+  "compatibility": [
+    "Replacing the snapshot-level pin with this file's hash would make the ingestion refuse the saved 2018 chunk (services/historical_news_ingestion.py rejects recorded provenance under a different policy hash); the separate run-level pin avoids this without an allowlist.",
+    "No Phase 11B manifest exists yet, so requiring the run_cap_policy block breaks no existing artefact.",
+    "Error messages for run-cap breaches change from 'after chunk ...' to 'on final totals'.",
+    "Pre-existing and out of scope: the manifest is written without temp-file-and-rename; a final-cap failure cannot cause a partial manifest because the check runs before the file is opened."
+  ],
+  "alternative_considered_not_adopted": {
+    "minimum_fresh_denominator": "Keep per-chunk run-cap checks but apply them only once fresh raw >= 5,000 (ABS_FLOOR / RUN_PCT_CAP), plus a final check. Keeps an early stop for sustained degradation, but adds a new frozen number whose value is partly arbitrary, and still couples the decision to chunk order near the boundary. Not adopted; final-total evaluation is simpler and judges exactly the published dataset."
+  },
+  "unchanged_invariants": [
+    "Design freeze, Amendment 03 and Amendment 04 files unchanged.",
+    "Frozen 30-ticker universe, interval [2017-01-01, 2026-09-29), 30-day chunks, --no-content.",
+    "Development cutoff 2024-09-30T20:30:00Z and dev/sealed split unchanged.",
+    "UTX-to-RTX mapping unchanged.",
+    "NewsArticle schema strict; no field is ever synthesised.",
+    "All-or-nothing manifest; no canonical dataset without a manifest.",
+    "Every malformed-record threshold and category unchanged.",
+    "Phase 8 artefacts and all saved Phase 11B snapshots unchanged."
+  ],
+  "verification_at_adoption": {
+    "amendment_04_values_checked": [
+      "status ADOPTED rev 3",
+      "classification_order == reason_categories (5)",
+      "ABS_FLOOR 10, PCT_CEILING 0.01, RUN_PCT_CAP 0.002",
+      "superseded run_cap keys exist"
+    ],
+    "evidence_chunk_checked": [
+      "jsonl sha256 equals meta sha256",
+      "raw 490, excluded 1, rows 489",
+      "recorded malformed_policy.amendment_sha256 equals Amendment 04"
+    ]
+  }
+}

@@ -14,7 +14,7 @@ from services.historical_news_ingestion import (
     create_provider,
     run_historical_ingestion,
 )
-from services.alpaca_news_provider import alpaca_to_canonical, malformed_policy
+from services.alpaca_news_provider import alpaca_to_canonical, malformed_policy, run_cap_policy
 from services.news_dataset import build_canonical_dataset, load_canonical_dataset
 from services.news_provider import NewsAuthError, NewsFetchResult, NewsPaginationError, NewsProviderError, NewsQuery
 from services.news_schema import NewsValidationError
@@ -209,7 +209,8 @@ def test_malformed_record_excluded_within_caps(tmp_path, bad, reason):
 
 
 def test_run_cap_breach_after_save_leaves_snapshot_but_no_manifest(tmp_path):
-    with pytest.raises(NewsProviderError, match="cumulative run cap exceeded"):     # 1/2 > 0.2%; per-chunk cap 10 ok
+    # 1/2 > 0.2% on final totals; per-chunk cap 10 ok
+    with pytest.raises(NewsProviderError, match=r"cumulative run cap exceeded on final totals: 1/2 = 0\.5 > 0\.002"):
         run(tmp_path, page([raw(1), raw(2, headline=None)]))
     assert len(list((tmp_path / "raw").glob("*.jsonl"))) == 1
     assert no_manifest(tmp_path)
@@ -222,9 +223,9 @@ def test_per_chunk_cap_breach_leaves_no_snapshot_and_no_manifest(tmp_path):
     assert no_manifest(tmp_path)
 
 
-def test_run_cap_is_checked_after_the_last_chunk_and_keeps_earlier_snapshots_valid(tmp_path):
-    # chunk 1 clean (600), chunk 2 (the last) 1 valid + 2 malformed: 2/603 > 0.2%
-    with pytest.raises(NewsProviderError, match="run cap exceeded after chunk 2017-01-02"):
+def test_final_whole_run_cap_breach_aborts_and_keeps_snapshots_valid(tmp_path):
+    # all-fresh run: chunk 1 clean (600), chunk 2 1 valid + 2 malformed -> final 2/603 > 0.2%
+    with pytest.raises(NewsProviderError, match=r"cumulative run cap exceeded on final totals: 2/603 = 0\.0033"):
         run(tmp_path, page(valid(600)), page(valid(1, 700, "2017-01-02T15:00:00Z")
                                              + [raw(9001, headline=None), raw(9002, headline=None)]), chunk_days=1)
     snaps = sorted((tmp_path / "raw").glob("*.jsonl"))
@@ -248,8 +249,9 @@ def legacy_snapshot(raw_dir, n, **prov_overrides):
     return save_news_snapshot(NewsFetchResult(articles=arts, provenance=prov), q, raw_dir)
 
 
-def resume(tmp_path, *responses):
-    return run_historical_ingestion(make_provider(FakeSession(*responses)), config(chunk_days=1),
+def resume(tmp_path, *responses, session=None, **overrides):
+    return run_historical_ingestion(make_provider(session or FakeSession(*responses)),
+                                    config(chunk_days=1, **overrides),
                                     raw_dir=tmp_path / "raw", clock=lambda: RUN_CLOCK, resume=True)
 
 
@@ -270,7 +272,7 @@ def test_fresh_only_run_cap_not_diluted_by_inferred_chunks(tmp_path):
     legacy_snapshot(tmp_path / "raw", 2000)
     fresh = valid(500, 5000, "2017-01-02T15:00:00Z") + [raw(9001, headline=None), raw(9002, headline=None)]
     # cumulative 2/2502 = 0.08% passes; fresh-only 2/502 = 0.40% must abort
-    with pytest.raises(NewsProviderError, match="fresh-chunk run cap exceeded"):
+    with pytest.raises(NewsProviderError, match="fresh-chunk run cap exceeded on final totals: 2/502"):
         resume(tmp_path, page(fresh))
     assert not list((tmp_path / "raw").glob("*.manifest.json"))
 
@@ -301,6 +303,102 @@ def test_reused_post_amendment_chunk_uses_recorded_counts(tmp_path):
     assert (c0["reused"], c0["malformed_counts_source"], c0["n_raw_records_fetched"], c0["n_malformed_excluded"]) == \
         (True, "recorded_in_snapshot_meta", 601, 1)
     assert m["totals"]["n_fresh_chunks"] == 2 and m["totals"]["n_malformed_excluded_among_fresh_chunks"] == 1
+
+
+# ---- Amendment 05 (ADOPTED): cumulative caps judged once, on final totals ----
+
+END3 = datetime(2017, 1, 4, tzinfo=UTC)                    # three daily chunks: 01-01, 01-02, 01-03
+AMENDMENT_04_SHA = "fa05a3ec4bc7562b362ce09cfe3cd1ae4d7060f453642d7015d210acc8e6bb5a"
+
+
+def incident_chunk():
+    """The observed pattern: 489 valid + 1 headline-less record = 1/490 fresh."""
+    return page(valid(489, 10000, "2017-01-02T15:00:00Z") + [raw(9001, headline=None)])
+
+
+def snapshot_bytes(raw_dir):
+    return {p.name: p.read_bytes() for p in sorted(raw_dir.iterdir())}
+
+
+def test_one_malformed_in_first_fresh_chunk_of_490_passes_on_final_totals(tmp_path):
+    legacy_snapshot(tmp_path / "raw", 2000)                                        # inferred, not fresh
+    assert 1 / 490 > 0.002                                                          # would abort under per-chunk timing
+    manifest = resume(tmp_path, incident_chunk(), page(valid(60, 20000, "2017-01-03T15:00:00Z")), end=END3)
+    m = json.loads(manifest.read_text(encoding="utf-8"))
+    t = m["totals"]
+    assert [c["malformed_counts_source"] for c in m["chunks"]] == [
+        "inferred_from_strict_pre_amendment_policy", "measured_this_run", "measured_this_run"]
+    assert (t["n_raw_records_fetched_among_fresh_chunks"], t["n_malformed_excluded_among_fresh_chunks"]) == (550, 1)
+    assert t["malformed_fraction_among_fresh_chunks"] == 1 / 550 <= 0.002
+    assert (t["n_raw_records_fetched"], t["n_malformed_excluded"]) == (2550, 1)
+    assert t["malformed_fraction"] == 1 / 2550 <= 0.002                            # checked independently
+    assert m["run_cap_policy"] == run_cap_policy() and m["malformed_policy"] == malformed_policy()
+    _, meta = build_canonical_dataset(manifest, tmp_path / "processed")
+    assert meta["rows"] == 2000 + 489 + 60
+
+
+@pytest.mark.parametrize("n_clean, passes", [(9, False), (10, True)])
+def test_final_fresh_only_cap_is_strict_and_unrounded(tmp_path, n_clean, passes):
+    legacy_snapshot(tmp_path / "raw", 2000)
+    responses = (incident_chunk(), page(valid(n_clean, 20000, "2017-01-03T15:00:00Z")))
+    if passes:                                                                      # 1/500 == 0.002, not > 0.002
+        t = json.loads(resume(tmp_path, *responses, end=END3).read_text(encoding="utf-8"))["totals"]
+        assert t["malformed_fraction_among_fresh_chunks"] == 0.002
+        return
+    with pytest.raises(NewsProviderError,
+                       match=r"fresh-chunk run cap exceeded on final totals: 1/499 = 0\.002004008"):
+        resume(tmp_path, *responses, end=END3)                                      # cumulative 1/2499 passes
+    assert no_manifest(tmp_path)
+    snaps = sorted((tmp_path / "raw").glob("*.jsonl"))
+    assert len(snaps) == 3                                                          # legacy + both fresh chunks kept
+    for snap in snaps:
+        load_news_snapshot(snap)                                                    # every snapshot hash-verifies
+
+
+def test_final_cap_failure_preserves_existing_snapshots_byte_for_byte(tmp_path):
+    raw_dir = tmp_path / "raw"
+    legacy_snapshot(raw_dir, 2000)
+    before = snapshot_bytes(raw_dir)
+    with pytest.raises(NewsProviderError, match="on final totals"):
+        resume(tmp_path, incident_chunk(), page(valid(5, 20000, "2017-01-03T15:00:00Z")), end=END3)
+    after = snapshot_bytes(raw_dir)
+    assert {k: after[k] for k in before} == before                                  # nothing pre-existing touched
+    assert not [n for n in after if n.endswith(".manifest.json")] and not (tmp_path / "processed").exists()
+
+
+def test_per_chunk_cap_still_aborts_immediately(tmp_path):
+    session = FakeSession(page(valid(600)),
+                          page(valid(1, 700, "2017-01-02T15:00:00Z") + [raw(9000 + i, headline=None) for i in range(11)]),
+                          page(valid(600, 5000, "2017-01-03T15:00:00Z")))
+    with pytest.raises(NewsProviderError, match="per-chunk cap exceeded"):
+        run_historical_ingestion(make_provider(session), config(chunk_days=1, end=END3),
+                                 raw_dir=tmp_path / "raw", clock=lambda: RUN_CLOCK)
+    assert len(session.calls) == 2                                                  # chunk 3 never requested
+    assert len(list((tmp_path / "raw").glob("*.jsonl"))) == 1                       # offending chunk not saved
+    assert no_manifest(tmp_path)
+
+
+def test_resume_reuses_saved_fresh_chunk_without_refetch(tmp_path):
+    raw_dir = tmp_path / "raw"
+    legacy_snapshot(raw_dir, 2000)
+    with pytest.raises(NewsProviderError, match="after 4 attempts"):                # chunk 3 unreachable
+        resume(tmp_path, incident_chunk(), *[FakeResponse(503)] * 4, end=END3)
+    saved = sorted(raw_dir.glob("alpaca_AAPL_20170102_20170103_*"))
+    before = {p.name: p.read_bytes() for p in saved}
+    recorded = json.loads(next(p for p in saved if p.name.endswith(".meta.json")).read_text(encoding="utf-8"))
+    assert recorded["malformed_policy"]["amendment_sha256"] == AMENDMENT_04_SHA      # snapshot-level hash unchanged
+
+    session = FakeSession(page(valid(60, 20000, "2017-01-03T15:00:00Z")))
+    m = json.loads(resume(tmp_path, session=session, end=END3).read_text(encoding="utf-8"))
+    assert len(session.calls) == 1 and session.calls[0]["params"]["start"] == "2017-01-03T00:00:00Z"
+    c0, c1, c2 = m["chunks"]
+    assert (c0["reused"], c0["malformed_counts_source"]) == (True, "inferred_from_strict_pre_amendment_policy")
+    assert (c1["reused"], c1["malformed_counts_source"], c1["n_raw_records_fetched"], c1["n_malformed_excluded"],
+            c1["rows"]) == (True, "recorded_in_snapshot_meta", 490, 1, 489)
+    assert c1["sha256"] == recorded["sha256"]
+    assert (c2["reused"], c2["malformed_counts_source"]) == (False, "measured_this_run")
+    assert m["totals"]["n_inferred_chunks"] == 1 and m["totals"]["n_fresh_chunks"] == 2
+    assert {p.name: p.read_bytes() for p in saved} == before                        # reused files never rewritten
 
 
 def test_provider_error_propagates(tmp_path):

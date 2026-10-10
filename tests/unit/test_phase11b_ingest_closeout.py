@@ -30,7 +30,9 @@ from services.alpaca_news_provider import (
     MALFORMED_POLICY_AMENDMENT_SHA256,
     MALFORMED_REASONS,
     MALFORMED_RUN_PCT_CAP,
+    RUN_CAP_POLICY_AMENDMENT_SHA256,
     malformed_policy,
+    run_cap_policy,
 )
 from services.historical_news_ingestion import malformed_totals
 from services.news_schema import NewsArticle, historical_information_available_at
@@ -427,12 +429,14 @@ def _chunk(n_raw: int, n_bad: int = 0, source: str = "measured_this_run", reason
 
 
 def _write_manifest(tmp_path: Path, chunks: list[dict], *, totals: dict | None = None,
-                    policy: dict | None = None) -> dict:
+                    policy: dict | None = None, run_cap: dict | None = None, omit_run_cap: bool = False) -> dict:
     """An ingestion manifest in tmp_path/raw shaped like run_historical_ingestion's; returns the meta reference."""
     raw = tmp_path / "raw"
     raw.mkdir(parents=True, exist_ok=True)
     manifest = {"chunks": chunks, "totals": totals if totals is not None else {"chunks": len(chunks), **malformed_totals(chunks)},
                 "malformed_policy": policy if policy is not None else malformed_policy()}
+    if not omit_run_cap:
+        manifest["run_cap_policy"] = run_cap if run_cap is not None else run_cap_policy()
     path = raw / "alpaca_test.manifest.json"
     path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
     return {"file": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
@@ -688,3 +692,88 @@ def test_closeout_report_satisfies_gate_b_amendment_04_checks(tmp_path):
     assert rpt["n_raw_records_fetched_total"] >= rpt["development_article_count"] + rpt["sealed_article_count"]
     assert rpt["malformed_fraction_total"] <= cap and rpt["malformed_fraction_among_fresh_chunks"] <= cap
     assert set(rpt["malformed_reason_counts_total"]) <= set(doc["what_counts_as_malformed"]["reason_categories"])
+
+
+# ============================================================
+# Amendment 05: run caps judged on final totals (run-level policy identity)
+# ============================================================
+
+
+AMENDMENT_05 = AMENDMENT_04.parent / "amendment_05_final_totals_run_cap.json"
+
+
+def test_adopted_amendment_05_matches_code_constants():
+    doc = json.loads(AMENDMENT_05.read_text(encoding="utf-8"))
+    a04 = json.loads(AMENDMENT_04.read_text(encoding="utf-8"))
+    assert doc["status"] == "ADOPTED" and doc["amendment_id"] == "05"
+    assert hashlib.sha256(AMENDMENT_05.read_bytes()).hexdigest() == RUN_CAP_POLICY_AMENDMENT_SHA256
+    assert doc["applies_to"]["amendment_04_sha256"] == MALFORMED_POLICY_AMENDMENT_SHA256 \
+        == hashlib.sha256(AMENDMENT_04.read_bytes()).hexdigest()
+    assert doc["applies_to"]["design_freeze_sha256"] == FROZEN_DESIGN_FREEZE_SHA256
+    unchanged = doc["policy_change"]["unchanged"]
+    assert tuple(unchanged["classification_order"]) == MALFORMED_REASONS \
+        == tuple(a04["what_counts_as_malformed"]["classification_order"])
+    assert (unchanged["ABS_FLOOR"], unchanged["PCT_CEILING"], unchanged["RUN_PCT_CAP"]) == \
+        (MALFORMED_ABS_FLOOR, MALFORMED_PCT_CEILING, MALFORMED_RUN_PCT_CAP) == \
+        (a04["threshold"]["per_chunk_cap"]["ABS_FLOOR"], a04["threshold"]["per_chunk_cap"]["PCT_CEILING"],
+         a04["threshold"]["run_cap"]["RUN_PCT_CAP"])
+    assert run_cap_policy() == {"amendment_sha256": RUN_CAP_POLICY_AMENDMENT_SHA256, "evaluation": "final_totals",
+                                "run_pct_cap": 0.002}
+
+
+def test_report_records_run_cap_policy(tmp_path):
+    canonical = _write_canonical_dataset(tmp_path, _two_articles(), chunks=[_chunk(1000, 1)])
+    _, rpt = _closeout(tmp_path, canonical, report_path=tmp_path / "r.json")
+    assert rpt["run_cap_policy_amendment_sha256"] == RUN_CAP_POLICY_AMENDMENT_SHA256
+    assert rpt["run_cap_evaluation"] == "final_totals"
+    assert rpt["malformed_policy_amendment_sha256"] == MALFORMED_POLICY_AMENDMENT_SHA256      # unchanged
+
+
+def test_closeout_refuses_manifest_without_run_cap_policy(tmp_path):
+    canonical = _write_canonical_dataset(tmp_path, _two_articles(), manifest_overrides={"omit_run_cap": True})
+    with pytest.raises(CloseoutError, match="run_cap_policy is missing or differs"):
+        _closeout(tmp_path, canonical, report_path=tmp_path / "r.json")
+    assert not (tmp_path / "r.json").exists()
+
+
+def test_closeout_refuses_wrong_run_cap_hash(tmp_path):
+    canonical = _write_canonical_dataset(tmp_path, _two_articles(),
+                                         manifest_overrides={"run_cap": {**run_cap_policy(), "amendment_sha256": "0" * 64}})
+    with pytest.raises(CloseoutError, match="run_cap_policy is missing or differs"):
+        _closeout(tmp_path, canonical, report_path=tmp_path / "r.json")
+    assert not (tmp_path / "r.json").exists()
+
+
+def test_closeout_refuses_evaluation_other_than_final_totals(tmp_path):
+    canonical = _write_canonical_dataset(tmp_path, _two_articles(),
+                                         manifest_overrides={"run_cap": {**run_cap_policy(), "evaluation": "per_chunk"}})
+    with pytest.raises(CloseoutError, match="run_cap_policy is missing or differs"):
+        _closeout(tmp_path, canonical, report_path=tmp_path / "r.json")
+    assert not (tmp_path / "r.json").exists()
+
+
+def test_closeout_refuses_missing_or_modified_amendment_05_file(tmp_path):
+    import training.phase11b_ingest_closeout as closeout_module
+    canonical = _write_canonical_dataset(tmp_path, _two_articles())
+    modified = tmp_path / "amendment_05_modified.json"
+    modified.write_bytes(AMENDMENT_05.read_bytes() + b" ")
+    original = closeout_module.AMENDMENT_05_PATH
+    try:
+        for stand_in in (modified, tmp_path / "does_not_exist.json"):
+            closeout_module.AMENDMENT_05_PATH = stand_in
+            with pytest.raises(CloseoutError, match="amendment_05_final_totals_run_cap.json is missing or differs"):
+                _closeout(tmp_path, canonical, report_path=tmp_path / "r.json")
+            assert not (tmp_path / "r.json").exists()
+    finally:
+        closeout_module.AMENDMENT_05_PATH = original
+
+
+def test_closeout_judges_final_totals_not_the_first_fresh_chunk(tmp_path):
+    """The incident pattern: 1/490 in the first fresh chunk, then clean fresh chunks -> final 1/550 passes."""
+    chunks = [_chunk(9668, 0, source=INFERRED, reused=True), _chunk(490, 1, source="recorded_in_snapshot_meta",
+                                                                    reused=True), _chunk(60)]
+    canonical = _write_canonical_dataset(tmp_path, _two_articles(), chunks=chunks)
+    _, rpt = _closeout(tmp_path, canonical, report_path=tmp_path / "r.json")
+    assert rpt["n_raw_records_fetched_among_fresh_chunks"] == 550 and rpt["n_inferred_chunks"] == 1
+    assert rpt["malformed_fraction_among_fresh_chunks"] == 1 / 550
+    assert rpt["malformed_fraction_total"] == 1 / 10218

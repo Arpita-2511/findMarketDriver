@@ -69,8 +69,10 @@ from services.alpaca_news_provider import (                 # noqa: E402
     MALFORMED_POLICY_AMENDMENT_SHA256,
     MALFORMED_REASONS,
     MALFORMED_RUN_PCT_CAP,
+    RUN_CAP_POLICY_AMENDMENT_SHA256,
     chunk_malformed_threshold,
     malformed_policy,
+    run_cap_policy,
 )
 from services.historical_news_ingestion import malformed_totals   # noqa: E402
 from services.news_dataset import load_canonical_dataset   # noqa: E402
@@ -97,6 +99,7 @@ assert len(TICKERS_QUERIED) == 30
 PHASE_11B_DIR = PROJECT_ROOT / "data" / "results" / "research" / "phase11" / "11B"
 DESIGN_FREEZE_PATH = PHASE_11B_DIR / "design_freeze.json"
 AMENDMENT_04_PATH = PHASE_11B_DIR / "amendment_04_malformed_record_policy.json"
+AMENDMENT_05_PATH = PHASE_11B_DIR / "amendment_05_final_totals_run_cap.json"
 REPORT_PATH = PHASE_11B_DIR / "news_integrity_report.json"
 
 CONTRACT_VERSION = "phase_11b_amendment_03"
@@ -429,6 +432,10 @@ def malformed_summary(manifest: dict) -> dict:
         raise CloseoutError("amendment_04_malformed_record_policy.json is missing or differs from the pinned SHA256")
     if manifest.get("malformed_policy") != malformed_policy():
         raise CloseoutError("manifest malformed_policy is missing or differs from the adopted Amendment 04 policy")
+    if not AMENDMENT_05_PATH.exists() or _file_sha256(AMENDMENT_05_PATH) != RUN_CAP_POLICY_AMENDMENT_SHA256:
+        raise CloseoutError("amendment_05_final_totals_run_cap.json is missing or differs from the pinned SHA256")
+    if manifest.get("run_cap_policy") != run_cap_policy():
+        raise CloseoutError("manifest run_cap_policy is missing or differs from the adopted Amendment 05 policy")
     chunks = manifest.get("chunks") or []
     if not chunks:
         raise CloseoutError("manifest has no chunks")
@@ -470,6 +477,8 @@ def malformed_summary(manifest: dict) -> dict:
         "malformed_cap_per_chunk_pct_ceiling": pol["pct_ceiling"],
         "malformed_cap_run_pct": pol["run_pct_cap"],
         "malformed_policy_amendment_sha256": pol["amendment_sha256"],
+        "run_cap_policy_amendment_sha256": run_cap_policy()["amendment_sha256"],
+        "run_cap_evaluation": run_cap_policy()["evaluation"],
     }
 
 

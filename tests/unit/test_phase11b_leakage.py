@@ -89,6 +89,7 @@ PHASE_11B_DIR = PROJECT_ROOT / "data" / "results" / "research" / "phase11" / "11
 DESIGN_FREEZE_PATH = PHASE_11B_DIR / "design_freeze.json"
 AMENDMENT_03_PATH = PHASE_11B_DIR / "amendment_03_test_gates.json"
 AMENDMENT_04_PATH = PHASE_11B_DIR / "amendment_04_malformed_record_policy.json"
+AMENDMENT_05_PATH = PHASE_11B_DIR / "amendment_05_final_totals_run_cap.json"
 NEWS_INTEGRITY_REPORT = PHASE_11B_DIR / "news_integrity_report.json"
 FEATURE_VERIFICATION_PATH = PHASE_11B_DIR / "feature_verification.json"
 
@@ -496,9 +497,10 @@ def _assert_t5_seal_synthetic():
     )
 
 
-def _assert_t5_seal_real():
+def _assert_t5_seal_real(report: dict | None = None):
     """Stage 11B.1 must produce news_integrity_report.json confirming the sealing split."""
-    report = _load_json(NEWS_INTEGRITY_REPORT)
+    if report is None:
+        report = _load_json(NEWS_INTEGRITY_REPORT)
     assert report.get("split_applied_before_scoring") is True, (
         "T5-real: news_integrity_report.json must set split_applied_before_scoring=true"
     )
@@ -537,6 +539,16 @@ def _assert_t5_seal_real():
     reasons = report.get("malformed_reason_counts_total")
     assert isinstance(reasons, dict) and set(reasons) <= categories, (
         f"T5-real: malformed_reason_counts_total has non-frozen categories: {sorted(set(reasons or {}) - categories)}"
+    )
+
+    # Amendment 05: run caps judged on final totals, under the adopted run-level policy file
+    amendment_05 = _load_json(AMENDMENT_05_PATH)
+    assert amendment_05.get("status") == "ADOPTED", "T5-real: Amendment 05 must be ADOPTED"
+    assert report.get("run_cap_policy_amendment_sha256") == _sha256_file(AMENDMENT_05_PATH), (
+        "T5-real: report was produced under a different Amendment 05 file than the one on disk"
+    )
+    assert report.get("run_cap_evaluation") == "final_totals", (
+        f"T5-real: run_cap_evaluation must be 'final_totals', got {report.get('run_cap_evaluation')!r}"
     )
 
 
@@ -1239,3 +1251,44 @@ def test_design_freeze_and_amendment_03_present():
         f"Amendment records {recorded_sha}, live file is {live_sha}. "
         "Either the design freeze has been modified (prohibited) or Amendment 03's recorded SHA is wrong."
     )
+
+
+# ============================================================
+# Gate B report check on synthetic closeout output (Amendments 03-05)
+# ============================================================
+
+
+def _synthetic_closeout_report(tmp_path):
+    from tests.unit.test_phase11b_ingest_closeout import INFERRED, _chunk, _closeout, _two_articles, \
+        _write_canonical_dataset
+    canonical = _write_canonical_dataset(tmp_path, _two_articles(),
+                                         chunks=[_chunk(9668, 0, source=INFERRED, reused=True), _chunk(1000, 1)])
+    _, report = _closeout(tmp_path, canonical, report_path=tmp_path / "news_integrity_report.json")
+    return report
+
+
+def test_gate_b_report_check_accepts_valid_synthetic_closeout_report(tmp_path):
+    _assert_t5_seal_real(_synthetic_closeout_report(tmp_path))
+
+
+@pytest.mark.parametrize("key, value", [
+    ("run_cap_policy_amendment_sha256", None),                 # missing
+    ("run_cap_policy_amendment_sha256", "0" * 64),
+    ("run_cap_evaluation", None),
+    ("run_cap_evaluation", "per_chunk"),
+    ("malformed_policy_amendment_sha256", "0" * 64),
+    ("malformed_fraction_total", 0.0020001),
+    ("malformed_fraction_among_fresh_chunks", 0.0020001),
+    ("n_raw_records_fetched_total", 1),
+    ("malformed_reason_counts_total", {"updated_before_created": 0}),
+    ("split_applied_before_scoring", False),
+    ("development_sealed_intersection_empty", None),
+])
+def test_gate_b_report_check_rejects_missing_or_inconsistent_fields(tmp_path, key, value):
+    report = _synthetic_closeout_report(tmp_path)
+    if value is None:
+        report.pop(key)
+    else:
+        report[key] = value
+    with pytest.raises(AssertionError):
+        _assert_t5_seal_real(report)
