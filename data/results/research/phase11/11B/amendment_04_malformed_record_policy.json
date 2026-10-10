@@ -1,0 +1,381 @@
+{
+  "document_type": "phase_11b_amendment",
+  "amendment_id": "04",
+  "title": "Malformed Alpaca Record Exclusion Policy",
+  "phase": "11B",
+  "status": "ADOPTED",
+  "proposed_date": "2026-10-10",
+  "revision": 3,
+  "revision_history": [
+    {
+      "rev": 1,
+      "date": "2026-10-10",
+      "note": "Initial draft."
+    },
+    {
+      "rev": 2,
+      "date": "2026-10-10",
+      "note": "User-requested clarifications: fractional threshold handling, run-cap timing, raw-denominator precise definition, reused-snapshot handling for the 14 pre-amendment chunks, explicit all-or-nothing proof under cap failure, and reiteration that the schema stays strict and no required field is ever synthesised."
+    },
+    {
+      "rev": 3,
+      "date": "2026-10-10",
+      "note": "Adopted by the project owner with two required improvements: (a) the raw-record denominator is measured from every response page before conversion, filtering or deduplication; the post-conversion len(articles) is never the denominator for a freshly fetched chunk; (b) the 0.2% run cap is enforced separately on fresh chunks as well as on the cumulative run, both during ingestion and at Gate B. One internal-consistency correction: reason category 'updated_before_created' is withdrawn because it is not a NewsArticle schema violation (see what_counts_as_malformed.withdrawn_categories)."
+    }
+  ],
+  "immutable_once_adopted": true,
+  "preserves_design_freeze": true,
+  "preserves_amendment_03": true,
+  "weakens_assertions": false,
+  "applies_to": {
+    "design_freeze": "data/results/research/phase11/11B/design_freeze.json",
+    "design_freeze_sha256_at_adoption": "cf7a14fbce45dc466a66993ffb985f4623022bb33a320caae0d6947495436d5f",
+    "amendment_03": "data/results/research/phase11/11B/amendment_03_test_gates.json",
+    "amendment_03_sha256_at_adoption": "0040483259cd3febea1feff6301fa545acaa8a21813006f62a06a50d49e02253",
+    "scope_of_change": "services/alpaca_news_provider.py behaviour on records that fail NewsArticle schema validation; services/historical_news_ingestion.py manifest aggregation and run-cap gating; training/phase11b_ingest_closeout.py report aggregation; tests of all three. No change to NewsArticle itself, to the design freeze, to Amendment 03, or to any Phase 8 artefact."
+  },
+  "trigger": {
+    "incident": "First Phase 11B ingestion attempt (2026-10-10, 30-symbol run) aborted at chunk 15 (2018-02-25 to 2018-03-27) with NewsValidationError: 'headline is required (article 11415383)'",
+    "root_cause": "services/alpaca_news_provider.py:98 substitutes raw.get('headline') or '' when Alpaca returns a null or missing headline; services/news_schema.py:113 then rejects that empty string. Multi-symbol historical queries over 30 tickers across 9+ years inevitably surface sporadic provider records lacking a headline. The frozen single-article fail-closed behaviour (asserted by tests/unit/test_alpaca_news_provider.py::test_invalid_article_fails_the_fetch) prevents the dataset from ever completing.",
+    "scope_of_malformed_records": "estimated to be a very small fraction of total Alpaca historical articles; exact fraction unknown pre-amendment"
+  },
+  "problem": "The design freeze's 'manifest: all-or-nothing' and 'ingestion_failure: no partial dataset; re-run whole retrieval' were written against single-ticker runs (Phase 8) where malformed records were not observed. The frozen policy admits only two outcomes: a chunk succeeds in full, or the whole run aborts. With a multi-symbol 9-year historical query, a single malformed Alpaca record is sufficient to make the run unrecoverable without a code change. The design freeze is silent on malformed-record handling at the provider boundary.",
+  "resolution": {
+    "principle": "Exclude malformed Alpaca records at the provider boundary (before NewsArticle is constructed), count them, record their identifiers and reasons, and allow the chunk to continue only while the excluded fraction stays below a frozen cap. The all-or-nothing manifest behaviour is preserved: any chunk-level or run-level cap failure aborts the run with NO manifest written and therefore NO canonical dataset.",
+    "non_synthesis": "No missing or invalid field is ever synthesized or substituted. The NewsArticle schema remains strict. Exclusions remove records; they do not repair them. The strict schema assertion `headline is required` in services/news_schema.py is preserved verbatim; this amendment never touches it."
+  },
+  "what_counts_as_malformed": {
+    "definition": "An Alpaca raw record is malformed when it would fail NewsArticle.__post_init__ as currently written in services/news_schema.py, before any defensive substitution by services/alpaca_news_provider.alpaca_to_canonical. The schema is the authority; the provider's job becomes to refuse to build an invalid NewsArticle, not to coerce one.",
+    "reason_categories": {
+      "missing_or_blank_headline": "raw.headline is missing, null, an empty string, or whitespace-only. A non-null non-string headline is NOT in this category and propagates as an unknown schema violation (fails the chunk).",
+      "missing_or_blank_id": "raw.id is missing, null, or str(raw.id) is empty/whitespace-only",
+      "missing_created_at": "raw.created_at is missing, null, not a string, blank, not ISO-8601, or timezone-naive (services.news_schema.parse_timestamp raises)",
+      "invalid_updated_at": "raw.updated_at is truthy but parse_timestamp raises (unparseable or naive). A falsy updated_at (missing, null, empty string) is treated as absent, exactly as the existing converter does.",
+      "invalid_symbols_type": "raw.symbols is present and truthy but not a list, or is a list containing a non-string or an empty/whitespace-only entry. A missing, null or empty list is valid (the schema accepts no symbols)."
+    },
+    "any_new_category_requires_amendment_update": true,
+    "silent_catch_of_unknown_exceptions_prohibited": true,
+    "comment_on_coverage": "Any exception raised by alpaca_to_canonical that is not explicitly in the reason_categories list must propagate (fail the chunk). A new reason category requires a new amendment or an amendment revision; it may not be added by code alone.",
+    "withdrawn_categories": {
+      "updated_before_created": {
+        "original_text": "parsed updated_at precedes created_at (schema contract: information_available_at >= created_at)",
+        "reason_withdrawn": "Not a schema violation. services.news_schema.historical_information_available_at returns max(created_at, updated_at), so information_available_at >= created_at always holds and NewsArticle accepts the record. The committed test tests/unit/test_alpaca_news_provider.py::test_information_available_at_semantics asserts such an article is valid (updated_at kept as reported, information_available_at == created_at). Excluding it would discard valid articles, contradict this amendment's own definition (malformed = fails NewsArticle.__post_init__), and break the inferred-zero proof for reused chunks (the strict pre-amendment policy did NOT reject such records). Read-only check: 0 of the 9,668 articles in the 14 saved chunks have updated_at < created_at."
+      }
+    },
+    "classification_order": [
+      "missing_or_blank_id",
+      "missing_or_blank_headline",
+      "missing_created_at",
+      "invalid_updated_at",
+      "invalid_symbols_type"
+    ],
+    "classification_order_note": "A record with several defects is assigned the first matching category in this fixed order, so the reason is deterministic.",
+    "unknown_violation_rule": "A record that passes the category pre-check is converted with the unchanged strict alpaca_to_canonical; any exception it raises propagates and fails the chunk."
+  },
+  "threshold": {
+    "intent": "Permit sporadic provider defects; abort immediately on systemic degradation. Two caps, both must hold.",
+    "per_chunk_cap": {
+      "rule_literal": "A chunk aborts the whole run if n_malformed_excluded_in_chunk > threshold_chunk, where threshold_chunk = max(ABS_FLOOR, PCT_CEILING * n_raw_records_fetched_in_chunk)",
+      "ABS_FLOOR": 10,
+      "ABS_FLOOR_type": "int",
+      "PCT_CEILING": 0.01,
+      "PCT_CEILING_type": "float",
+      "fractional_handling": {
+        "comparison_is_strict_greater_than": true,
+        "comparison_is_on_real_numbers": "n_malformed_excluded_in_chunk is int, threshold_chunk is a real-valued float. The comparison `int > float` evaluates in Python's native real arithmetic; neither value is rounded or truncated. Example: if n_raw_records_fetched_in_chunk = 2345 then PCT_CEILING * 2345 = 23.45; max(10, 23.45) = 23.45; abort iff excluded >= 24. A chunk with excluded = 23 passes.",
+        "no_hidden_rounding": "The implementation MUST NOT round, ceil, or floor threshold_chunk; the test suite MUST include a fractional-boundary case (e.g. 23 vs 24 malformed on a 2345-raw chunk) that would fail if any such rounding is applied.",
+        "why_strict_greater_than_not_greater_or_equal": "Using `>` (not `>=`) means the cap value itself is the largest permitted count, not one less. A chunk that produces exactly max(10, 1%) excluded records still passes. This matches ordinary data-engineering intuition for ceiling-style limits."
+      },
+      "small_chunk_rationale": {
+        "problem": "For a small chunk (say 500 raw records), PCT_CEILING * raw = 5. A pure-percentage rule would abort on the 6th malformed record. That is unreasonably strict given the natural statistical noise in a 500-article sample and the common pattern of 1 to 2 sporadic provider defects.",
+        "effect_of_ABS_FLOOR_at_small_chunks": "max(ABS_FLOOR, PCT_CEILING * raw) = max(10, 5) = 10. The chunk tolerates up to 10 malformed records (a 2% rate) before aborting.",
+        "effect_of_ABS_FLOOR_at_medium_chunks": "At raw = 1000, max(10, 10) = 10 (ABS_FLOOR still binding). At raw = 1001, max(10, 10.01) = 10.01 (PCT_CEILING just starts binding).",
+        "effect_of_ABS_FLOOR_at_large_chunks": "At raw = 5000, max(10, 50) = 50 (PCT_CEILING dominant). ABS_FLOOR has no effect for raw >= 1000; it only widens tolerance for small chunks.",
+        "why_this_is_acceptable": "Small chunks have higher relative variance in any provider-defect rate; the ABS_FLOOR deliberately tolerates a modest absolute count there so the run does not spuriously abort on a chunk whose sample is simply too small for the percentage cap to be statistically meaningful. The absolute 10-record ceiling across any chunk, combined with the stricter run cap (0.2% cumulative), ensures that even a long tail of small-chunk ABS_FLOOR-saturated events cannot escape the run cap.",
+        "cumulative_safeguard_against_small_chunk_abuse": "Even if every chunk operated at exactly ABS_FLOOR excluded records, the cumulative rate across a 119-chunk, roughly 300000-raw-record run would be about 1190/300000 ~= 0.4%, which EXCEEDS the 0.2% run cap. The run cap would therefore still abort a pathological 'every chunk at ABS_FLOOR' pattern well before it finishes."
+      }
+    },
+    "run_cap": {
+      "rule_literal": "After each chunk has been fully processed (its snapshot saved and its chunk-level entry appended to the in-memory manifest draft), the ingestion checks: cumulative_fraction = cumulative_n_malformed_excluded / max(1, cumulative_n_raw_records_fetched). If cumulative_fraction > RUN_PCT_CAP, the run aborts BEFORE starting the next chunk and BEFORE writing the manifest.",
+      "RUN_PCT_CAP": 0.002,
+      "RUN_PCT_CAP_type": "float",
+      "when_the_check_runs": {
+        "position": "At the end of each chunk iteration in services.historical_news_ingestion.run_historical_ingestion, after the save_news_snapshot call for that chunk succeeded, after the chunks[] list has been appended to, and before the next chunk's query is issued. There is no check mid-chunk and no check after the final chunk's save unless followed by a `continue` to a next iteration; the final-chunk check is therefore executed inside the loop body before the loop terminates (i.e. runs for every chunk including the last).",
+        "includes_the_just_completed_chunk": true,
+        "includes_the_just_completed_chunk_rationale": "The cumulative fraction accumulates every chunk the ingestion has observed. A chunk is 'observed' once its raw records have been fetched. The just-completed chunk's n_raw_records_fetched and n_malformed_excluded are added to the running totals before the cumulative comparison; otherwise a last-chunk degradation would never be caught.",
+        "fractional_handling_identical_to_per_chunk": "cumulative_n_malformed_excluded is int; cumulative_n_raw_records_fetched is int; RUN_PCT_CAP is float; comparison is `int / int > float` evaluated in Python real arithmetic; no rounding; strict `>` (not `>=`).",
+        "zero_division_guard": "max(1, cumulative_n_raw_records_fetched) prevents a 0/0 case; by construction the denominator is positive after the first chunk's successful save."
+      },
+      "cumulative_denominator_includes_reused_chunks": "cumulative_n_raw_records_fetched sums n_raw_records_fetched across ALL chunks in the current ingestion run, including chunks reused from a prior run via --resume. The malformed count for reused chunks is treated according to the Reused Snapshot Handling section below.",
+      "effect_on_already_saved_snapshot_of_current_chunk": "The current chunk's snapshot has already been written to disk by save_news_snapshot before the run-cap check. If the check fails, the saved snapshot stays on disk (uncorrupted and sha-verified). No manifest is written. The on-disk state is identical to any other mid-run abort: snapshots exist, no manifest exists, no canonical dataset exists. A later --resume may reuse the snapshot if, and only if, a subsequent amendment reclassifies the policy to permit it.",
+      "RUN_PCT_CAP_justification": "0.2 percent across the whole run. Stricter than any individual chunk's percentage cap. The intent is to catch a long tail of chunks that stay individually under their per-chunk cap but systematically bias the run upward. Also traps the small-chunk abuse edge case documented in per_chunk_cap.cumulative_safeguard_against_small_chunk_abuse.",
+      "fresh_only_rule_literal": "After each chunk (same position as the cumulative check), fresh_fraction = fresh_n_malformed_excluded / max(1, fresh_n_raw_records_fetched). If fresh_fraction > RUN_PCT_CAP, the run aborts before the next chunk and before the manifest write.",
+      "fresh_chunk_definition": "A chunk is FRESH when its malformed counts were measured under this amendment's policy: fetched in the current run (malformed_counts_source = 'measured_this_run') or reused from an earlier post-amendment run whose snapshot .meta.json records them (malformed_counts_source = 'recorded_in_snapshot_meta'). A chunk whose counts are inferred from the strict pre-amendment policy (malformed_counts_source = 'inferred_from_strict_pre_amendment_policy') is NOT fresh and contributes to neither the fresh numerator nor the fresh denominator, so inferred-zero chunks cannot dilute the fresh-data malformed rate.",
+      "both_run_caps_must_hold": true,
+      "known_consequence_small_denominators": "Because both run caps are evaluated after every chunk, early in a run the cap can bind before the per-chunk ABS_FLOOR does. Example: the first fresh chunk with 700 raw records may contain at most 1 excluded record (1/700 = 0.143% passes; 2/700 = 0.286% aborts) although its per-chunk cap is 10. This is a direct consequence of the approved rule and is recorded so it is not mistaken for a defect."
+    },
+    "overrides": {
+      "cli_override_prohibited": true,
+      "env_override_prohibited": true,
+      "note": "Neither cap is tunable at the command line or via environment variables. ABS_FLOOR, PCT_CEILING and RUN_PCT_CAP are module constants in services/alpaca_news_provider.py (MALFORMED_ABS_FLOOR, MALFORMED_PCT_CEILING, MALFORMED_RUN_PCT_CAP), imported by services/historical_news_ingestion.py and training/phase11b_ingest_closeout.py. Changing a cap requires a new amendment."
+    },
+    "abort_semantics": {
+      "per_chunk_cap_breach": {
+        "where_raised": "services.alpaca_news_provider.AlpacaNewsProvider.fetch_historical raises NewsProviderError INSIDE the chunk fetch, AFTER all pages for the chunk have been consumed and malformed counts tallied, BEFORE control returns to run_historical_ingestion.",
+        "disk_state_after_breach": "No snapshot file for the current chunk is written (save_news_snapshot is never called because fetch_historical raised). No manifest is written. Already-saved snapshots from earlier chunks of the same run remain on disk, sha-verified, untouched.",
+        "all_or_nothing_preserved": true,
+        "proof": "A canonical dataset exists if and only if build_canonical_dataset was invoked, which happens only after run_historical_ingestion wrote the manifest, which happens only after the for-loop over chunks completes without exception. A chunk-cap breach raises mid-loop; the manifest write at the end of run_historical_ingestion is never reached; build_canonical_dataset is never called."
+      },
+      "run_cap_breach": {
+        "where_raised": "services.historical_news_ingestion.run_historical_ingestion raises NewsProviderError after the current chunk's save_news_snapshot and chunks[] append completed, before the next loop iteration or the manifest write.",
+        "disk_state_after_breach": "The just-completed chunk's snapshot IS on disk (saved by save_news_snapshot before the check). No manifest is written. Earlier chunks' snapshots untouched.",
+        "all_or_nothing_preserved": true,
+        "proof": "Same proof as above: without a manifest, build_canonical_dataset is never invoked and no canonical dataset exists. The design freeze's news_acquisition.manifest = 'all-or-nothing' invariant is defined on the manifest, not on individual snapshots; the frozen rule 'missing_news_semantics.ingestion_failure: no partial dataset; re-run whole retrieval' refers to the processed canonical dataset, not to raw snapshots. Both are preserved."
+      },
+      "no_misleading_artifact": "Neither path can produce a manifest or canonical dataset that reports success. The only on-disk evidence of a failed run is a set of raw snapshots in data/raw/news/, which are explicitly permitted by the design freeze's resume semantics (news_acquisition.manifest + find_reusable_snapshot). An observer who finds snapshots but no manifest can only conclude that the run did not complete."
+    }
+  },
+  "exclusion_provenance": {
+    "n_raw_records_fetched_definition": {
+      "definition": "n_raw_records_fetched = the sum, across all pages of the chunk's Alpaca HTTP responses, of the length of each page's `news` array in the parsed JSON payload, counted BEFORE any filtering, deduplication, or NewsArticle construction. This is literally 'what Alpaca sent in response to this chunk's query'.",
+      "includes": [
+        "every entry in every page's `news` array, in the order received",
+        "entries that will later be duplicates of other entries in the same chunk",
+        "entries that will later be rejected by the malformed-record exclusion filter",
+        "entries that would later be filtered out because their canonical symbols do not intersect the requested symbol set (news_dataset.SYMBOL_RULE); such filtering happens during build_canonical_dataset (post-manifest), not during ingestion, so these entries are still in n_raw_records_fetched"
+      ],
+      "excludes": [
+        "entries that were never received (network error, HTTP 5xx, timeout, aborted retry sequence) - these fail the chunk via the existing retry/abort path, not via malformed-record exclusion",
+        "entries from an earlier chunk or a different ticker query",
+        "pagination tokens, HTTP headers, and other non-article payload"
+      ],
+      "duplicate_handling": "A duplicate across pages (same provider_article_id appearing in page 1 and page 3) is counted TWICE in n_raw_records_fetched because it was literally sent twice. Deduplication (services.news_provider.deduplicate) runs AFTER the raw count is taken and reduces the saved snapshot's row count via the existing n_duplicates_removed field. The malformed_fraction denominator is therefore the honest 'what the provider sent' number, not a post-dedup number.",
+      "measurement_rule": "For a freshly fetched chunk, n_raw_records_fetched is accumulated as len(payload['news']) for every response page, immediately after the page is received and before any record is classified, converted, filtered or deduplicated.",
+      "relation_to_n_raw_articles": "The existing provenance field n_raw_articles keeps its historical meaning: the number of records that were converted to NewsArticle, before deduplication. Under this amendment n_raw_articles = n_raw_records_fetched - n_malformed_excluded for a fresh chunk. n_raw_articles is NEVER used as the denominator of a freshly fetched chunk. It is used as the denominator only for an inferred (pre-amendment) chunk, where the strict policy guarantees n_malformed_excluded = 0 and therefore n_raw_articles equals the pre-conversion count."
+    },
+    "per_record": {
+      "schema": "{'provider_article_id': str_or_'<missing>', 'reason': one_of(reason_categories), 'chunk_start_utc': iso_str, 'chunk_end_utc': iso_str}",
+      "where_recorded": "In the per-chunk .meta.json next to the .jsonl snapshot, under key 'malformed_excluded'. Not in the .jsonl itself (the .jsonl is the canonical valid-articles stream and must stay strictly schema-conforming).",
+      "when_id_itself_is_malformed": "If raw.id is null or blank, provider_article_id is recorded as the literal string '<missing>' and the record is excluded with reason missing_or_blank_id. The '<missing>' marker is a documented sentinel, not a synthesised id."
+    },
+    "per_chunk": {
+      "fields_added_to_chunk_meta_json": {
+        "n_raw_records_fetched": "int, as defined above",
+        "n_malformed_excluded": "int, number removed by the exclusion filter",
+        "malformed_reason_counts": "dict {reason_category: int}, zero for reasons that did not occur",
+        "malformed_excluded": "list of per-record entries (see schema above), empty list if n_malformed_excluded == 0",
+        "malformed_fraction": "float = n_malformed_excluded / max(1, n_raw_records_fetched); never NaN; written to the .meta.json for the auditor"
+      },
+      "field_semantics_vs_existing_meta": "These fields are additive. Existing meta keys (sha256, rows, pages, n_raw_articles, n_duplicates_removed, n_conflicting_duplicates) retain their current semantics unchanged. If n_raw_records_fetched is implemented by reusing n_raw_articles verbatim, that reuse is permissible and documented here."
+    },
+    "manifest_totals": {
+      "fields_added_to_manifest_totals": {
+        "n_raw_records_fetched": "int, sum across all chunks (including reused)",
+        "n_malformed_excluded": "int, sum across all chunks (including reused; see Reused Snapshot Handling)",
+        "malformed_reason_counts": "dict {reason_category: int}, summed across all chunks",
+        "malformed_fraction": "float, cumulative = n_malformed_excluded / max(1, n_raw_records_fetched)",
+        "max_per_chunk_malformed_fraction": "float, the single worst chunk's fraction across the run"
+      },
+      "manifest_is_still_all_or_nothing": true,
+      "manifest_also_records_caps": "The manifest records the three cap constants (ABS_FLOOR, PCT_CEILING, RUN_PCT_CAP) in a top-level 'malformed_policy' block, so an auditor can reconstruct the exact threshold logic that admitted the run without reading the amendment file."
+    }
+  },
+  "reused_snapshot_handling": {
+    "scope": "The 14 multi-symbol chunk snapshots already saved to data/raw/news/ by the 2026-10-10 pre-amendment ingestion attempt (chunks 2017-01-01 to 2018-02-25).",
+    "under_what_policy_were_they_saved": "The strict single-article-fail-closed policy that this amendment supersedes. Under that policy, any malformed article in a chunk raised NewsValidationError inside fetch_historical and prevented save_news_snapshot from being called. Therefore, the fact that each of the 14 chunks has a saved .jsonl AND a saved .meta.json (both sha-verified) is itself evidence that no malformed article was present in that chunk's Alpaca response.",
+    "inferred_malformed_counts_for_reused_chunks": {
+      "n_malformed_excluded": 0,
+      "malformed_reason_counts": {},
+      "malformed_excluded": [],
+      "basis": "This is a logical consequence of the policy under which the chunks were saved, not an invention. If any single raw record in the chunk had been malformed, the strict pre-amendment policy would have raised and the snapshot would never have been written. The snapshots exist; therefore no malformed record was present; therefore the exclusion counts are provably zero.",
+      "distinguishable_from_invention": "The amendment does NOT write a '0' into a reused .meta.json file. The .meta.json files are left byte-exact; their sha256 remains verifiable by load_news_snapshot. The '0' values are supplied by the ingestion module at manifest-build time (in the chunks[] entry for reused chunks), not by editing the .meta.json. The ingestion module's chunks[] entry explicitly carries a 'reused': True flag and a 'malformed_counts_source' field whose value is 'inferred_from_strict_pre_amendment_policy'. The report and manifest therefore surface the reasoning rather than hiding it."
+    },
+    "n_raw_records_fetched_for_reused_chunks": {
+      "source": "The existing per-chunk provenance already records n_raw_articles (the pre-dedup page-sum). This value is read from the reused chunk's .meta.json verbatim.",
+      "if_absent_in_old_meta": "If n_raw_articles is missing from a reused .meta.json (not expected for the 14 chunks above but defensively specified), the chunk MUST be re-fetched rather than silently assigned 0. 'Missing provenance' is never equal to 'zero'. The ingestion module must refuse to proceed in this case; the test suite must cover it.",
+      "consistency_check": "For an inferred chunk the ingestion requires integer n_raw_articles, rows and n_duplicates_removed in the verified .meta.json and n_raw_articles == rows + n_duplicates_removed; otherwise it refuses to proceed. Read-only check on 2026-10-10: the identity holds for all 14 saved chunks; sum(n_raw_articles) = 9,668."
+    },
+    "treatment_in_cumulative_calculations": "Reused chunks contribute their inferred n_malformed_excluded (0) and recorded n_raw_records_fetched to the cumulative totals. Freshly-fetched chunks under the new policy contribute real measured values. The cumulative malformed_fraction therefore reflects whatever excluded records exist in the newly-fetched portion of the run; it does not understate the fraction because reused chunks are proven zero under the stricter pre-amendment policy.",
+    "integrity_report_surfacing": "news_integrity_report.json records both n_reused_chunks and n_fresh_chunks, and separately records n_malformed_excluded_among_fresh_chunks and n_raw_records_fetched_among_fresh_chunks, so an auditor can see the fresh-only fraction (which cannot be inferred).",
+    "boundary_rule": "If any reused chunk's .meta.json records that it was saved by a provider version AFTER this amendment was adopted (identifiable because the provider will stamp its implementation signature into the provenance), its malformed counts come from the recorded provenance, not from the inferred-zero rule. The inferred-zero rule applies ONLY to chunks saved before this amendment is adopted.",
+    "recorded_post_amendment_chunks": "A reused snapshot whose .meta.json carries the malformed fields must also carry malformed_policy.amendment_sha256 equal to the pinned value; otherwise the ingestion refuses to proceed (a snapshot saved under a different policy is never silently mixed in)."
+  },
+  "schema_strictness_invariant": {
+    "statement": "services/news_schema.py NewsArticle validation is unchanged. The 'headline is required' check at line 113 remains in force. Blank, null, or whitespace-only headlines still raise NewsValidationError when a NewsArticle is constructed directly. The code change implied by this amendment is contained in services/alpaca_news_provider.py: the provider refuses to pass a malformed raw record to NewsArticle at all. The schema is not asked to accept any record it previously rejected.",
+    "test_regression_guard_required": "A test MUST exist that constructs NewsArticle(headline='', ...) directly and asserts NewsValidationError is still raised; this guards against a future accidental schema relaxation that would silently invalidate this amendment.",
+    "no_field_is_synthesised": "At no point does the provider or any other module invent a headline, id, timestamp, symbol list, or any other required field. Exclusion is the only remedy for malformed input. If an exclusion category is ever expanded via amendment, it must still exclude - never substitute."
+  },
+  "gate_b_verification": {
+    "news_integrity_report_new_fields": {
+      "n_raw_records_fetched_total": "int, from manifest totals (reused + fresh)",
+      "n_malformed_excluded_total": "int, from manifest totals (reused inferred-zero + fresh measured)",
+      "malformed_fraction_total": "float, cumulative over the run",
+      "max_per_chunk_malformed_fraction": "float, worst single chunk",
+      "malformed_reason_counts_total": "dict",
+      "n_reused_chunks": "int",
+      "n_fresh_chunks": "int",
+      "n_raw_records_fetched_among_fresh_chunks": "int",
+      "n_malformed_excluded_among_fresh_chunks": "int",
+      "malformed_fraction_among_fresh_chunks": "float",
+      "malformed_cap_per_chunk_abs_floor": "int (frozen constant, echoed for audit)",
+      "malformed_cap_per_chunk_pct_ceiling": "float (frozen constant)",
+      "malformed_cap_run_pct": "float (frozen constant)",
+      "malformed_policy_amendment_sha256": "hex SHA256 of this amendment file at the time of ingestion, pinned so a drift in the amendment file after ingestion is detectable",
+      "n_inferred_chunks": "int, chunks with inferred-zero malformed counts",
+      "malformed_reason_categories": "list, the frozen category names"
+    },
+    "gate_b_pass_conditions_added": [
+      "malformed_fraction_total <= malformed_cap_run_pct (defence-in-depth; redundant with ingestion's own run-cap abort, but catches a code regression that disables that cap)",
+      "max_per_chunk_malformed_fraction, when compared against max(malformed_cap_per_chunk_abs_floor / max(1, per_chunk_raw_count), malformed_cap_per_chunk_pct_ceiling) using the per-chunk raw count, is within the policy for every chunk",
+      "every key in malformed_reason_counts_total is one of the frozen reason_categories (new reason categories cannot ship via code; they require an amendment update)",
+      "malformed_policy_amendment_sha256 in the report matches the live SHA256 of amendment_04_malformed_record_policy.json on disk at Gate B evaluation time (detects post-ingestion amendment drift)",
+      "malformed_fraction_among_fresh_chunks <= malformed_cap_run_pct (approved improvement; inferred chunks cannot dilute the fresh-data rate)"
+    ],
+    "gate_b_test_updates_required": [
+      "_assert_t5_seal_real: report['n_raw_records_fetched_total'] >= development_article_count + sealed_article_count",
+      "_assert_t5_seal_real: report['malformed_fraction_total'] <= 0.002",
+      "_assert_t5_seal_real: report['malformed_fraction_among_fresh_chunks'] <= 0.002",
+      "_assert_t5_seal_real: every key in report['malformed_reason_counts_total'] is a frozen category of this file",
+      "_assert_t5_seal_real: report['malformed_policy_amendment_sha256'] equals the live SHA256 of this file"
+    ],
+    "existing_gate_b_assertions_remain": [
+      "split_applied_before_scoring is True",
+      "development_sealed_intersection_empty is True",
+      "development_article_count is positive int",
+      "sealed_article_count is non-negative int",
+      "development_article_sha256 and sealed_article_id_sha256 are 64-char lowercase hex",
+      "tickers_queried_count == 30"
+    ],
+    "amendment_03_contract_additive_only": "The seven required keys from Amendment 03 contract_for_future_stages.stage_11b_1_must_write remain required and keep their original semantics. The new fields above are additive. No Amendment 03 field is removed, renamed, or weakened."
+  },
+  "compatibility_with_existing_artifacts": {
+    "design_freeze_invariants_preserved": [
+      "news_acquisition.tickers_queried: unchanged (30 symbols, UTX included)",
+      "news_acquisition.interval: unchanged (2017-01-01 to 2026-09-29, half-open)",
+      "news_acquisition.chunking: unchanged (30-day chunks)",
+      "news_acquisition.content_flag: unchanged (--no-content)",
+      "news_acquisition.manifest: all-or-nothing (preserved; cap failure aborts the run with no manifest)",
+      "news_acquisition.chunk_record_cap: unchanged (500,000)",
+      "news_acquisition.on_cap_exceeded: unchanged (abort run, never silently truncate)",
+      "news_acquisition.deduplication: unchanged ((provider, provider_article_id); keep latest)",
+      "news_acquisition.canonical_file_never_edited: unchanged",
+      "sealing_policy: unchanged (dev cutoff 2024-09-30T20:30:00Z; <= cutoff is development)",
+      "rtx_utx_mapping: unchanged (boundary 2020-04-03T04:00:00Z)",
+      "leakage_controls: unchanged",
+      "missing_news_semantics: unchanged",
+      "amendment_02_aapl_reproducibility: unchanged (Phase 8 AAPL dataset passed strict validation; this amendment does not retroactively alter those articles)",
+      "finbert_provenance: unchanged",
+      "anti_leakage_tests T1-T15: unchanged in count; T5-real gains three defence-in-depth assertions; no assertion weakened",
+      "execution_stages: unchanged",
+      "stop_conditions: unchanged (the 11 frozen conditions all still apply)"
+    ],
+    "amendment_03_invariants_preserved": [
+      "'real experiment' definition: unchanged (Stage 11B.4 model training)",
+      "gate_a / gate_b / gate_c structure: unchanged",
+      "status codes PASS / BLOCKED_NOT_YET_ELIGIBLE / FAIL: unchanged",
+      "authorization_logic: unchanged (a single BLOCKED or FAIL denies its gate)",
+      "contract_for_future_stages.stage_11b_1_must_write seven required keys: unchanged (new keys are ADDITIVE)",
+      "gate_authorization pytest marker: unchanged"
+    ],
+    "phase_8_artifacts_preserved": [
+      "data/raw/news/alpaca_AAPL_*.jsonl and .meta.json: unchanged on disk; filename pattern differs from the multi-symbol run; cannot be reused by this amendment's provider nor by find_reusable_snapshot",
+      "data/processed/news/alpaca_AAPL_*.jsonl canonical datasets: unchanged; all articles there already passed strict schema; no retroactive exclusion applies"
+    ]
+  },
+  "test_strategy": {
+    "frozen_test_to_replace": "tests/unit/test_alpaca_news_provider.py::test_invalid_article_fails_the_fetch - this test currently asserts the single-article abort behaviour. It MUST be replaced (not deleted) with the new tests below. The replacement must be committed in the same change as the code.",
+    "new_tests_required_in_tests_unit_test_alpaca_news_provider_py": [
+      "test_blank_headline_is_excluded_and_counted",
+      "test_null_headline_is_excluded_and_counted",
+      "test_whitespace_only_headline_is_excluded_and_counted",
+      "test_missing_id_is_excluded_and_counted",
+      "test_missing_created_at_is_excluded_and_counted",
+      "test_invalid_updated_at_is_excluded_and_counted",
+      "test_invalid_symbols_type_is_excluded_and_counted (string instead of list, list with non-str entries, list with empty strings)",
+      "test_per_chunk_cap_above_threshold_aborts (synthetic chunk with excluded > max(10, 1%))",
+      "test_per_chunk_cap_fractional_boundary (chunk with raw=2345 and excluded=23 passes; excluded=24 aborts) - guards against hidden rounding",
+      "test_per_chunk_cap_abs_floor_small_chunk (chunk with raw=500 and excluded=10 passes; excluded=11 aborts) - validates small-chunk tolerance",
+      "test_per_chunk_cap_below_threshold_proceeds (synthetic chunk with few malformed records)",
+      "test_valid_article_still_passes_schema_strictly_regression_guard (direct NewsArticle(headline='') still raises; schema is NOT weakened)",
+      "test_unknown_schema_violation_propagates (an exception not in the reason_categories list fails the chunk; silent catch is prohibited)",
+      "test_per_record_sentinel_for_missing_id (an excluded record with no provider id records '<missing>' as its id in the exclusion list)",
+      "test_updated_before_created_is_kept_not_excluded (withdrawn category; regression guard)",
+      "test_raw_count_is_measured_before_conversion_and_dedup"
+    ],
+    "new_tests_required_in_tests_unit_test_historical_news_ingestion_py": [
+      "test_manifest_chunk_entry_has_malformed_fields",
+      "test_manifest_totals_aggregate_malformed_counts (fresh chunks only)",
+      "test_run_cap_check_timing (cap is checked after each chunk's save; the just-completed chunk IS included in the cumulative; a last-chunk breach aborts after save without manifest)",
+      "test_run_cap_includes_reused_chunks_in_denominator",
+      "test_reused_chunk_contributes_inferred_zero_malformed (reused chunk's chunks[] entry carries reused=True and malformed_counts_source='inferred_from_strict_pre_amendment_policy')",
+      "test_reused_chunk_missing_n_raw_articles_refuses_to_proceed (defensive: no silent zero substitution)",
+      "test_cap_breach_leaves_no_manifest (both per-chunk and run-cap paths)",
+      "test_cap_breach_leaves_prior_snapshots_intact (sha-verified reusability preserved)",
+      "test_fresh_only_run_cap_not_diluted_by_inferred_chunks"
+    ],
+    "new_tests_required_in_tests_unit_test_phase11b_ingest_closeout_py": [
+      "test_report_includes_malformed_summary_fields",
+      "test_report_includes_reused_vs_fresh_breakdown",
+      "test_report_fails_gate_b_contract_if_run_fraction_exceeds_cap (manually construct a manifest totals block whose malformed_fraction > 0.002; closeout refuses to write a report asserting split_applied_before_scoring=True)",
+      "test_report_fails_gate_b_contract_if_new_reason_category_appears (unknown reason in malformed_reason_counts_total must fail)",
+      "test_report_pins_amendment_04_sha_and_detects_drift"
+    ],
+    "gate_a_implication": "test_gate_a_is_clear re-executes every closeout contract test via the inline enumeration in _assert_ingest_closeout_contract_passes; the new tests above will be picked up automatically provided they are callable with (no-args | tmp_path) signatures.",
+    "regression_suite": "Must still return 0 failures after the code change. test_invalid_article_fails_the_fetch is the only test removal; it is replaced by the enumerated tests above.",
+    "frozen_tests_to_replace": [
+      "tests/unit/test_alpaca_news_provider.py::test_invalid_article_fails_the_fetch",
+      "tests/unit/test_historical_news_ingestion.py::test_malformed_record_fails_run",
+      "tests/unit/test_historical_news_ingestion.py::test_invalid_timestamp_fails_run"
+    ],
+    "frozen_tests_to_replace_note": "Each asserts the superseded single-record abort; each is replaced in the same change by tests of the adopted behaviour (exclusion, caps, provenance)."
+  },
+  "non_goals": [
+    "Does not relax any NewsArticle schema check in services/news_schema.py.",
+    "Does not synthesize headlines, ids, timestamps, or symbol lists under any condition.",
+    "Does not reinstate articles previously excluded by Phase 8's strict schema.",
+    "Does not edit any existing .meta.json file on disk (the 14 reused chunks' metadata is read verbatim; derived zero-exclusion counts are produced at manifest-build time, not written back into the old .meta.json).",
+    "Does not change the frozen Phase 11B universe, interval, chunk size, content flag, cutoff, mapping, or any of the 11 stop conditions.",
+    "Does not change the 23 Gate A assertions already in test_phase11b_leakage.py; Gate C real-data assertions remain unchanged in count and intent; Gate B gains three defence-in-depth assertions.",
+    "Does not change Amendment 03's PASS / BLOCKED_NOT_YET_ELIGIBLE / FAIL semantics.",
+    "Does not expose the caps to CLI flags or environment variables."
+  ],
+  "approval_and_implementation_sequence": {
+    "step_1_user_review_this_draft": "User reviews this file (currently revision 2). If approved, authorises the status transition DRAFT_FOR_USER_REVIEW -> ADOPTED; a one-line edit to status plus an approval_date field is the amendment's canonical adoption event.",
+    "step_2_amendment_adopted_sha_pinned": "After adoption, hashlib.sha256 of this file is pinned in services/alpaca_news_provider.py and training/phase11b_ingest_closeout.py as a drift guard, mirroring the FROZEN_DESIGN_FREEZE_SHA256 pattern already in the closeout module.",
+    "step_3_code_change": "Implement the exclusion filter in services/alpaca_news_provider.py; propagate the new provenance fields through services/historical_news_ingestion.py including the run-cap check; propagate through training/phase11b_ingest_closeout.py's report.",
+    "step_4_tests": "Author the tests enumerated above; replace test_invalid_article_fails_the_fetch; run full regression suite.",
+    "step_5_commit": "User reviews the diff and commits manually (no git activity by Claude).",
+    "step_6_resume_ingestion": "User runs the ingestion command with --resume. The 14 already-saved chunks are reused (inferred-zero malformed counts, source flagged); chunk 15 onward is re-fetched with the exclusion filter active.",
+    "step_7_closeout_and_gate_b": "User runs the closeout against the new canonical dataset, then runs test_gate_b_is_clear."
+  },
+  "risks_and_considerations": [
+    "Risk: a chunk straddling a provider schema change could legitimately trip the per-chunk cap and abort the run. Intentional: forces diagnosis rather than silent acceptance.",
+    "Risk: 11415383 might not be unique; other symbols' histories could contain analogous records. The 0.2% run cap tolerates many such records as long as they are sporadic and uncorrelated.",
+    "Risk: a provider change could introduce a new malformed reason category not yet enumerated. Code is required to propagate an unknown exception rather than catch it silently (what_counts_as_malformed.silent_catch_of_unknown_exceptions_prohibited: true). A new category requires a new amendment.",
+    "Risk: the inferred-zero rule for reused chunks relies on the strict pre-amendment policy being correctly characterised. If the pre-amendment code had a different bug that allowed a malformed article through, inferred-zero would be incorrect. Mitigation: the chunks[] entry explicitly records malformed_counts_source='inferred_from_strict_pre_amendment_policy', surfacing the reasoning to the auditor; the integrity report breaks out reused vs fresh counts so a reader can discount the inferred portion if desired.",
+    "Risk: the integrity report's malformed_fraction becomes a user-visible number that invites informal tuning. The caps are frozen in code constants; the amendment update process (not CLI, not env var) is the only way to change them."
+  ],
+  "unchanged_invariants_summary": [
+    "Design freeze SHA256 unchanged.",
+    "Amendment 03 SHA256 unchanged.",
+    "NewsArticle schema unchanged.",
+    "No existing .meta.json file edited.",
+    "Phase 8 artefacts unchanged.",
+    "Frozen 30-ticker universe unchanged.",
+    "Frozen date range unchanged.",
+    "Development cutoff unchanged.",
+    "UTX-to-RTX mapping unchanged.",
+    "All-or-nothing manifest behaviour preserved for both chunk-cap and run-cap abort paths.",
+    "No synthesis or substitution of missing or invalid fields.",
+    "Fresh-only and cumulative run caps both enforced; inferred chunks never dilute the fresh rate."
+  ],
+  "approval_date": "2026-10-10",
+  "adoption": {
+    "approved_by": "project owner",
+    "approved_improvements": [
+      "raw denominator measured per response page before conversion, filtering and deduplication",
+      "fresh-chunk-only run cap enforced in addition to the cumulative run cap (ingestion and Gate B)"
+    ],
+    "sha256_pinned_in": "services/alpaca_news_provider.py MALFORMED_POLICY_AMENDMENT_SHA256 (echoed into every snapshot .meta.json, the manifest and news_integrity_report.json; training/phase11b_ingest_closeout.py refuses to write a report if the live file differs)"
+  }
+}

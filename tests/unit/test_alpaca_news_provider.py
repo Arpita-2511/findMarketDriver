@@ -10,11 +10,15 @@ from services.alpaca_news_provider import (
     ALPACA_MAX_PAGE_SIZE,
     API_KEY_ENV,
     API_SECRET_ENV,
+    MALFORMED_POLICY_AMENDMENT_SHA256,
+    MALFORMED_REASONS,
     AlpacaNewsProvider,
     alpaca_to_canonical,
+    chunk_malformed_threshold,
+    classify_malformed,
 )
 from services.news_provider import NewsAuthError, NewsPaginationError, NewsProviderError, NewsQuery
-from services.news_schema import ML_FACING_FIELDS, NewsValidationError
+from services.news_schema import ML_FACING_FIELDS, NewsArticle, NewsValidationError
 
 UTC = timezone.utc
 KEY = "TEST-KEY-ID-not-real"
@@ -118,11 +122,134 @@ def test_required_field_validation(mutate, message):
         alpaca_to_canonical(item, FETCHED)
 
 
-def test_invalid_article_fails_the_fetch():
+# Amendment 04 (Rev 3, ADOPTED): malformed records are excluded, counted and
+# capped; this replaces the superseded single-record abort test.
+
+def _without(key):
+    return lambda r: r.pop(key)
+
+
+def _set(key, value):
+    return lambda r: r.update({key: value})
+
+
+MALFORMED_CASES = [
+    (_without("id"), "missing_or_blank_id"),
+    (_set("id", None), "missing_or_blank_id"),
+    (_set("id", "   "), "missing_or_blank_id"),
+    (_without("headline"), "missing_or_blank_headline"),
+    (_set("headline", None), "missing_or_blank_headline"),
+    (_set("headline", ""), "missing_or_blank_headline"),
+    (_set("headline", " \t "), "missing_or_blank_headline"),
+    (_without("created_at"), "missing_created_at"),
+    (_set("created_at", None), "missing_created_at"),
+    (_set("created_at", "not-a-date"), "missing_created_at"),
+    (_set("created_at", "2017-01-03T14:30:00"), "missing_created_at"),        # naive
+    (_set("updated_at", "garbage"), "invalid_updated_at"),
+    (_set("updated_at", "2017-01-03T14:35:00"), "invalid_updated_at"),        # naive
+    (_set("symbols", "AAPL"), "invalid_symbols_type"),
+    (_set("symbols", ["AAPL", 5]), "invalid_symbols_type"),
+    (_set("symbols", ["AAPL", " "]), "invalid_symbols_type"),
+]
+
+
+@pytest.mark.parametrize("mutate, reason", MALFORMED_CASES)
+def test_malformed_record_is_excluded_counted_and_never_repaired(mutate, reason):
     bad = raw(2)
-    bad["headline"] = ""
+    mutate(bad)
+    assert classify_malformed(bad) == reason
+    with pytest.raises(NewsValidationError):                     # the strict converter still rejects it
+        alpaca_to_canonical(bad, FETCHED)
+
+    result = provider(FakeSession(page([raw(1), bad, raw(3)]))).fetch_historical(query())
+    p = result.provenance
+    assert [a.provider_article_id for a in result.articles] == ["1", "3"]
+    assert (p["n_raw_records_fetched"], p["n_malformed_excluded"], p["n_raw_articles"]) == (3, 1, 2)
+    assert p["malformed_reason_counts"] == {r: int(r == reason) for r in MALFORMED_REASONS}
+    assert p["malformed_excluded"] == [{
+        "provider_article_id": "<missing>" if reason == "missing_or_blank_id" else "2", "reason": reason,
+        "chunk_start_utc": "2017-01-01T00:00:00Z", "chunk_end_utc": "2017-02-01T00:00:00Z"}]
+    assert p["malformed_fraction"] == 1 / 3
+    assert p["malformed_policy"]["amendment_sha256"] == MALFORMED_POLICY_AMENDMENT_SHA256
+
+
+def test_classification_order_is_deterministic():
+    item = raw(1, created="nope")
+    item.pop("id")
+    item["headline"] = None
+    assert classify_malformed(item) == "missing_or_blank_id"
+    item["id"] = 7
+    assert classify_malformed(item) == "missing_or_blank_headline"
+
+
+@pytest.mark.parametrize("mutate", [_set("headline", 123), _set("summary", 5), _set("source", ["x"])])
+def test_violation_outside_the_categories_fails_the_chunk(mutate):
+    bad = raw(2)
+    mutate(bad)
+    assert classify_malformed(bad) is None
     with pytest.raises(NewsValidationError):
         provider(FakeSession(page([raw(1), bad]))).fetch_historical(query())
+
+
+def test_non_object_item_fails_the_chunk():
+    with pytest.raises(NewsValidationError, match="not an object"):
+        provider(FakeSession(page([raw(1), "junk"]))).fetch_historical(query())
+
+
+def test_missing_or_empty_symbols_and_falsy_updated_at_stay_valid():
+    for item in (raw(1, symbols=()), {**raw(2), "updated_at": None}, {k: v for k, v in raw(3).items() if k != "symbols"}):
+        assert classify_malformed(item) is None
+        alpaca_to_canonical(item, FETCHED)
+
+
+def test_updated_before_created_is_kept_not_excluded():
+    item = raw(1, created="2017-01-03T14:30:00Z", updated="2017-01-03T14:00:00Z")
+    assert classify_malformed(item) is None
+    result = provider(FakeSession(page([item]))).fetch_historical(query())
+    assert len(result.articles) == 1 and result.provenance["n_malformed_excluded"] == 0
+
+
+def test_schema_still_rejects_blank_or_missing_headline_directly():
+    base = dict(provider="alpaca", provider_article_id="1", symbols=("AAPL",), created_at=FETCHED,
+                information_available_at=FETCHED, fetched_at=FETCHED)
+    for headline in ("", "   ", None):
+        with pytest.raises(NewsValidationError, match="headline is required"):
+            NewsArticle(headline=headline, **base)
+
+
+def test_raw_count_is_measured_before_conversion_and_dedup():
+    bad = raw(9, headline=None)
+    session = FakeSession(page([raw(1), raw(2), bad], "t"), page([raw(2), raw(3)]))
+    p = provider(session).fetch_historical(query()).provenance
+    assert p["n_raw_records_fetched"] == 5                 # every record of every page
+    assert p["n_malformed_excluded"] == 1
+    assert p["n_raw_articles"] == 4                         # converted, before dedup
+    assert (p["n_duplicates_removed"], p["n_articles"]) == (1, 3)
+
+
+def _chunk_page(n_valid, n_bad):
+    return page([raw(i) for i in range(n_valid)] + [raw(100_000 + i, headline=None) for i in range(n_bad)])
+
+
+@pytest.mark.parametrize("n_raw, n_bad, passes", [
+    (500, 10, True), (500, 11, False),              # ABS_FLOOR binds: max(10, 5.0) = 10
+    (1000, 10, True), (1000, 11, False),            # tie: max(10, 10.0) = 10
+    (2345, 23, True), (2345, 24, False),            # fractional: max(10, 23.45) = 23.45, no rounding
+])
+def test_per_chunk_cap_boundaries(n_raw, n_bad, passes):
+    session = FakeSession(_chunk_page(n_raw - n_bad, n_bad))
+    if passes:
+        p = provider(session).fetch_historical(query()).provenance
+        assert (p["n_raw_records_fetched"], p["n_malformed_excluded"]) == (n_raw, n_bad)
+    else:
+        with pytest.raises(NewsProviderError, match="per-chunk cap exceeded") as exc:
+            provider(session).fetch_historical(query())
+        assert_no_secret(str(exc.value))
+
+
+def test_chunk_threshold_is_not_rounded():
+    assert chunk_malformed_threshold(2345) == 23.45
+    assert chunk_malformed_threshold(0) == 10 and chunk_malformed_threshold(500) == 10
 
 
 # ==========================================

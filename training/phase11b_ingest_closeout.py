@@ -65,8 +65,17 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from services.alpaca_news_provider import (                 # noqa: E402
+    MALFORMED_POLICY_AMENDMENT_SHA256,
+    MALFORMED_REASONS,
+    MALFORMED_RUN_PCT_CAP,
+    chunk_malformed_threshold,
+    malformed_policy,
+)
+from services.historical_news_ingestion import malformed_totals   # noqa: E402
 from services.news_dataset import load_canonical_dataset   # noqa: E402
 from services.news_schema import NewsArticle               # noqa: E402
+from services.news_service import RAW_NEWS_DIR             # noqa: E402
 
 # ============================================================
 # Frozen constants (never derive from runtime input)
@@ -87,6 +96,7 @@ assert len(TICKERS_QUERIED) == 30
 
 PHASE_11B_DIR = PROJECT_ROOT / "data" / "results" / "research" / "phase11" / "11B"
 DESIGN_FREEZE_PATH = PHASE_11B_DIR / "design_freeze.json"
+AMENDMENT_04_PATH = PHASE_11B_DIR / "amendment_04_malformed_record_policy.json"
 REPORT_PATH = PHASE_11B_DIR / "news_integrity_report.json"
 
 CONTRACT_VERSION = "phase_11b_amendment_03"
@@ -410,22 +420,93 @@ def process(articles: list[NewsArticle]) -> dict:
     return report
 
 
+def malformed_summary(manifest: dict) -> dict:
+    """
+    Amendment 04 checks on an ingestion manifest; returns the report fields.
+    Totals are recomputed from the per-chunk entries, never trusted as written.
+    """
+    if not AMENDMENT_04_PATH.exists() or _file_sha256(AMENDMENT_04_PATH) != MALFORMED_POLICY_AMENDMENT_SHA256:
+        raise CloseoutError("amendment_04_malformed_record_policy.json is missing or differs from the pinned SHA256")
+    if manifest.get("malformed_policy") != malformed_policy():
+        raise CloseoutError("manifest malformed_policy is missing or differs from the adopted Amendment 04 policy")
+    chunks = manifest.get("chunks") or []
+    if not chunks:
+        raise CloseoutError("manifest has no chunks")
+    required = ("n_raw_records_fetched", "n_malformed_excluded", "malformed_reason_counts",
+                "malformed_fraction", "malformed_counts_source")
+    for c in chunks:
+        if any(k not in c for k in required):
+            raise CloseoutError(f"manifest chunk {c.get('start')} lacks malformed-record fields")
+        if set(c["malformed_reason_counts"]) != set(MALFORMED_REASONS):
+            raise CloseoutError(f"manifest chunk {c.get('start')} has non-frozen malformed reason categories")
+        if sum(c["malformed_reason_counts"].values()) != c["n_malformed_excluded"]:
+            raise CloseoutError(f"manifest chunk {c.get('start')} reason counts do not sum to its excluded count")
+        if c["n_malformed_excluded"] > chunk_malformed_threshold(c["n_raw_records_fetched"]):
+            raise CloseoutError(f"manifest chunk {c.get('start')} exceeds the per-chunk malformed cap")
+    t = malformed_totals(chunks)
+    written = manifest.get("totals", {})
+    if any(written.get(k) != v for k, v in t.items()):
+        raise CloseoutError("manifest malformed totals disagree with its per-chunk entries")
+    if t["malformed_fraction"] > MALFORMED_RUN_PCT_CAP:
+        raise CloseoutError(f"cumulative malformed fraction {t['malformed_fraction']} exceeds {MALFORMED_RUN_PCT_CAP}")
+    if t["malformed_fraction_among_fresh_chunks"] > MALFORMED_RUN_PCT_CAP:
+        raise CloseoutError(
+            f"fresh-chunk malformed fraction {t['malformed_fraction_among_fresh_chunks']} exceeds {MALFORMED_RUN_PCT_CAP}")
+    pol = malformed_policy()
+    return {
+        "n_raw_records_fetched_total": t["n_raw_records_fetched"],
+        "n_malformed_excluded_total": t["n_malformed_excluded"],
+        "malformed_fraction_total": t["malformed_fraction"],
+        "max_per_chunk_malformed_fraction": t["max_per_chunk_malformed_fraction"],
+        "malformed_reason_counts_total": t["malformed_reason_counts"],
+        "malformed_reason_categories": list(MALFORMED_REASONS),
+        "n_reused_chunks": sum(1 for c in chunks if c.get("reused")),
+        "n_fresh_chunks": t["n_fresh_chunks"],
+        "n_inferred_chunks": t["n_inferred_chunks"],
+        "n_raw_records_fetched_among_fresh_chunks": t["n_raw_records_fetched_among_fresh_chunks"],
+        "n_malformed_excluded_among_fresh_chunks": t["n_malformed_excluded_among_fresh_chunks"],
+        "malformed_fraction_among_fresh_chunks": t["malformed_fraction_among_fresh_chunks"],
+        "malformed_cap_per_chunk_abs_floor": pol["abs_floor"],
+        "malformed_cap_per_chunk_pct_ceiling": pol["pct_ceiling"],
+        "malformed_cap_run_pct": pol["run_pct_cap"],
+        "malformed_policy_amendment_sha256": pol["amendment_sha256"],
+    }
+
+
+def _load_manifest(canonical_meta: dict, raw_dir: Path) -> tuple[Path, dict]:
+    ref = canonical_meta.get("manifest") or {}
+    path = Path(raw_dir) / str(ref.get("file", ""))
+    if not ref.get("file") or not path.is_file():
+        raise CloseoutError(f"ingestion manifest referenced by the canonical dataset not found: {path}")
+    if _file_sha256(path) != ref.get("sha256"):
+        raise CloseoutError(f"ingestion manifest hash mismatch: {path.name}")
+    return path, json.loads(path.read_text(encoding="utf-8"))
+
+
 def run_closeout(
     canonical_path: Path,
     *,
     report_path: Path = REPORT_PATH,
     overwrite: bool = False,
+    raw_dir: Path = RAW_NEWS_DIR,
 ) -> tuple[Path, dict]:
     """
-    End-to-end: load canonical dataset (sha256-verified), build report, write atomically.
-
-    Returns (report_path, report_dict). Does not modify the canonical file.
+    End-to-end: load canonical dataset (sha256-verified) and its ingestion
+    manifest (sha256-verified), apply the Amendment 04 checks, build the
+    report, write atomically. Returns (report_path, report_dict). Does not
+    modify the canonical file or the manifest.
     """
     canonical_path = Path(canonical_path)
     report_path = Path(report_path)
 
     articles, canonical_meta = load_canonical_dataset(canonical_path)      # verifies sha256
+    manifest_path, manifest = _load_manifest(canonical_meta, raw_dir)
+    malformed = malformed_summary(manifest)
     report = process(articles)
+    if malformed["n_raw_records_fetched_total"] < report["development_article_count"] + report["sealed_article_count"]:
+        raise CloseoutError("raw record total is smaller than the canonical article count")
+    report.update(malformed)
+    report["ingestion_manifest"] = {"file": manifest_path.name, "sha256": _file_sha256(manifest_path)}
 
     # Design freeze SHA verification: if the local design_freeze.json has drifted
     # from the frozen value, refuse to write (fail-closed).

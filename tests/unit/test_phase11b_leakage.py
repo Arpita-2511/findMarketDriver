@@ -88,6 +88,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PHASE_11B_DIR = PROJECT_ROOT / "data" / "results" / "research" / "phase11" / "11B"
 DESIGN_FREEZE_PATH = PHASE_11B_DIR / "design_freeze.json"
 AMENDMENT_03_PATH = PHASE_11B_DIR / "amendment_03_test_gates.json"
+AMENDMENT_04_PATH = PHASE_11B_DIR / "amendment_04_malformed_record_policy.json"
 NEWS_INTEGRITY_REPORT = PHASE_11B_DIR / "news_integrity_report.json"
 FEATURE_VERIFICATION_PATH = PHASE_11B_DIR / "feature_verification.json"
 
@@ -517,6 +518,26 @@ def _assert_t5_seal_real():
         assert isinstance(v, str) and len(v) == 64 and all(c in "0123456789abcdef" for c in v), (
             f"T5-real: {key} must be a lowercase 64-char hex sha256, got {v!r}"
         )
+
+    # Amendment 04 (values taken from the adopted amendment file, not from the code under test)
+    amendment = _load_json(AMENDMENT_04_PATH)
+    assert amendment.get("status") == "ADOPTED", "T5-real: Amendment 04 must be ADOPTED"
+    run_cap = amendment["threshold"]["run_cap"]["RUN_PCT_CAP"]
+    categories = set(amendment["what_counts_as_malformed"]["reason_categories"])
+    assert report.get("malformed_policy_amendment_sha256") == _sha256_file(AMENDMENT_04_PATH), (
+        "T5-real: report was produced under a different Amendment 04 file than the one on disk"
+    )
+    n_raw = report.get("n_raw_records_fetched_total")
+    assert isinstance(n_raw, int) and n_raw >= dev_count + sealed_count, (
+        f"T5-real: n_raw_records_fetched_total {n_raw!r} must be >= development + sealed article counts"
+    )
+    for key in ("malformed_fraction_total", "malformed_fraction_among_fresh_chunks"):
+        v = report.get(key)
+        assert isinstance(v, (int, float)) and v <= run_cap, f"T5-real: {key}={v!r} exceeds run cap {run_cap}"
+    reasons = report.get("malformed_reason_counts_total")
+    assert isinstance(reasons, dict) and set(reasons) <= categories, (
+        f"T5-real: malformed_reason_counts_total has non-frozen categories: {sorted(set(reasons or {}) - categories)}"
+    )
 
 
 # ============================================================

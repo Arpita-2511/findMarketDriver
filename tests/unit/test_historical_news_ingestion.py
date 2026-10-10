@@ -14,10 +14,12 @@ from services.historical_news_ingestion import (
     create_provider,
     run_historical_ingestion,
 )
+from services.alpaca_news_provider import alpaca_to_canonical, malformed_policy
 from services.news_dataset import build_canonical_dataset, load_canonical_dataset
-from services.news_provider import NewsAuthError, NewsPaginationError, NewsProviderError
+from services.news_provider import NewsAuthError, NewsFetchResult, NewsPaginationError, NewsProviderError, NewsQuery
 from services.news_schema import NewsValidationError
-from tests.news_fakes import KEY, SECRET, FakeResponse, FakeSession, make_provider, page, raw
+from services.news_service import load_news_snapshot, save_news_snapshot
+from tests.news_fakes import FETCHED, KEY, SECRET, FakeResponse, FakeSession, make_provider, page, raw
 
 UTC = timezone.utc
 START = datetime(2017, 1, 1, tzinfo=UTC)
@@ -173,17 +175,132 @@ def test_empty_response(tmp_path):
     assert dataset.read_bytes() == b"" and meta["rows"] == 0 and meta["first_created_at"] is None
 
 
-def test_malformed_record_fails_run(tmp_path):
-    with pytest.raises(NewsValidationError, match="headline"):
+# ---- Amendment 04 (Rev 3, ADOPTED): malformed-record exclusion and caps ----
+# (supersedes test_malformed_record_fails_run / test_invalid_timestamp_fails_run)
+
+
+def valid(n, start=1, created="2017-01-01T15:00:00Z"):
+    return [raw(i, created=created) for i in range(start, start + n)]
+
+
+@pytest.mark.parametrize("bad, reason", [
+    (raw(9001, headline=None), "missing_or_blank_headline"),
+    (raw(9001, created="not-a-date"), "missing_created_at"),
+    (raw(9001, created="2017-01-02T10:00:00"), "missing_created_at"),            # naive
+])
+def test_malformed_record_excluded_within_caps(tmp_path, bad, reason):
+    _, manifest, dataset, meta = run(tmp_path, page(valid(600) + [bad]))           # 1/601 = 0.166% <= 0.2%
+    assert "9001" not in dataset_ids(dataset) and len(dataset_ids(dataset)) == 600
+    m = json.loads(manifest.read_text(encoding="utf-8"))
+    chunk = m["chunks"][0]
+    assert (chunk["n_raw_records_fetched"], chunk["n_malformed_excluded"]) == (601, 1)
+    assert chunk["malformed_reason_counts"][reason] == 1
+    assert chunk["malformed_counts_source"] == "measured_this_run"
+    assert (m["totals"]["n_raw_records_fetched"], m["totals"]["n_malformed_excluded"]) == (601, 1)
+    assert m["totals"]["malformed_fraction_among_fresh_chunks"] == 1 / 601
+    assert m["malformed_policy"] == malformed_policy()
+
+    snap = manifest.parent / chunk["snapshot"]
+    snap_meta = json.loads(snap.with_suffix(".meta.json").read_text(encoding="utf-8"))
+    assert snap_meta["malformed_excluded"] == [{"provider_article_id": "9001", "reason": reason,
+                                                "chunk_start_utc": "2017-01-01T00:00:00Z",
+                                                "chunk_end_utc": "2017-01-03T00:00:00Z"}]
+    assert b'"9001"' not in snap.read_bytes()                                      # exclusions stay out of JSONL
+
+
+def test_run_cap_breach_after_save_leaves_snapshot_but_no_manifest(tmp_path):
+    with pytest.raises(NewsProviderError, match="cumulative run cap exceeded"):     # 1/2 > 0.2%; per-chunk cap 10 ok
         run(tmp_path, page([raw(1), raw(2, headline=None)]))
+    assert len(list((tmp_path / "raw").glob("*.jsonl"))) == 1
     assert no_manifest(tmp_path)
 
 
-@pytest.mark.parametrize("bad", ["not-a-date", "2017-01-02T10:00:00"])   # garbage, naive
-def test_invalid_timestamp_fails_run(tmp_path, bad):
-    with pytest.raises(NewsValidationError):
-        run(tmp_path, page([raw(1, created=bad)]))
+def test_per_chunk_cap_breach_leaves_no_snapshot_and_no_manifest(tmp_path):
+    with pytest.raises(NewsProviderError, match="per-chunk cap exceeded"):
+        run(tmp_path, page(valid(1) + [raw(9000 + i, headline=None) for i in range(11)]))
+    assert not list((tmp_path / "raw").glob("*.jsonl"))
     assert no_manifest(tmp_path)
+
+
+def test_run_cap_is_checked_after_the_last_chunk_and_keeps_earlier_snapshots_valid(tmp_path):
+    # chunk 1 clean (600), chunk 2 (the last) 1 valid + 2 malformed: 2/603 > 0.2%
+    with pytest.raises(NewsProviderError, match="run cap exceeded after chunk 2017-01-02"):
+        run(tmp_path, page(valid(600)), page(valid(1, 700, "2017-01-02T15:00:00Z")
+                                             + [raw(9001, headline=None), raw(9002, headline=None)]), chunk_days=1)
+    snaps = sorted((tmp_path / "raw").glob("*.jsonl"))
+    assert len(snaps) == 2 and no_manifest(tmp_path)
+    articles, meta = load_news_snapshot(snaps[0])                                   # hash-verified, reusable
+    assert len(articles) == 600 and meta["n_malformed_excluded"] == 0
+
+
+# ---- reused snapshots: inferred (pre-amendment) vs recorded (post-amendment) ----
+
+CHUNK1_END = datetime(2017, 1, 2, tzinfo=UTC)
+
+
+def legacy_snapshot(raw_dir, n, **prov_overrides):
+    """A chunk-1 snapshot as the pre-amendment provider wrote it (no malformed-record fields)."""
+    q = NewsQuery(symbols=("AAPL",), start=START, end=CHUNK1_END)
+    arts = [alpaca_to_canonical(item, FETCHED) for item in valid(n)]
+    prov = {"provider": "alpaca", "request": q.describe(), "fetch_finished_at": "2026-09-30T10:00:00+00:00",
+            "pages": 1, "n_raw_articles": n, "n_articles": n, "n_duplicates_removed": 0,
+            "n_conflicting_duplicates": 0, **prov_overrides}
+    return save_news_snapshot(NewsFetchResult(articles=arts, provenance=prov), q, raw_dir)
+
+
+def resume(tmp_path, *responses):
+    return run_historical_ingestion(make_provider(FakeSession(*responses)), config(chunk_days=1),
+                                    raw_dir=tmp_path / "raw", clock=lambda: RUN_CLOCK, resume=True)
+
+
+def test_reused_legacy_chunk_contributes_inferred_zero(tmp_path):
+    legacy = legacy_snapshot(tmp_path / "raw", 50)
+    before = legacy.read_bytes(), legacy.with_suffix(".meta.json").read_bytes()
+    m = json.loads(resume(tmp_path, page(valid(600, 100, "2017-01-02T15:00:00Z"))).read_text(encoding="utf-8"))
+    c0, c1 = m["chunks"]
+    assert (c0["reused"], c0["malformed_counts_source"], c0["n_raw_records_fetched"], c0["n_malformed_excluded"]) == \
+        (True, "inferred_from_strict_pre_amendment_policy", 50, 0)
+    assert (c1["reused"], c1["malformed_counts_source"]) == (False, "measured_this_run")
+    assert (m["totals"]["n_inferred_chunks"], m["totals"]["n_fresh_chunks"]) == (1, 1)
+    assert m["totals"]["n_raw_records_fetched"] == 650
+    assert (legacy.read_bytes(), legacy.with_suffix(".meta.json").read_bytes()) == before   # never rewritten
+
+
+def test_fresh_only_run_cap_not_diluted_by_inferred_chunks(tmp_path):
+    legacy_snapshot(tmp_path / "raw", 2000)
+    fresh = valid(500, 5000, "2017-01-02T15:00:00Z") + [raw(9001, headline=None), raw(9002, headline=None)]
+    # cumulative 2/2502 = 0.08% passes; fresh-only 2/502 = 0.40% must abort
+    with pytest.raises(NewsProviderError, match="fresh-chunk run cap exceeded"):
+        resume(tmp_path, page(fresh))
+    assert not list((tmp_path / "raw").glob("*.manifest.json"))
+
+
+@pytest.mark.parametrize("overrides", [{"n_raw_articles": 51}, {"n_raw_articles": None}])
+def test_reused_legacy_chunk_with_missing_or_inconsistent_counts_is_refused(tmp_path, overrides):
+    legacy_snapshot(tmp_path / "raw", 50, **overrides)
+    with pytest.raises(NewsValidationError, match="refusing to infer"):
+        resume(tmp_path, page(valid(600, 100, "2017-01-02T15:00:00Z")))
+    assert not list((tmp_path / "raw").glob("*.manifest.json"))
+
+
+def test_reused_snapshot_from_a_different_policy_is_refused(tmp_path):
+    legacy_snapshot(tmp_path / "raw", 50, n_raw_records_fetched=50, n_malformed_excluded=0,
+                    malformed_reason_counts={}, malformed_policy={"amendment_sha256": "0" * 64})
+    with pytest.raises(NewsValidationError, match="different malformed-record policy"):
+        resume(tmp_path, page(valid(600, 100, "2017-01-02T15:00:00Z")))
+
+
+def test_reused_post_amendment_chunk_uses_recorded_counts(tmp_path):
+    raw_dir = tmp_path / "raw"
+    with pytest.raises(NewsProviderError):                                          # chunk 2 fails after retries
+        run_historical_ingestion(make_provider(FakeSession(page(valid(600) + [raw(9001, headline=None)]),
+                                                           *[FakeResponse(503)] * 4)),
+                                 config(chunk_days=1), raw_dir=raw_dir, clock=lambda: RUN_CLOCK)
+    m = json.loads(resume(tmp_path, page(valid(600, 1000, "2017-01-02T15:00:00Z"))).read_text(encoding="utf-8"))
+    c0 = m["chunks"][0]
+    assert (c0["reused"], c0["malformed_counts_source"], c0["n_raw_records_fetched"], c0["n_malformed_excluded"]) == \
+        (True, "recorded_in_snapshot_meta", 601, 1)
+    assert m["totals"]["n_fresh_chunks"] == 2 and m["totals"]["n_malformed_excluded_among_fresh_chunks"] == 1
 
 
 def test_provider_error_propagates(tmp_path):

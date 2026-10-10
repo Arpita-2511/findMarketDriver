@@ -60,6 +60,16 @@ DEFAULT_MAX_PAGES = 10_000         # hard stop: 500k articles at 50/page
 
 RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 
+# Phase 11B Amendment 04 (Rev 3, ADOPTED): malformed-record exclusion policy.
+# data/results/research/phase11/11B/amendment_04_malformed_record_policy.json
+MALFORMED_POLICY_AMENDMENT_SHA256 = "fa05a3ec4bc7562b362ce09cfe3cd1ae4d7060f453642d7015d210acc8e6bb5a"
+MALFORMED_REASONS = ("missing_or_blank_id", "missing_or_blank_headline", "missing_created_at",
+                     "invalid_updated_at", "invalid_symbols_type")          # classification order
+MALFORMED_ABS_FLOOR = 10
+MALFORMED_PCT_CEILING = 0.01
+MALFORMED_RUN_PCT_CAP = 0.002
+MISSING_ID_SENTINEL = "<missing>"
+
 # Response fields mapped into the canonical schema; everything else is
 # kept in provider_metadata for provenance only.
 MAPPED_FIELDS = {"id", "headline", "summary", "content", "symbols", "source", "url",
@@ -68,6 +78,49 @@ MAPPED_FIELDS = {"id", "headline", "summary", "content", "symbols", "source", "u
 
 def _rfc3339(dt: datetime) -> str:
     return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def malformed_policy() -> dict[str, Any]:
+    return {"amendment_sha256": MALFORMED_POLICY_AMENDMENT_SHA256, "reasons": list(MALFORMED_REASONS),
+            "abs_floor": MALFORMED_ABS_FLOOR, "pct_ceiling": MALFORMED_PCT_CEILING,
+            "run_pct_cap": MALFORMED_RUN_PCT_CAP}
+
+
+def chunk_malformed_threshold(n_raw_records_fetched: int) -> float:
+    """Per-chunk cap; a chunk fails iff n_malformed_excluded > this value (no rounding)."""
+    return max(MALFORMED_ABS_FLOOR, MALFORMED_PCT_CEILING * n_raw_records_fetched)
+
+
+def classify_malformed(raw: Any) -> str | None:
+    """
+    The Amendment 04 category of a record that the strict converter would
+    reject, or None. Mirrors alpaca_to_canonical / NewsArticle checks; it
+    never repairs a record. Anything not covered here (e.g. a non-object
+    item, a non-string headline) is left to alpaca_to_canonical, whose
+    error then fails the chunk.
+    """
+    if not isinstance(raw, Mapping):
+        return None
+    article_id = raw.get("id")
+    if article_id is None or str(article_id).strip() == "":
+        return "missing_or_blank_id"
+    headline = raw.get("headline")
+    if headline is None or (isinstance(headline, str) and not headline.strip()):
+        return "missing_or_blank_headline"
+    try:
+        parse_timestamp(raw.get("created_at"), "created_at")
+    except NewsValidationError:
+        return "missing_created_at"
+    if raw.get("updated_at"):
+        try:
+            parse_timestamp(raw.get("updated_at"), "updated_at")
+        except NewsValidationError:
+            return "invalid_updated_at"
+    symbols = raw.get("symbols")
+    if symbols and (not isinstance(symbols, list)
+                    or not all(isinstance(s, str) and s.strip() for s in symbols)):
+        return "invalid_symbols_type"
+    return None
 
 
 def alpaca_to_canonical(raw: Mapping[str, Any], fetched_at: datetime) -> NewsArticle:
@@ -95,7 +148,7 @@ def alpaca_to_canonical(raw: Mapping[str, Any], fetched_at: datetime) -> NewsArt
     return NewsArticle(
         provider=AlpacaNewsProvider.name,
         provider_article_id=article_id,
-        headline=raw.get("headline") or "",
+        headline=raw.get("headline"),
         summary=raw.get("summary"),
         content=raw.get("content"),
         symbols=tuple(symbols),
@@ -243,6 +296,9 @@ class AlpacaNewsProvider(NewsProvider):
         seen_tokens: set[str] = set()
         token: str | None = None
         pages = 0
+        n_raw_records_fetched = 0
+        excluded: list[dict[str, str]] = []
+        chunk_start, chunk_end = _rfc3339(query.start), _rfc3339(query.end)
 
         while True:
             params = dict(base_params)
@@ -255,7 +311,16 @@ class AlpacaNewsProvider(NewsProvider):
             if not isinstance(items, list):
                 raise NewsProviderError("Alpaca response has no 'news' list")
 
-            articles.extend(alpaca_to_canonical(item, fetched_at) for item in items)
+            n_raw_records_fetched += len(items)              # before classification, conversion and dedup
+            for item in items:
+                reason = classify_malformed(item)
+                if reason is None:
+                    articles.append(alpaca_to_canonical(item, fetched_at))
+                    continue
+                item_id = item.get("id")
+                excluded.append({
+                    "provider_article_id": MISSING_ID_SENTINEL if reason == "missing_or_blank_id" else str(item_id),
+                    "reason": reason, "chunk_start_utc": chunk_start, "chunk_end_utc": chunk_end})
             pages += 1
 
             token = payload.get("next_page_token")
@@ -269,6 +334,16 @@ class AlpacaNewsProvider(NewsProvider):
                     f"Stopped after max_pages={max_pages} with more results remaining; "
                     "narrow the date range or raise max_pages"
                 )
+
+        threshold = chunk_malformed_threshold(n_raw_records_fetched)
+        if len(excluded) > threshold:
+            raise NewsProviderError(
+                f"malformed-record per-chunk cap exceeded for {chunk_start} .. {chunk_end}: "
+                f"{len(excluded)} excluded of {n_raw_records_fetched} raw records > {threshold} "
+                f"(max({MALFORMED_ABS_FLOOR}, {MALFORMED_PCT_CEILING} x raw)); no snapshot written")
+        reason_counts = {r: 0 for r in MALFORMED_REASONS}
+        for e in excluded:
+            reason_counts[e["reason"]] += 1
 
         unique, n_duplicates, n_conflicts = deduplicate(articles)
         requested = set(query.symbols)
@@ -289,5 +364,11 @@ class AlpacaNewsProvider(NewsProvider):
             "n_created_outside_window": sum(
                 1 for a in unique if not (query.start <= a.created_at <= query.end)),
             "n_without_requested_symbol": sum(1 for a in unique if not requested & set(a.symbols)),
+            "n_raw_records_fetched": n_raw_records_fetched,
+            "n_malformed_excluded": len(excluded),
+            "malformed_reason_counts": reason_counts,
+            "malformed_excluded": excluded,
+            "malformed_fraction": len(excluded) / max(1, n_raw_records_fetched),
+            "malformed_policy": malformed_policy(),
         }
         return NewsFetchResult(articles=unique, provenance=provenance)
