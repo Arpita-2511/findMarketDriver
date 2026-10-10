@@ -1,0 +1,615 @@
+{
+  "document_type": "phase_11b_design_freeze",
+  "phase": "11B",
+  "status": "APPROVED",
+  "frozen_before_any_11b_data": true,
+  "approval_date": "2026-10-10",
+
+  "builds_on": {
+    "phase_11_0_design_sha256": "266daaddba0e8cb18163b4ec9db7eadabe2d5ab574bf410e043a7d28d3247650",
+    "amendment_01_sha256": "94fadaa6135546b6ca1b422d1a5ebbb4e1a82442a3ca867ee3493c55bcc0485d",
+    "phase_11_1_price_verification_sha256": "c6afc03fec249e146c37c0b4f5c512835c1cda9d344229b8ac3f0ce7bd1b15b0",
+    "phase_11a_matrix_sha256": "0a405106615f7dfb9adf782ac9565579d9df268a2a4cf864c706ff9e841741ad"
+  },
+
+  "experiment_matrix": {
+    "feature_sets": {
+      "B": {
+        "n_features": 35,
+        "composition": "A (20 technical) + 15 cumulative sentiment",
+        "generator": "sentiment_features_v1"
+      },
+      "C": {
+        "n_features": 43,
+        "composition": "A (20 technical) + 23 event numeric columns",
+        "generator": "event_features_v1 on rules_v1"
+      },
+      "D": {
+        "n_features": 58,
+        "composition": "A (20 technical) + 15 cumulative sentiment + 23 event",
+        "generators": ["sentiment_features_v1", "event_features_v1"]
+      },
+      "F": {
+        "n_features": 64,
+        "composition": "A (20 technical) + 12 windowed sentiment + 23 event + 9 market context; sw_count_1 dropped",
+        "generators": ["sentiment_window_v1", "event_features_v1", "market_context"],
+        "sw_count_1_dropped": true,
+        "sw_count_1_drop_reason": "duplicates event__article_count; T13 verifies equality holds for every stock"
+      }
+    },
+    "feature_set_definitions_source": "training/phase11_design.py (frozen at phase_11_0_design_sha256)",
+    "universe": [
+      "AAPL", "AXP", "BA", "CAT", "CSCO", "CVX", "DIS", "GE", "GS", "HD",
+      "IBM", "INTC", "JNJ", "JPM", "KO", "MCD", "MMM", "MRK", "MSFT", "NKE",
+      "PFE", "PG", "RTX", "TRV", "UNH", "V", "VZ", "WMT", "XOM"
+    ],
+    "n_stocks": 29,
+    "dd_excluded": true,
+    "rtx_continues_utx": true,
+    "target": "excess return over SPY; direction = 1 if above 0",
+    "horizons": [1, 3, 5],
+    "models": {
+      "regression": [
+        "linear_regression",
+        "ridge",
+        "rf_regressor",
+        "histgradientboosting_regressor",
+        "xgboost_regressor",
+        "lightgbm_regressor"
+      ],
+      "classification": [
+        "logistic_regression",
+        "random_forest",
+        "xgboost",
+        "lightgbm",
+        "histgradientboosting"
+      ]
+    },
+    "n_models": 11,
+    "model_seed": 42,
+    "model_parameters": "fixed from Phase 9; no tuning",
+    "comparison_counts": {
+      "per_stock": 3828,
+      "panel_primary": 132,
+      "panel_ex_aapl_descriptive": 132,
+      "total_11b": 3960
+    },
+    "comparison_id_formats": {
+      "per_stock": "p11_stock_{SYM}_{FS}_h{h}_{model}",
+      "panel": "p11_panel_{FS}_h{h}_{model}",
+      "panel_ex_aapl": "p11_panel_exAAPL_{FS}_h{h}_{model}"
+    },
+    "comparison_id_authoritative_source": "data/results/research/phase11/design_registry.json",
+    "comparison_id_verified_by_design_sha256": "266daaddba0e8cb18163b4ec9db7eadabe2d5ab574bf410e043a7d28d3247650",
+    "any_count_other_than_3828_132_132_stops_run": true
+  },
+
+  "development_period": {
+    "start": "2017-02-01",
+    "end": "2024-09-30",
+    "cutoff_utc": "2024-09-30T20:30:00Z",
+    "cutoff_new_york": "2024-09-30T16:30:00",
+    "n_sessions_per_stock": 1928,
+    "n_oos_rows_per_per_stock_run": 1820,
+    "panel_oos_rows": {
+      "all_29_stocks_h1": 52780,
+      "ex_aapl_28_stocks_h1": 50960
+    },
+    "must_equal_11a_exactly": true
+  },
+
+  "confirmation_period": {
+    "start": "2024-10-01",
+    "end": "2026-09-25",
+    "status": "NOT_EVALUATED",
+    "condition": "May be opened only for development qualifiers, only with explicit project-owner authorization, and only once. Sealed news remains sealed until then."
+  },
+
+  "multiple_testing": {
+    "alpha": 0.05,
+    "qualification_requires_all_of": [
+      "gate_QUALIFIED",
+      "raw_p < 0.05",
+      "holm_p < 0.05"
+    ],
+    "final_families": {
+      "panel": {
+        "total": 198,
+        "phase_11a_count": 66,
+        "phase_11b_count": 132
+      },
+      "per_stock": {
+        "total": 5742,
+        "phase_11a_count": 1914,
+        "phase_11b_count": 3828
+      }
+    },
+    "phase_11a_p_values": {
+      "source": "data/results/research/phase11/11A/registry.json",
+      "loaded_by_hash": true,
+      "never_recomputed": true,
+      "all_raw_p_below_0_05": false
+    },
+    "panel_ex_aapl": {
+      "count": 198,
+      "holm_applied": false,
+      "qualification_possible": false,
+      "use": "descriptive only"
+    },
+    "stage_level_11b_holm": {
+      "panel": 132,
+      "per_stock": 3828,
+      "use": "descriptive only; final families decide qualification"
+    },
+    "dependence": "Holm is valid under arbitrary dependence; no independence assumption made.",
+    "note": "gate_v1, thresholds, DM test, reference baselines, and families all unchanged. No adjustments in response to Phase 11A results."
+  },
+
+  "gate_v1": {
+    "per_stock": {
+      "regression": {
+        "reference": "min(MSE(Mean Return baseline), MSE(Zero Return baseline))",
+        "conditions": ["MSE_model < reference", "DM_p < 0.05"]
+      },
+      "classification": {
+        "reference": "Base Rate baseline",
+        "conditions": ["log_loss_model < reference", "DM_p < 0.05", "accuracy_model >= accuracy(Always_UP)"]
+      }
+    },
+    "panel": {
+      "regression": {
+        "reference": "min(MSE(Zero), MSE(pooled Mean), MSE(Per-Stock Mean))",
+        "conditions": ["MSE_model < reference", "DM_p < 0.05"]
+      },
+      "classification": {
+        "reference": "min(log_loss(Base Rate), log_loss(Per-Stock Base Rate))",
+        "conditions": ["log_loss_model < reference", "DM_p < 0.05", "accuracy_model >= accuracy(Always_UP)"]
+      }
+    },
+    "dm_test": {
+      "direction": "one_sided",
+      "variance_estimator": "Newey-West",
+      "lags": "h - 1",
+      "d_definition": "loss_baseline - loss_model (positive = model better)"
+    }
+  },
+
+  "news_acquisition": {
+    "service": "services/historical_news_ingestion.py",
+    "tickers_queried": [
+      "AAPL", "AXP", "BA", "CAT", "CSCO", "CVX", "DIS", "GE", "GS", "HD",
+      "IBM", "INTC", "JNJ", "JPM", "KO", "MCD", "MMM", "MRK", "MSFT", "NKE",
+      "PFE", "PG", "RTX", "TRV", "UNH", "V", "VZ", "WMT", "XOM", "UTX"
+    ],
+    "n_tickers_queried": 30,
+    "utx_included_for_rtx_historical_mapping": true,
+    "interval": {
+      "created_at_start_utc": "2017-01-01T00:00:00Z",
+      "created_at_end_utc": "2026-09-29T00:00:00Z"
+    },
+    "text_policy": "text_v1",
+    "content_flag": "--no-content",
+    "content": "headline and summary only; no full article text",
+    "chunking": "30-day chunks",
+    "manifest": "all-or-nothing",
+    "aapl_redownloaded_in_same_batch": true,
+    "deduplication": "by (provider, article_id); keep latest revision",
+    "chunk_record_cap": 500000,
+    "on_cap_exceeded": "abort run; never silently truncate",
+    "rate_limit_handling": "retry with backoff on HTTP 429",
+    "canonical_file_never_edited": true
+  },
+
+  "sealing_policy": {
+    "development_cutoff_utc": "2024-09-30T20:30:00Z",
+    "development_set": {
+      "definition": "information_available_at <= development_cutoff_utc",
+      "allowed_operations": [
+        "canonicalize",
+        "hash",
+        "finbert_scoring",
+        "rules_v1_classification",
+        "feature_generation",
+        "descriptive_statistics"
+      ]
+    },
+    "sealed_set": {
+      "definition": "information_available_at > development_cutoff_utc",
+      "includes": "articles created before cutoff but revised after it (information_available_at = max(created_at, updated_at))",
+      "allowed_operations": [
+        "download_for_archiving",
+        "canonicalize",
+        "deduplicate",
+        "record_count_and_sha256",
+        "record_created_before_available_after_count"
+      ],
+      "forbidden_operations": [
+        "scoring",
+        "classification",
+        "feature_generation",
+        "reading_headline_or_text",
+        "any_other_statistic"
+      ]
+    },
+    "enforcement": {
+      "split_timing": "in memory, before any scoring",
+      "assertion": "development_ids intersection sealed_ids = empty set",
+      "cli_tools_forbidden_on_multisymbol": ["historical_sentiment", "historical_events"],
+      "11b_calls_service_functions_on_development_subset_only": true,
+      "unsealing_condition": "requires separate explicit authorization; only for confirmation run"
+    }
+  },
+
+  "finbert_provenance": {
+    "model": "ProsusAI/finbert",
+    "revision": "4556d13015211d73dccd3fdd39d39232506f3e43",
+    "scoring_policy": "every development article scored fresh",
+    "phase_8_score_reuse": false,
+    "checkpoint_interval_articles": 512,
+    "checkpoint_enables_resume": true,
+    "determinism_note": "FinBERT run-to-run determinism has not been verified (Phase 8 finding); recorded as limitation"
+  },
+
+  "multi_symbol_attribution_rule": {
+    "basis": "symbol_tags_only",
+    "attribution_field": "article.symbols",
+    "relevance_inference_from_text": false,
+    "double_counting_within_stock": false,
+    "deduplication": "by (provider, article_id); keep latest revision; conflicting duplicates raise error",
+    "multi_symbol_behaviour": "article contributes once to each tagged stock for the same session with the same FinBERT score and event label",
+    "attribution_noise_recorded_as_limitation": true,
+    "tag_count_cap": null,
+    "tag_count_distribution": "reported descriptively",
+    "cross_stock_dependence": "shared articles correlate stocks within a date; panel DM on per-date averages accommodates this; Holm valid under arbitrary dependence"
+  },
+
+  "rtx_utx_mapping": {
+    "boundary_utc": "2020-04-03T04:00:00Z",
+    "boundary_new_york": "2020-04-03T00:00:00",
+    "boundary_event": "RTX merger; Phase 11.1 status CONTINUOUS; provider factor 1.589",
+    "determination_field": "created_at",
+    "rule": {
+      "utx_tag_created_before_boundary": "attribute to RTX",
+      "rtx_tag_created_on_or_after_boundary": "attribute to RTX",
+      "rtx_tag_created_before_boundary": "excluded; off-period tag",
+      "utx_tag_created_on_or_after_boundary": "excluded; off-period tag",
+      "rtn_tag_only": "excluded; RTN is a different security from the price series",
+      "rtn_plus_utx_before_boundary": "counted once via UTX tag",
+      "utx_plus_rtx_same_article": "counted once"
+    },
+    "rtn_never_substituted": true,
+    "off_period_tag_counts_reported": true,
+    "canonical_file_never_edited": true,
+    "mapping_applied_in_memory": true
+  },
+
+  "leakage_controls": {
+    "eligibility_rule": "information_available_at <= prediction_timestamp",
+    "information_available_at": "max(created_at, updated_at)",
+    "availability_rule_name": "HISTORICAL_AVAILABILITY_RULE / historical_backfill_v1",
+    "prediction_timestamp_formula": "D 16:30 America/New_York",
+    "prediction_timestamp_utc": {
+      "standard_time": "D 21:30:00Z",
+      "daylight_saving_time": "D 20:30:00Z"
+    },
+    "horizon_does_not_affect_features": true,
+    "after_close_articles_safe": true,
+    "after_close_article_explanation": "articles available 16:00-16:30 enter row D; target starts at Close[D] fixed at 16:00; no future price information",
+    "fold_gap": "gap = h sessions; last training date and first test date separated by h sessions",
+    "revised_article_handling": "avail = max(created_at, updated_at); article created on D but revised on D+3 is ineligible for row D; first eligible on D+3",
+    "revision_handling_conservative": true,
+    "revision_lag_reported_descriptively": true,
+    "generators_share_is_eligible_function": true,
+    "unverifiable_assumption": "provider sets updated_at on every text change; silent edits without updated_at change are undetectable; recorded as limitation"
+  },
+
+  "missing_news_semantics": {
+    "covered_session_no_articles": {
+      "handling": "frozen zeros",
+      "counts": 0,
+      "ratios": 0.0,
+      "means": 0.0,
+      "standard_deviation": 0.0,
+      "maxima": 0.0,
+      "never_nan": true
+    },
+    "coverage_interval": {
+      "start_utc": "2017-01-01T00:00:00Z",
+      "end_utc": "2024-09-30T20:30:00Z",
+      "first_dev_row": "2017-02-01",
+      "prev20_of_first_dev_row": "2017-01-03",
+      "all_1928_development_rows_covered_inferred": true,
+      "expected_development_nans": 0
+    },
+    "uncovered_or_unknown": {
+      "handling": "NaN",
+      "converted_to_zero": false,
+      "imputed": false,
+      "dropped_quietly": false,
+      "nan_in_development_features_action": "stops the run",
+      "fillna_on_news_columns": false
+    },
+    "provider_gaps": {
+      "distinguishable_from_real_silence": false,
+      "handling": "monthly article counts per stock reported descriptively; no exclusion"
+    },
+    "low_or_zero_coverage": {
+      "stock_removed_for_low_coverage": false,
+      "news_based_exclusion_rule": false,
+      "constant_zero_news_columns_allowed": true,
+      "existing_exclusion_rules_only": [
+        "corporate actions",
+        "minimum 1800 development rows (all 29 stocks currently pass)"
+      ]
+    },
+    "ingestion_failure": "no partial dataset; re-run whole retrieval",
+    "row_set_invariant": "news never adds or removes rows; 11B frames must reproduce 11A Date, Close, technical, and market-context columns exactly"
+  },
+
+  "cumulative_vs_windowed_sentiment": {
+    "sentiment_features_v1": {
+      "feature_sets": ["B", "D"],
+      "n_columns": 15,
+      "articles_counted": "all eligible since 2017-01-01T00:00Z through D 16:30 New York",
+      "bounded": false,
+      "zero_convention_no_news": 0,
+      "zero_never_nan": true,
+      "known_consequences": [
+        "counts grow without bound; act as a time trend in per-stock expanding folds",
+        "scale differs by stock in panel; partly identifies stock and elapsed time despite no ticker feature",
+        "test values in later folds fall above the training range (extrapolation)"
+      ]
+    },
+    "sentiment_window_v1": {
+      "feature_sets": ["F"],
+      "n_columns_in_F": 12,
+      "window_sizes_sessions": [1, 5, 20],
+      "bounded": true,
+      "zero_convention_empty_window": 0,
+      "uncovered_convention": "NaN",
+      "sw_count_1_dropped_from_F": true
+    },
+    "contrast_tests": "none; B vs F pairwise comparisons are descriptive only and never used for qualification",
+    "preregistered_diagnostic": "for each stock, fold, and cumulative count column: share of test values above the training maximum"
+  },
+
+  "panel_methodology": {
+    "code_source": "11A functions imported unchanged: panel_rows, date_splits, panel_walk_forward, panel_qualify, evaluate_panel",
+    "folds": {
+      "method": "TimeSeriesSplit",
+      "n_splits": 20,
+      "gap": "h sessions",
+      "grouping": "unique trading dates; all rows for a date in the same fold"
+    },
+    "model_fitting": {
+      "one_fresh_model_per_fold": true,
+      "trained_on": "pooled training rows from all stocks",
+      "symbol_column_rejected_as_feature": true
+    },
+    "per_stock_baselines": "computed from training-fold rows only; never from test rows",
+    "dm_test": {
+      "series_construction": "per-date cross-sectional mean loss (mean across stocks for each out-of-sample date)",
+      "direction": "one_sided",
+      "variance_estimator": "Newey-West",
+      "lags": "h - 1"
+    }
+  },
+
+  "anti_leakage_tests": {
+    "all_required_before_any_real_experiment": true,
+    "file": "tests/unit/test_phase11b_leakage.py",
+    "tests": [
+      {
+        "id": "T1",
+        "name": "prefix_invariance",
+        "description": "Adding articles with avail > ts(D) leaves every row <= D unchanged, for all three generators (sentiment_features_v1, sentiment_window_v1, event_features_v1)",
+        "data": "synthetic + real development sample"
+      },
+      {
+        "id": "T2",
+        "name": "boundary_exact",
+        "description": "avail = ts(D) is included in row D; avail = ts(D) + 1 microsecond is excluded and enters the next session",
+        "data": "synthetic"
+      },
+      {
+        "id": "T3",
+        "name": "revision_semantics",
+        "description": "article with created_at < ts(D) but updated_at > ts(D) is not in row D; first appears at its revision time",
+        "data": "synthetic"
+      },
+      {
+        "id": "T4",
+        "name": "dst_handling",
+        "description": "ts(D) = 21:30Z under standard time and 20:30Z under daylight time; checked around both March and November DST transitions",
+        "data": "synthetic"
+      },
+      {
+        "id": "T5",
+        "name": "seal_verification",
+        "description": "scorer and classifier receive no article with avail > T_dev; development_ids intersection sealed_ids = empty set; sealed count and hash recorded",
+        "data": "synthetic + real"
+      },
+      {
+        "id": "T6",
+        "name": "attribution_correctness",
+        "description": "tagged stocks only; an untagged article naming a company contributes 0; multi-symbol articles reach each tagged stock exactly once",
+        "data": "synthetic"
+      },
+      {
+        "id": "T7",
+        "name": "rtx_utx_mapping_exhaustive",
+        "description": "UTX before boundary -> RTX; RTX on or after -> RTX; RTX before boundary -> excluded; UTX on or after -> excluded; RTN only -> excluded; RTN + UTX before -> counted once via UTX; UTX + RTX same article -> counted once",
+        "data": "synthetic"
+      },
+      {
+        "id": "T8",
+        "name": "horizon_independence",
+        "description": "news features are identical for h = 1, 3, 5",
+        "data": "real"
+      },
+      {
+        "id": "T9",
+        "name": "missing_data_semantics",
+        "description": "zero-news covered rows produce frozen zeros; an uncovered row produces NaN and the pipeline raises; no fillna on news columns",
+        "data": "synthetic"
+      },
+      {
+        "id": "T10",
+        "name": "row_identity",
+        "description": "11B frames equal 11A frames on all shared columns; row counts are exactly 1928 per stock and match 11A panel counts",
+        "data": "real"
+      },
+      {
+        "id": "T11",
+        "name": "panel_structure",
+        "description": "11A fold structure, baseline construction, and per-date DM test reproduce correctly on B/C/D/F feature columns; symbol column rejected as feature",
+        "data": "synthetic"
+      },
+      {
+        "id": "T12",
+        "name": "matrix_and_families_integrity",
+        "description": "3828/132/132 comparison IDs are a subset of the frozen design; final Holm runs over 198 and 5742 comparisons with 11A p-values verified by hash",
+        "data": "real"
+      },
+      {
+        "id": "T13",
+        "name": "f_duplicate_check",
+        "description": "sw_count_1 == event__article_count for every stock and every row; pipeline stops if this fails for any stock",
+        "data": "real"
+      },
+      {
+        "id": "T14",
+        "name": "input_hash_verification",
+        "description": "news, sentiment, and event file hashes match their records; Phase 11.0 design, amendment 01, Phase 11.1 price verification, and Phase 11A registry artifacts are unchanged",
+        "data": "real"
+      },
+      {
+        "id": "T15",
+        "name": "regression_suite",
+        "description": "every earlier phase test still passes; then python -m compileall . and git diff --check pass cleanly",
+        "data": "all prior tests"
+      }
+    ],
+    "pre_matrix_validation_order": [
+      "T1-T15 all pass",
+      "synthetic smoke test",
+      "one real AAPL per-stock validation",
+      "one real non-AAPL per-stock validation",
+      "one real panel validation",
+      "registry freeze"
+    ]
+  },
+
+  "amendment_02_aapl_reproducibility": {
+    "status": "adopted_descriptive_only",
+    "scope": "AAPL B/C/D/F comparisons only",
+    "frozen_before_retrieval": true,
+    "components": [
+      {
+        "name": "data_comparison",
+        "description": "share of AAPL articles in both the new multi-symbol batch and the Phase 8 dataset; share with identical text hash; share with identical information_available_at"
+      },
+      {
+        "name": "results_comparison",
+        "description": "132 AAPL B/C/D/F comparisons vs Phase 10A results; reported as differences and gate-status agreement"
+      }
+    ],
+    "pass_fail": false,
+    "affects_results": false,
+    "note": "diagnostic only; no result changes regardless of findings"
+  },
+
+  "execution_stages": {
+    "11B_0_design_freeze": {
+      "description": "Write this document once before any news is downloaded",
+      "status": "COMPLETE"
+    },
+    "11B_1_news_retrieval": {
+      "runner": "project_owner",
+      "description": "Run ingestion command; produce integrity report",
+      "integrity_report_contents": [
+        "article counts by stock and month",
+        "UTX/RTX tag counts each side of 2020-04-03",
+        "deduplication statistics",
+        "availability lag distribution",
+        "development article count and sha256",
+        "sealed article count and sha256 of sorted id list",
+        "count of articles created before cutoff but available after it"
+      ],
+      "no_scoring_in_this_stage": true,
+      "command": "to be supplied by Claude at this stage after design freeze is written"
+    },
+    "11B_2_scoring_and_classification": {
+      "runner": "project_owner or Claude with explicit authorization",
+      "steps": [
+        "FinBERT on development subset only (pinned revision 4556d130...)",
+        "rules_v1 event classification"
+      ],
+      "write_once": true,
+      "hashed": true,
+      "runtime_estimate_cpu": "7-10 hours per 100000 unique development articles (inferred)"
+    },
+    "11B_3_feature_build_and_verification": {
+      "steps": [
+        "row equality check vs 11A",
+        "NaN check on all development features",
+        "prefix invariance check",
+        "F duplicate check (sw_count_1 == event__article_count for all stocks)",
+        "descriptive coverage report (monthly counts by stock)"
+      ],
+      "no_models": true
+    },
+    "11B_4_development": {
+      "pre_steps": [
+        "T1-T15 all pass",
+        "synthetic smoke test",
+        "one real AAPL per-stock validation",
+        "one real non-AAPL per-stock validation",
+        "one real panel validation",
+        "registry freeze"
+      ],
+      "matrix": "3828 per-stock + 132 panel + 132 panel_ex_aapl comparisons",
+      "n_workers": 12,
+      "runtime_estimate_hours": "3-6 (inferred from 11A)"
+    },
+    "11B_5_final_families_audit_report": {
+      "steps": [
+        "Holm correction over 198 panel and 5742 per-stock comparisons",
+        "audit",
+        "determinism sample rerun",
+        "report"
+      ],
+      "stop_after": true,
+      "confirmation_period": "not opened without explicit authorization"
+    }
+  },
+
+  "stop_conditions": [
+    "an article with information_available_at > development_cutoff_utc reaches scoring or feature generation",
+    "a feature row prediction_timestamp differs from D 16:30 America/New_York",
+    "11B frame row counts differ from 11A",
+    "any NaN appears in development features",
+    "prefix invariance check fails",
+    "F duplicate check fails: sw_count_1 != event__article_count for any stock",
+    "RTX receives RTN-tagged articles",
+    "a news, sentiment, or event file hash mismatches its record",
+    "11A artifacts (design registry, amendment 01, price verification, 11A registry) are modified",
+    "matrix comparison count is not exactly 3828 / 132 / 132",
+    "Holm families are not exactly 198 / 5742"
+  ],
+
+  "known_limitations": [
+    "Event labels are keyword-rule output, not ground truth. PRODUCT rule contains Apple-specific keywords (iPhone, iPad, Mac, AirPods, App Store); product events are under-detected for non-Apple stocks.",
+    "Cumulative sentiment features are non-stationary (Phase 8 finding); issue amplified by scale differences across stocks in the panel.",
+    "Symbol tags come from the provider and are not checked for relevance; an article tagged with many stocks may be marginal to each.",
+    "Revision-time availability rule (avail = max(created_at, updated_at)) may delay information; revision lag unmeasured.",
+    "Provider may silently edit article text without updating updated_at; such edits are undetectable.",
+    "Provider coverage changes over time are indistinguishable from real variation in news volume.",
+    "Fixed model parameters, no hyperparameter tuning, one news provider, one sentiment model.",
+    "FinBERT run-to-run determinism has not been verified (Phase 8 finding).",
+    "39% of AAPL articles were classified as OTHER event type.",
+    "A null result in Phase 11B covers these specific news representations, not news information in general."
+  ],
+
+  "not_done_at_freeze": "No news downloaded, no FinBERT run, no source files modified, no Phase 11A artifacts changed, no research experiments run, nothing committed or pushed."
+}

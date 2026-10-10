@@ -2,7 +2,10 @@
 testpaths = ["tests"]
 pythonpath = ["."]
 # Live-network tests are opt-in:  pytest -m integration
-addopts = "-m \"not integration\""
+# Gate-authorization checks (Phase 11B Amendment 03) fail-by-design when
+# future-stage artifacts are absent; run with:  pytest -m gate_authorization
+addopts = "-m \"not integration and not gate_authorization\""
 markers = [
     "integration: needs internet access (live yfinance); excluded by default",
+    "gate_authorization: Phase 11B gate denial check; excluded by default; invoke explicitly to authorize a gate",
 ]

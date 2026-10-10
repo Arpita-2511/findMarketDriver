@@ -1,0 +1,116 @@
+{
+  "document_type": "phase_11b_amendment",
+  "amendment_id": "03",
+  "title": "Test-Gate Execution Schedule",
+  "phase": "11B",
+  "status": "ADOPTED",
+  "approval_date": "2026-10-10",
+  "immutable": true,
+  "preserves_design_freeze": true,
+  "weakens_assertions": false,
+
+  "applies_to": {
+    "design_freeze": "data/results/research/phase11/11B/design_freeze.json",
+    "design_freeze_sha256_at_adoption": "cf7a14fbce45dc466a66993ffb985f4623022bb33a320caae0d6947495436d5f"
+  },
+
+  "problem": "The design freeze states 'all 15 T1-T15 anti-leakage tests must pass before any real experiment.' Seven of those tests reference artifacts that do not exist until after news ingestion, FinBERT scoring, or feature generation (T1 real portion, T5 real portion, T8, T10, T12 Holm portion, T13, T14 full). Interpreting 'real experiment' literally would require those tests to pass before the artifacts they verify can be produced; a strict read is self-contradictory.",
+
+  "resolution": {
+    "key_clarification": "'Real experiment' in Phase 11B means Stage 11B.4 model training and evaluation (3828 per-stock + 132 panel + 132 panel-ex-AAPL comparisons). It does NOT mean news download, FinBERT scoring, or feature generation. Those steps are preparation, not experimentation.",
+    "gating_principle": "Each T-test is placed at the earliest gate at which all of its prerequisites exist. No assertion is weakened, deleted or permanently skipped. A test with both synthetic and real-data components runs its synthetic portion at Gate A and its real-data portion at Gate B or C."
+  },
+
+  "test_gates": {
+    "gate_a": {
+      "name": "Pre-ingestion gate",
+      "prerequisite": "none",
+      "authorizes": "Stage 11B.1 (multi-symbol news retrieval)",
+      "runs_against": "synthetic fixtures and already-frozen 11A/11.0/11.1 artifacts",
+      "must_all_pass_before_proceeding": true,
+      "a_blocked_or_failed_test_denies_authorization": true,
+      "tests": [
+        {"id": "T1-synthetic", "component": "synthetic portion of prefix invariance (3 generators)"},
+        {"id": "T2", "component": "full (boundary exact; synthetic)"},
+        {"id": "T3", "component": "full (revision semantics; synthetic)"},
+        {"id": "T4", "component": "full (DST handling; synthetic, both March and November transitions)"},
+        {"id": "T5-synthetic", "component": "development/sealed split assertion on synthetic articles across T_dev"},
+        {"id": "T6", "component": "full (attribution correctness; synthetic)"},
+        {"id": "T7", "component": "full (RTX/UTX mapping exhaustive; synthetic; reference rule tested + generator attribution)"},
+        {"id": "T9", "component": "full (missing data semantics; synthetic)"},
+        {"id": "T11", "component": "full (panel structure: symbol-column rejection, 20 folds, date grouping)"},
+        {"id": "T12-id-subset", "component": "3828/132/132 comparison IDs enumerated from frozen design and are a subset of design_registry.json"},
+        {"id": "T14-existing-artifacts", "component": "SHA256 of amendment_01, price_verification; design_sha256 in design_registry; 11A matrix_sha256 match design_freeze builds_on"},
+        {"id": "T15", "component": "python -m compileall and git diff --check pass; user must separately run pytest tests/ before advancing"}
+      ]
+    },
+    "gate_b": {
+      "name": "Pre-scoring gate",
+      "prerequisite": "Stage 11B.1 complete; news_integrity_report.json written to data/results/research/phase11/11B/",
+      "authorizes": "Stage 11B.2 (FinBERT scoring on development subset only)",
+      "runs_against": "the newly ingested multi-symbol news dataset and its sealing split",
+      "must_all_pass_before_proceeding": true,
+      "a_blocked_or_failed_test_denies_authorization": true,
+      "tests": [
+        {"id": "T5-real", "component": "actual multi-symbol dataset: development ∩ sealed = ∅; split applied before scoring; sealed count and sha256 recorded; sealed subset not read for content"}
+      ]
+    },
+    "gate_c": {
+      "name": "Pre-matrix gate",
+      "prerequisite": "Stages 11B.1-11B.3 complete; feature_verification.json written to data/results/research/phase11/11B/ listing the 11B feature frame paths",
+      "authorizes": "Stage 11B.4 (3828 per-stock + 132 panel + 132 panel-ex-AAPL model training/evaluation runs)",
+      "runs_against": "scored articles, event-classified articles, and the 29 built 11B feature frames",
+      "must_all_pass_before_proceeding": true,
+      "a_blocked_or_failed_test_denies_authorization": true,
+      "re_verifies_gates_a_and_b": true,
+      "tests": [
+        {"id": "T1-real", "component": "prefix invariance on an actual development sample"},
+        {"id": "T8", "component": "news feature columns identical across h=1,3,5 for every (stock, date)"},
+        {"id": "T10", "component": "11B frames equal 11A frames on all shared columns; 1928 rows per stock; panel counts match"},
+        {"id": "T12-holm", "component": "Holm correction runs over 198 panel + 5742 per-stock comparisons with 11A p-values loaded by verified hash"},
+        {"id": "T13", "component": "sw_count_1 == event__article_count for every stock and every row"},
+        {"id": "T14-full", "component": "news, sentiment, and event file hashes match recorded values"}
+      ]
+    }
+  },
+
+  "status_codes": {
+    "PASS": "test ran and all its assertions passed",
+    "BLOCKED_NOT_YET_ELIGIBLE": "test skipped because a prerequisite artifact does not yet exist; treated as 'does NOT clear its gate' for authorization purposes",
+    "FAIL": "test ran and at least one assertion failed; the pipeline stops"
+  },
+
+  "authorization_logic": {
+    "gate_a_clear": "every Gate A test above returned PASS",
+    "gate_b_clear": "Gate A is clear AND Stage 11B.1 produced news_integrity_report.json AND T5-real returned PASS",
+    "gate_c_clear": "Gate A is clear AND Gate B is clear AND Stage 11B.3 produced feature_verification.json AND every Gate C test above returned PASS",
+    "stage_11b_4_begins_only_if_gate_c_clear": true,
+    "a_single_BLOCKED_or_FAIL_denies_the_gate": true
+  },
+
+  "unchanged_invariants": [
+    "All 15 T-tests remain required.",
+    "No assertion is weakened, deleted or permanently skipped.",
+    "Stage 11B.4 (the research matrix) does not begin until every T1-T15 assertion has passed on real artifacts where real artifacts are specified.",
+    "Stage 11B.1 does not begin until all Gate A assertions pass.",
+    "Stage 11B.2 does not begin until T5-real passes.",
+    "A BLOCKED test is not a PASS; it does not authorize its gate.",
+    "The design freeze is preserved unchanged by this amendment."
+  ],
+
+  "implementation": {
+    "test_file": "tests/unit/test_phase11b_leakage.py",
+    "pytest_gate_validators": {
+      "test_gate_a_is_clear": "runs every Gate A assertion inline; no skips allowed; fails if any assertion fails",
+      "test_gate_b_is_clear": "requires news_integrity_report.json; runs T5-real; fails with explicit BLOCKED message otherwise",
+      "test_gate_c_is_clear": "requires news_integrity_report.json AND feature_verification.json; re-verifies Gate A and Gate B assertions; runs all Gate C real-data assertions; fails with explicit BLOCKED message if any prerequisite is missing"
+    },
+    "individual_pytest_tests": "each T-test also exists as a standalone pytest function. Real-data variants use pytest.skip with 'BLOCKED_NOT_YET_ELIGIBLE' reason when their prerequisite artifact is absent, so the test suite's SKIPPED count surfaces blocked state during normal development."
+  },
+
+  "contract_for_future_stages": {
+    "stage_11b_1_must_write": "data/results/research/phase11/11B/news_integrity_report.json with keys: split_applied_before_scoring (bool, true), development_sealed_intersection_empty (bool, true), development_article_count (int), sealed_article_count (int), sealed_article_id_sha256 (hex), development_article_sha256 (hex), tickers_queried_count (int)",
+    "stage_11b_3_must_write": "data/results/research/phase11/11B/feature_verification.json with keys: frame_paths (map {symbol: path} for each of the 29 stocks and each feature set in {B,C,D,F}), row_count_per_stock (int, 1928), shared_columns_match_11a (bool, true), f_duplicate_check_passed (bool, true), nans_in_development_features (int, 0)",
+    "any_deviation_from_this_contract_fails_the_corresponding_gate_test": true
+  }
+}
