@@ -994,6 +994,38 @@ def _assert_t15_regression_suite():
 # ============================================================
 
 
+def _assert_ingest_closeout_contract_passes():
+    """
+    Run every synthetic contract test in tests/unit/test_phase11b_ingest_closeout.py
+    inline. The gate must only PASS if every assertion executed; a missing
+    module or an empty discovery is a FAIL, not a silent pass.
+    """
+    import inspect
+    import tempfile
+    import tests.unit.test_phase11b_ingest_closeout as closeout_tests
+
+    test_fns = [
+        getattr(closeout_tests, name) for name in sorted(dir(closeout_tests))
+        if name.startswith("test_") and callable(getattr(closeout_tests, name))
+    ]
+    if len(test_fns) == 0:
+        raise AssertionError(
+            "Gate A: no closeout contract tests discovered in test_phase11b_ingest_closeout.py"
+        )
+    for fn in test_fns:
+        sig = inspect.signature(fn)
+        if "tmp_path" in sig.parameters:
+            with tempfile.TemporaryDirectory() as td:
+                fn(Path(td))
+        elif len(sig.parameters) == 0:
+            fn()
+        else:
+            raise AssertionError(
+                f"Gate A: closeout test {fn.__name__} has unexpected parameters {list(sig.parameters)}; "
+                "add handling here before accepting it as a Gate A gate assertion"
+            )
+
+
 def test_gate_a_is_clear():
     """Gate A: every pre-ingestion assertion must PASS. No skips allowed."""
     _assert_t1_prefix_invariance_synthetic()
@@ -1008,6 +1040,7 @@ def test_gate_a_is_clear():
     _assert_t12_id_subset()
     _assert_t14_existing_artifacts()
     _assert_t15_regression_suite()
+    _assert_ingest_closeout_contract_passes()
 
 
 # Gate B / Gate C authorization checks are explicit commands that FAIL by design
@@ -1055,6 +1088,7 @@ def test_gate_c_is_clear():
     _assert_t12_id_subset()
     _assert_t14_existing_artifacts()
     _assert_t15_regression_suite()
+    _assert_ingest_closeout_contract_passes()
     # Re-verify Gate B
     _assert_t5_seal_real()
     # Gate C real-data assertions
