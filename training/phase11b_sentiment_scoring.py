@@ -38,7 +38,7 @@ import os
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Callable
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -331,9 +331,19 @@ def run_development_scoring(canonical_path: Path, service_factory: Callable[[], 
     frozen = verify_frozen_artifacts()
     report = load_integrity_report(report_path)
     expected_sha = report["canonical_input"]["sha256"]
+    expected_name = PureWindowsPath(str(report["canonical_input"].get("path") or
+                                        report["canonical_input"].get("file") or "")).name
+    if not canonical_path.is_file():
+        raise ScoringError(f"canonical dataset not found: {canonical_path} "
+                           f"(the integrity report's canonical input is {expected_name})")
+    if canonical_path.name != expected_name:
+        raise ScoringError(f"canonical dataset {canonical_path.name} is not the integrity report's canonical input "
+                           f"{expected_name}")
     meta_file = meta_path_for(canonical_path)
-    if not meta_file.is_file() or json.loads(meta_file.read_text(encoding="utf-8")).get("sha256") != expected_sha:
-        raise ScoringError("canonical dataset metadata is missing or does not match the integrity report")
+    if not meta_file.is_file():
+        raise ScoringError(f"canonical dataset metadata not found: {meta_file.name}")
+    if json.loads(meta_file.read_text(encoding="utf-8")).get("sha256") != expected_sha:
+        raise ScoringError("canonical dataset metadata SHA256 does not match the integrity report")
 
     run_id = run_id_for(expected_sha)
     record_path = record_dir / f"finbert_development_scoring_{run_id}.json"

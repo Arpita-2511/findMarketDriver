@@ -68,7 +68,7 @@ def make_env(tmp_path, dev=(), sealed=(), *, raw_lines=None, report_overrides=No
         "sealed_article_count": len(sealed_keys),
         "development_article_sha256": _development_article_sha256(dev_articles),
         "sealed_article_id_sha256": _sealed_article_id_sha256(sealed_keys),
-        "canonical_input": {"file": canonical.name, "sha256": sha, "rows": len(lines), "run_id": "synthetic"},
+        "canonical_input": {"path": str(canonical), "sha256": sha, "rows": len(lines), "run_id": "synthetic"},
         **(report_overrides or {}),
     }
     report_path = tmp_path / "news_integrity_report.json"
@@ -460,6 +460,44 @@ def test_partition_must_reproduce_the_integrity_report(tmp_path, overrides):
     calls = []
     with pytest.raises(m.ScoringError, match="does not reproduce the integrity report"):
         run(env, factory_calls=calls)
+    assert calls == [] and no_outputs(env)
+
+
+def _run_on(env, path, calls):
+    return m.run_development_scoring(path, lambda: calls.append(1) or fake(), report_path=env.report,
+                                     output_dir=env.out, record_dir=env.records)
+
+
+def test_mistyped_canonical_path_names_the_expected_file(tmp_path):
+    """The 2026-10-11 operator error: one ticker dropped from the file name."""
+    env = make_env(tmp_path, dev=[news(1, CUT - H)])
+    calls = []
+    with pytest.raises(m.ScoringError, match=r"canonical dataset not found: .*canonical input is canonical\.jsonl"):
+        _run_on(env, tmp_path / "canonica.jsonl", calls)
+    assert calls == [] and no_outputs(env)
+
+
+def test_a_different_existing_canonical_file_is_refused(tmp_path):
+    env = make_env(tmp_path, dev=[news(1, CUT - H)])
+    other = tmp_path / "other.jsonl"
+    other.write_bytes(env.canonical.read_bytes())
+    other.with_suffix(".meta.json").write_bytes(env.canonical.with_suffix(".meta.json").read_bytes())
+    calls = []
+    with pytest.raises(m.ScoringError, match="other.jsonl is not the integrity report's canonical input"):
+        _run_on(env, other, calls)
+    assert calls == [] and no_outputs(env)
+
+
+def test_missing_or_mismatched_canonical_metadata_is_refused(tmp_path):
+    env = make_env(tmp_path, dev=[news(1, CUT - H)])
+    meta = env.canonical.with_suffix(".meta.json")
+    meta.write_text(json.dumps({"sha256": "0" * 64}), encoding="utf-8")
+    calls = []
+    with pytest.raises(m.ScoringError, match="metadata SHA256 does not match the integrity report"):
+        _run_on(env, env.canonical, calls)
+    meta.unlink()
+    with pytest.raises(m.ScoringError, match="metadata not found: canonical.meta.json"):
+        _run_on(env, env.canonical, calls)
     assert calls == [] and no_outputs(env)
 
 
