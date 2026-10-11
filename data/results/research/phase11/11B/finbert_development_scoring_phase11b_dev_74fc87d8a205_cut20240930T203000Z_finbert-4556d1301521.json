@@ -1,0 +1,64 @@
+{
+  "boundary_rule": "information_available_at <= cutoff -> development; > cutoff -> sealed",
+  "canonical_input": {
+    "file": "alpaca_AAPL-AXP-BA-CAT-CSCO-CVX-DIS-GE-GS-HD-IBM-INTC-JNJ-JPM-KO-MCD-MMM-MRK-MSFT-NKE-PFE-PG-RTX-TRV-UNH-UTX-V-VZ-WMT-XOM_20170101T000000Z_20260929T000000Z_20261010T111731Z.jsonl",
+    "rows": 129489,
+    "sha256": "74fc87d8a2053e1814669b1302c8aedfaac7c865b7683e85af9f352226d3f77e"
+  },
+  "development_article_count": 97788,
+  "development_article_sha256": "f594b58cc7b46f951411a0843f741e9725dc47a4d7167e5f1ee1cb73c57a29e1",
+  "development_cutoff_utc": "2024-09-30T20:30:00Z",
+  "document_type": "phase_11b_finbert_development_scoring_run",
+  "eligible_article_count": 97788,
+  "excluded_article_count": 0,
+  "exclusion_policy": "none; an article that cannot be scored or validated fails the whole run",
+  "finished_at": "2026-10-10T22:29:57.378194+00:00",
+  "frozen_artifact_sha256": {
+    "amendment_03": "0040483259cd3febea1feff6301fa545acaa8a21813006f62a06a50d49e02253",
+    "amendment_04": "fa05a3ec4bc7562b362ce09cfe3cd1ae4d7060f453642d7015d210acc8e6bb5a",
+    "amendment_05": "d235cee6a679319bc918610d54b852f74af7c3ed36654fed1fbe4abecbaf86b1",
+    "design_freeze": "cf7a14fbce45dc466a66993ffb985f4623022bb33a320caae0d6947495436d5f"
+  },
+  "integrity_report": {
+    "file": "news_integrity_report.json",
+    "sha256": "9dff4857482362486eb9d19af0ea5cb1d20ba1b4c0f9cccc1b7e442109b1f0fc"
+  },
+  "model": {
+    "approved_model": "ProsusAI/finbert",
+    "approved_revision": "4556d13015211d73dccd3fdd39d39232506f3e43",
+    "batch_size": 16,
+    "inference_version": "finbert_sentiment_v1",
+    "labels": [
+      "positive",
+      "negative",
+      "neutral"
+    ],
+    "model_name": "ProsusAI/finbert",
+    "model_revision": "4556d13015211d73dccd3fdd39d39232506f3e43",
+    "text_policy": "text_v1: headline + ' ' + summary (whitespace-collapsed; summary dropped if it repeats the headline); content (HTML stripped) only if both are empty; never URLs, ids, symbols, timestamps or source"
+  },
+  "operator": {
+    "device": "cpu",
+    "hf_hub_offline": true
+  },
+  "outputs": {
+    "checkpoint": "phase11b_dev_74fc87d8a205_cut20240930T203000Z_finbert-4556d1301521.checkpoint.jsonl",
+    "scores": {
+      "file": "phase11b_dev_74fc87d8a205_cut20240930T203000Z_finbert-4556d1301521.sentiment.jsonl",
+      "rows": 97788,
+      "sha256": "b92a1da354c2861fea42ad97d5b7a6fcdbfe643446af448f31584472fa586fde"
+    },
+    "scores_meta": "phase11b_dev_74fc87d8a205_cut20240930T203000Z_finbert-4556d1301521.sentiment.meta.json"
+  },
+  "partition_reproduces_integrity_report": true,
+  "phase": "11B",
+  "phase_8_score_reuse": false,
+  "run_id": "phase11b_dev_74fc87d8a205_cut20240930T203000Z_finbert-4556d1301521",
+  "scored_article_count": 97788,
+  "scored_from_checkpoint_count": 0,
+  "scoring_version": "phase11b_development_finbert_v1",
+  "sealed_article_count": 31701,
+  "sealed_content_sent_to_scoring": false,
+  "stage": "11B.2",
+  "started_at": "2026-10-10T18:49:31.765316+00:00"
+}
