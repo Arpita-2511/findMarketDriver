@@ -1,0 +1,68 @@
+{
+  "boundary_rule": "information_available_at <= cutoff -> development; > cutoff -> sealed",
+  "canonical_input": {
+    "file": "alpaca_AAPL-AXP-BA-CAT-CSCO-CVX-DIS-GE-GS-HD-IBM-INTC-JNJ-JPM-KO-MCD-MMM-MRK-MSFT-NKE-PFE-PG-RTX-TRV-UNH-UTX-V-VZ-WMT-XOM_20170101T000000Z_20260929T000000Z_20261010T111731Z.jsonl",
+    "rows": 129489,
+    "sha256": "74fc87d8a2053e1814669b1302c8aedfaac7c865b7683e85af9f352226d3f77e"
+  },
+  "classification_version": "phase11b_development_rules_v1_v1",
+  "classified_article_count": 97788,
+  "classifier": {
+    "classifier_name": "keyword_event_classifier",
+    "classifier_version": "rules_v1",
+    "taxonomy_version": "taxonomy_v1"
+  },
+  "determinism_check": "two independent in-memory classifications identical",
+  "development_article_count": 97788,
+  "development_article_sha256": "f594b58cc7b46f951411a0843f741e9725dc47a4d7167e5f1ee1cb73c57a29e1",
+  "development_cutoff_utc": "2024-09-30T20:30:00Z",
+  "document_type": "phase_11b_rules_v1_development_classification_run",
+  "excluded_article_count": 0,
+  "exclusion_policy": "none; an article that cannot be joined, validated or classified fails the whole run",
+  "finished_at": "2026-10-13T19:12:54.717782+00:00",
+  "frozen_artifact_sha256": {
+    "amendment_03": "0040483259cd3febea1feff6301fa545acaa8a21813006f62a06a50d49e02253",
+    "amendment_04": "fa05a3ec4bc7562b362ce09cfe3cd1ae4d7060f453642d7015d210acc8e6bb5a",
+    "amendment_05": "d235cee6a679319bc918610d54b852f74af7c3ed36654fed1fbe4abecbaf86b1",
+    "design_freeze": "cf7a14fbce45dc466a66993ffb985f4623022bb33a320caae0d6947495436d5f"
+  },
+  "integrity_report": {
+    "file": "news_integrity_report.json",
+    "sha256": "9dff4857482362486eb9d19af0ea5cb1d20ba1b4c0f9cccc1b7e442109b1f0fc"
+  },
+  "labels_are_ground_truth": false,
+  "n_events": 55937,
+  "n_other": 41851,
+  "outputs": {
+    "events": {
+      "file": "phase11b_dev_74fc87d8a205_cut20240930T203000Z_finbert-4556d1301521.events-rules_v1.jsonl",
+      "rows": 97788,
+      "sha256": "c48647a1e54def26b4ac0744f4f755dd7f218ed141df5f5b4a350a79cee9b64c"
+    },
+    "events_meta": "phase11b_dev_74fc87d8a205_cut20240930T203000Z_finbert-4556d1301521.events-rules_v1.meta.json"
+  },
+  "partition_reproduces_integrity_report": true,
+  "phase": "11B",
+  "phase_8_score_reuse": false,
+  "rules_v1_spec_sha256": "974016388088b7eb50c8ed2659c738bc464d10a34c7b068471fd6a24d7cd44ad",
+  "run_id": "phase11b_dev_74fc87d8a205_cut20240930T203000Z_finbert-4556d1301521",
+  "score_input": {
+    "file": "phase11b_dev_74fc87d8a205_cut20240930T203000Z_finbert-4556d1301521.sentiment.jsonl",
+    "provenance": {
+      "inference_version": "finbert_sentiment_v1",
+      "model_name": "ProsusAI/finbert",
+      "model_revision": "4556d13015211d73dccd3fdd39d39232506f3e43",
+      "text_policy": "text_v1: headline + ' ' + summary (whitespace-collapsed; summary dropped if it repeats the headline); content (HTML stripped) only if both are empty; never URLs, ids, symbols, timestamps or source"
+    },
+    "rows": 97788,
+    "sha256": "b92a1da354c2861fea42ad97d5b7a6fcdbfe643446af448f31584472fa586fde"
+  },
+  "scoring_run_record": {
+    "file": "finbert_development_scoring_phase11b_dev_74fc87d8a205_cut20240930T203000Z_finbert-4556d1301521.json",
+    "sha256": "0acf73c438cf2cd77f98f16491f46907808466621587febfef5e7acf31ac692a"
+  },
+  "sealed_article_count": 31701,
+  "sealed_content_sent_to_classifier": false,
+  "stage": "11B.2",
+  "started_at": "2026-10-13T19:12:09.246158+00:00"
+}
