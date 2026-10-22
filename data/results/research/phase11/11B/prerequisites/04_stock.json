@@ -1,0 +1,64 @@
+{
+  "code_sha256": {
+    "training/evaluation_harness.py": "577663fd4635c5fedb5bbfb2615164db3fd254b8d6ee50ff7f8658954f6df66b",
+    "training/excess_targets.py": "455ea8fccc6564d138fd214d932d899ecb7454f020cbaa2846866347054aa9e6",
+    "training/phase10a_research.py": "dd04e6effbc6f34738c45f7e397bbd1cc3aeadd3a93900d40d9f15125df489f2",
+    "training/phase11a_research.py": "acb2b4191cb1fdb1d6778d003b4c23c28123e8e1c879d55d44a7ebc7e3873728",
+    "training/phase11b_research.py": "c8e9905c00ef47db702bf43e8caed83dffa3111fddbb6343736c741e1f1d6180",
+    "training/phase9_research.py": "580181deaa50021f6141839cd7224afabb343f2e5a7aa0b3dc88b8a49e0255d3"
+  },
+  "created_at": "2026-10-14T20:14:18+00:00",
+  "data_kind": "real",
+  "details": {
+    "horizon": 1,
+    "runs": {
+      "B": {
+        "first_date": "2017-02-01",
+        "folds": 20,
+        "last_date": "2024-09-30",
+        "models": 15,
+        "n_oos_rows": 1820,
+        "rows": 1928,
+        "warnings": 0
+      },
+      "C": {
+        "first_date": "2017-02-01",
+        "folds": 20,
+        "last_date": "2024-09-30",
+        "models": 15,
+        "n_oos_rows": 1820,
+        "rows": 1928,
+        "warnings": 0
+      },
+      "D": {
+        "first_date": "2017-02-01",
+        "folds": 20,
+        "last_date": "2024-09-30",
+        "models": 15,
+        "n_oos_rows": 1820,
+        "rows": 1928,
+        "warnings": 0
+      },
+      "F": {
+        "first_date": "2017-02-01",
+        "folds": 20,
+        "last_date": "2024-09-30",
+        "models": 15,
+        "n_oos_rows": 1820,
+        "rows": 1928,
+        "warnings": 0
+      }
+    },
+    "symbol": "AXP"
+  },
+  "git": {
+    "commit": "ee02f3d3f3d8f327cf9fc8f52889fc8c5b69ee57",
+    "uncommitted_changes": true
+  },
+  "inputs_sha256": "0fb601fc6abb98ae30ac7edee57aa6e45c519726d63f4b3e962f127dc310124a",
+  "order": 4,
+  "outcome": "PASS",
+  "spec_sha256": "3c9ba4e756bc047201137c9aa4aaeaad27d7ecb134d8b4e854d36dc5175cd1bc",
+  "stage": "11B.4",
+  "step": "stock"
+}
