@@ -4,3 +4,19 @@
 data/raw/stocks/** -text
 data/*.csv -text
 data/*.meta.json -text
+
+# Phase 11 price snapshots: pinned by their .meta.json and the Phase 11 registries.
+data/processed/phase11/market/** -text
+
+# Research evidence (registries, prerequisites, results, design freezes,
+# amendments): pinned by sha256 in other records and in code constants.
+data/results/research/** -text
+
+# Code pinned by sha256 in Phase 11B evidence (training/phase11b_research.py
+# CODE_FILES, recorded as code_sha256 in the registry and prerequisites).
+training/evaluation_harness.py -text
+training/excess_targets.py -text
+training/phase9_research.py -text
+training/phase10a_research.py -text
+training/phase11a_research.py -text
+training/phase11b_research.py -text
