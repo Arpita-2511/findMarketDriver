@@ -20,3 +20,5 @@ training/phase9_research.py -text
 training/phase10a_research.py -text
 training/phase11a_research.py -text
 training/phase11b_research.py -text
+# Phase 11B.5 (Amendment 06): code_sha256 recorded in final/protocol.json.
+training/phase11b_final.py -text

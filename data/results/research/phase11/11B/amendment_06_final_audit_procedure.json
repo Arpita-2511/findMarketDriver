@@ -1,0 +1,107 @@
+{
+  "document_type": "phase_11b_amendment",
+  "amendment_id": "06",
+  "title": "Phase 11B.5 Final Families, Audit, Determinism Re-run and Report Procedure",
+  "phase": "11B",
+  "status": "ADOPTED",
+  "proposed_date": "2026-10-26",
+  "approval_date": "2026-10-26",
+  "revision": 1,
+  "revision_history": [
+    {
+      "rev": 1,
+      "date": "2026-10-26",
+      "note": "Specification v1 adopted by the project owner with decisions D1-D6 approved as written; D5 chose this formal amendment."
+    }
+  ],
+  "immutable_once_adopted": true,
+  "preserves_design_freeze": true,
+  "preserves_amendments_03_04_05": true,
+  "amends": "nothing; fills in the procedure behind design_freeze.json stages.11B_5_final_families_audit_report (steps: Holm over 198 / 5742, audit, determinism sample rerun, report), which the design names but does not detail",
+  "weakens_thresholds": false,
+  "frozen_before_any_11b5_result": true,
+  "source_specification": {
+    "file": "data/results/research/phase11b5_specification_v1.md",
+    "sha256": "fed357e11074b8fb179ffaad05673e8d61ffe0b64c0fc462e5c4f956b4eb56dc"
+  },
+  "owner_decisions": {
+    "D1": "APPROVED - determinism sample size and selection rule as specified",
+    "D2": "APPROVED - bit-identical comparison, excluding only the warnings field",
+    "D3": "APPROVED - confirmation period remains NOT_EVALUATED / NOT_APPLICABLE; sealed content not accessed",
+    "D4": "APPROVED - on determinism failure preserve all frozen results and withhold Phase 11B acceptance until investigated",
+    "D5": "APPROVED - this formal Amendment 06 freezes the procedure; final/protocol.json is the execution record conforming to it",
+    "D6": "APPROVED - refuse the determinism rerun if Python or package versions differ from the frozen environment"
+  },
+  "inputs": {
+    "phase_11a_results": "data/results/research/phase11/11A/registry.json, loaded by hash (d5cdef22a634a98133e9a3643fd7d1590fbf2e712634550473d3be8699f6ae5a), never recomputed",
+    "phase_11b_results": "data/results/research/phase11/11B/development_results.json (sha256 504ab08a8d358a882af8977079a65fc6e28d4db58cf9063ad7c5ff82a8737d96 at adoption); its registry_sha256 must equal the frozen registry file hash and every artifact hash must verify",
+    "family_definitions": "data/results/research/phase11/design_registry.json design.comparison_ids and design.multiple_comparisons (frozen Phase 11.0 design)",
+    "gate_status": "taken as recorded in the frozen evidence; never re-evaluated"
+  },
+  "families": {
+    "primary_panel": {"size": 198, "phase_11a": 66, "phase_11b": 132, "method": "Holm", "alpha": 0.05, "can_qualify": true},
+    "secondary_per_stock": {"size": 5742, "phase_11a": 1914, "phase_11b": 3828, "method": "Holm", "alpha": 0.05, "can_qualify": true},
+    "aapl_excluded_sensitivity": {"size": 198, "phase_11a": 66, "phase_11b": 132, "method": null, "can_qualify": false, "role": "descriptive only; raw p and gate status reported, no Holm"},
+    "membership": "the set of assembled ids must equal the frozen design id set exactly; 11A and 11B ids disjoint; no duplicates",
+    "ordering": "the order of design.comparison_ids.<family>",
+    "integrity_failure": "FAMILY_INTEGRITY_FAILED - the run stops; a family is never shrunk, padded or imputed",
+    "p_value_requirements": "finite float in [0, 1]; anything else stops the run"
+  },
+  "holm": "training.phase9_research.holm_adjust unchanged (step-down; ties keep input order; adjusted values capped at 1)",
+  "qualification": {
+    "rule": "qualified = gate_status == QUALIFIED AND p_value_raw < 0.05 AND p_value_holm_final < 0.05",
+    "comparisons": "strict less-than; a value of exactly 0.05 fails",
+    "order_of_evaluation": ["gate_ok", "raw_ok", "holm_ok"],
+    "holm_computed_for_every_confirmatory_comparison": true,
+    "holm_never_overrides_gate": true,
+    "sensitivity_family": "qualified = null"
+  },
+  "confirmation": {
+    "status": "NOT_EVALUATED",
+    "applicability": "NOT_APPLICABLE when there are 0 development qualifiers; otherwise PENDING_OWNER_AUTHORIZATION",
+    "authorization": null,
+    "sealed_content": "never read; no sealed path is opened"
+  },
+  "audit_checks": {
+    "A1": "verified_inputs() passes (design freeze, Amendments 03-05, Phase 11.0 design, Amendment 01, price report, 11A registry, feature verification, 29 feature frames)",
+    "A2": "11B registry loads: FROZEN, matrix sha256 169c369f89056749754f8324edccee1cd85eacaa4d80a8f9e8be995118f87b08, prerequisites PASS with pinned hashes",
+    "A3": "development_results.json: status COMPLETE, counts 3828 / 132 / 132, registry_sha256 matches, confirmation NOT_EVALUATED, data_kind real",
+    "A4": "all 53 artifact hashes match; no development.incomplete directory",
+    "A5": "entries re-derived from the artifacts equal development_results.json exactly",
+    "A6": "code_sha256() equals the registry's code_sha256",
+    "A7": "recomputed descriptive 11B-stage Holm equals the stored values exactly",
+    "A8": "every pre-existing file under phase11/11A and phase11/11B (outside final/) hashes identically before and after the run",
+    "failure": "AUDIT_FAILED - the run stops before Holm and writes only the failure evidence"
+  },
+  "determinism": {
+    "unit": "per-stock run (symbol, feature set, horizon) re-executed as in 11B.4 _stock_job; panel run (kind, feature set, horizon) re-executed as in 11B.4 _panel_job",
+    "sample": {
+      "S1_coverage": "for each (fs, h) in order B, C, D, F x 1, 3, 5: symbol = universe[int(sha256('phase11b5|determinism_v1|' + fs + '|' + str(h)).hexdigest(), 16) % 29], universe in frozen order",
+      "S2_boundary": "the per-stock runs containing the 3 smallest Phase 11B per-stock raw p-values (ties broken by frozen order); runs already in S1 are skipped and not replaced",
+      "S3_panel": "(a) the primary-panel run containing the smallest Phase 11B panel raw p (ties broken by frozen order); (b) the panel_exAAPL run at cell index int(sha256('phase11b5|determinism_v1|panel_exAAPL').hexdigest(), 16) % 12 of the (fs, h) cells in order B, C, D, F x 1, 3, 5",
+      "frozen_in": "final/protocol.json before any rerun"
+    },
+    "conditions": {
+      "code": "code_sha256() equals the registry",
+      "inputs": "verified inputs equal the registry inputs",
+      "environment": "Python and package versions equal registry.environment, otherwise ENVIRONMENT_MISMATCH and no rerun",
+      "mode": "sequential, in-process (workers = 1), as in 11B.4"
+    },
+    "comparison": "canonical JSON (sorted keys, JSON round trip of the 11B.4 writer) of the stored run object vs the rerun object, both without the top-level warnings key; must be identical; sha256 of both recorded; panel runs compared on the fields produced by evaluate_panel",
+    "warnings": "stored vs rerun warnings.total reported, never a failure",
+    "outcome": "DETERMINISM_VERIFIED or DETERMINISM_CHECK_FAILED with every differing field path; never alters frozen results or the qualification decision",
+    "acceptance_on_failure": "phase_11b_acceptance = NOT_ACCEPTED_DETERMINISM_FAILED until investigated"
+  },
+  "outputs": {
+    "directory": "data/results/research/phase11/11B/final/ (write-once; built in final.incomplete/ and renamed on success)",
+    "files": ["protocol.json (first)", "audit.json", "combined_holm.json", "determinism.json", "final_report.json", "final_report.md", "manifest.json (last)"],
+    "never_modified": "phase11/11A/*, phase11/11B/*.json, phase11/11B/prerequisites/*, phase11/11B/development/*"
+  },
+  "unchanged_invariants": [
+    "gate_v1, its thresholds, reference baselines and the Diebold-Mariano test",
+    "targets, horizons, feature sets, models and parameters",
+    "the frozen families, their sizes and membership",
+    "the development cutoff and the sealed confirmation period",
+    "all Phase 11A and Phase 11B.4 evidence"
+  ]
+}
