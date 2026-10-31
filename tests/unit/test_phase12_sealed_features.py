@@ -264,56 +264,142 @@ def test_real_generator_files_equal_the_amendment_pins():
 
 
 # ============================================================
-# Sealed path: refused before every gate passes
+# Sealed path: Stage A preflight (no sealed access, no attempt) and Stage C guards
 # ============================================================
 
 
 @pytest.fixture
-def no_data_access(monkeypatch):
-    def boom(*a, **k):
-        raise AssertionError("data accessed before authorization")
-    for name in ("development_news", "sealed_articles", "read_bars_until", "development_prefix", "reproduce"):
-        monkeypatch.setattr(s, name, boom)
-    return boom
+def stage_a(env, tmp_path, monkeypatch):
+    """Every Stage A gate passing on synthetic stand-ins; every sealed reader records a call instead of reading."""
+    calls = []
+    monkeypatch.setenv("HF_HUB_OFFLINE", "1")
+    monkeypatch.setenv("TRANSFORMERS_OFFLINE", "1")
+    monkeypatch.setattr(s, "check_sealed_authorization",
+                        lambda: calls.append("authorization") or {"authorization": {"authorized_by": "owner"},
+                                                                  "erratum": {"model_files_sha256": {"f": "h"}}})
+    monkeypatch.setattr(s, "check_finbert", lambda *a, **k: calls.append("finbert") or {"model_revision": "r"})
+    monkeypatch.setattr(s, "development_news", lambda *a, **k: calls.append("development_news") or env.news)
+    monkeypatch.setattr(s, "reproduce", lambda *a, **k: calls.append("reproduce") or
+                        {"result": "EXACT_MATCH", "frame_sha256": {}})
+    monkeypatch.setattr(s, "require_equivalence", lambda *a, **k: calls.append("equivalence") or
+                        {"result": "PASS", "checked": 500, "matches": 500, "article_keys_sha256": "k"})
+    for name in ("sealed_articles", "read_bars_until", "build_sealed_frames"):
+        monkeypatch.setattr(s, name, lambda *a, _n=name, **k: calls.append(f"SEALED:{_n}") or {"AAA": None})
+    marker = tmp_path / "confirmation.incomplete" / "attempt.json"
+    build = s.SealedBuild(service_factory=lambda: calls.append("load_finbert") or fake(),
+                          out_dir=tmp_path / "sealed", attempt_marker=marker)
+    return types.SimpleNamespace(calls=calls, build=build, marker=marker, tmp=tmp_path)
 
 
-def test_sealed_build_refuses_without_owner_authorization(no_data_access, tmp_path, monkeypatch):
-    monkeypatch.setattr(c, "OUT_DIR", tmp_path)                              # no authorization.json here
+def sealed_calls(st):
+    return [x for x in st.calls if x.startswith("SEALED")]
+
+
+def test_preflight_runs_every_gate_in_order_without_sealed_access(stage_a):
+    summary = stage_a.build.preflight()
+    assert stage_a.calls == ["authorization", "load_finbert", "finbert", "development_news", "reproduce", "equivalence"]
+    assert summary["development_reproduction"] == "EXACT_MATCH" and summary["equivalence"]["matches"] == 500
+    assert not stage_a.marker.exists() and not (stage_a.tmp / "sealed").exists()
+
+
+@pytest.mark.parametrize("missing", ["HF_HUB_OFFLINE", "TRANSFORMERS_OFFLINE"])
+def test_preflight_requires_both_offline_switches(stage_a, monkeypatch, missing):
+    monkeypatch.delenv(missing)
+    with pytest.raises(s.SealedFeatureError, match=f"{missing}=1"):
+        stage_a.build.preflight()
+    assert "load_finbert" not in stage_a.calls and not sealed_calls(stage_a) and not stage_a.marker.exists()
+
+
+def test_preflight_refuses_invalid_authorization(stage_a, monkeypatch, tmp_path):
+    monkeypatch.setattr(s, "check_sealed_authorization", _real_check_sealed_authorization)
+    monkeypatch.setattr(c, "OUT_DIR", tmp_path)                          # no authorization.json here
     monkeypatch.setattr(c, "load_amendment", lambda *a, **k: {})
     with pytest.raises(c.Phase12S3Error, match="not authorized"):
-        s.build_sealed(no_data_access, tmp_path / "sealed")
-    assert not (tmp_path / "sealed").exists()
+        stage_a.build.preflight()
+    assert "load_finbert" not in stage_a.calls and not sealed_calls(stage_a) and not stage_a.marker.exists()
 
 
-def test_sealed_build_refuses_without_a_verified_erratum(no_data_access, tmp_path, monkeypatch):
+def test_preflight_refuses_a_wrong_erratum_hash(stage_a, monkeypatch):
+    monkeypatch.setattr(s, "check_sealed_authorization", _real_check_sealed_authorization)
     monkeypatch.setattr(c, "load_amendment", lambda *a, **k: {})
     monkeypatch.setattr(c, "load_authorization", lambda *a, **k: {"authorized_by": "owner"})
-    monkeypatch.setattr(s, "ERRATUM_SHA256", None)
-    with pytest.raises(s.SealedFeatureError, match="not pinned"):
-        s.build_sealed(no_data_access, tmp_path / "sealed")
     monkeypatch.setattr(s, "ERRATUM_SHA256", "0" * 64)
     with pytest.raises(s.SealedFeatureError, match="differs from its pinned SHA256"):
-        s.build_sealed(no_data_access, tmp_path / "sealed")
-    assert not (tmp_path / "sealed").exists()
+        stage_a.build.preflight()
+    monkeypatch.setattr(s, "ERRATUM_SHA256", None)
+    with pytest.raises(s.SealedFeatureError, match="not pinned"):
+        stage_a.build.preflight()
+    assert "load_finbert" not in stage_a.calls and not sealed_calls(stage_a) and not stage_a.marker.exists()
 
 
-def test_sealed_build_stops_when_reproduction_fails(tmp_path, monkeypatch):
-    monkeypatch.setattr(s, "check_sealed_authorization", lambda: {})
-    calls = []
-    monkeypatch.setattr(s, "reproduce", lambda *a, **k: (_ for _ in ()).throw(s.SealedFeatureError("mismatch")))
-    monkeypatch.setattr(s, "sealed_articles", lambda *a, **k: calls.append("sealed"))
-    with pytest.raises(s.SealedFeatureError, match="mismatch"):
-        s.build_sealed(lambda: calls.append("finbert"), tmp_path / "sealed")
-    assert calls == [] and not (tmp_path / "sealed").exists()
+def test_preflight_refuses_a_wrong_model_file_hash(stage_a, monkeypatch, tmp_path):
+    snap = snapshot(tmp_path)
+    monkeypatch.setattr(s, "check_finbert", lambda svc, files: _real_check_finbert(svc, files, snap))
+    monkeypatch.setattr(s, "check_sealed_authorization",
+                        lambda: {"authorization": {}, "erratum": {"model_files_sha256": {"config.json": "0" * 64}}})
+    stage_a.build.service_factory = frozen_like
+    with pytest.raises(s.SealedFeatureError, match="fingerprint"):
+        stage_a.build.preflight()
+    assert "reproduce" not in stage_a.calls and not sealed_calls(stage_a) and not stage_a.marker.exists()
+
+
+def test_preflight_stops_on_a_development_feature_mismatch(stage_a, monkeypatch):
+    monkeypatch.setattr(s, "reproduce", lambda *a, **k: (_ for _ in ()).throw(
+        s.SealedFeatureError("development reproduction FAILED (1): ['AAPL.Volatility: 1 value(s) differ']")))
+    with pytest.raises(s.SealedFeatureError, match="reproduction FAILED"):
+        stage_a.build.preflight()
+    assert "equivalence" not in stage_a.calls and not sealed_calls(stage_a) and not stage_a.marker.exists()
+
+
+def test_preflight_stops_on_a_finbert_label_mismatch(stage_a, monkeypatch):
+    monkeypatch.setattr(s, "require_equivalence", _real_require_equivalence)   # 5 synthetic articles < 500 -> FAIL
+    with pytest.raises(s.SealedFeatureError, match="label equivalence FAILED"):
+        stage_a.build.preflight()
+    assert not sealed_calls(stage_a) and not stage_a.marker.exists()
+
+
+def test_preflight_refuses_existing_outputs_attempts_and_frozen_dirs(stage_a):
+    (stage_a.tmp / "sealed").mkdir()
+    with pytest.raises(s.SealedFeatureError, match="built once"):
+        stage_a.build.preflight()
+    (stage_a.tmp / "sealed").rmdir()
+    stage_a.marker.parent.mkdir()
+    stage_a.marker.write_text("{}")
+    with pytest.raises(s.SealedFeatureError, match="runs once"):
+        stage_a.build.preflight()
+    stage_a.build.out_dir = m2.OUT_DIR / "sealed"
     with pytest.raises(s.SealedFeatureError, match="frozen evidence"):
-        s.build_sealed(lambda: None, m2.OUT_DIR / "sealed")
+        stage_a.build.preflight()
+    assert "load_finbert" not in stage_a.calls and not sealed_calls(stage_a)
 
 
-def test_sealed_loader_requires_offline_model_loading(monkeypatch):
-    monkeypatch.delenv("HF_HUB_OFFLINE", raising=False)
-    monkeypatch.setattr(s, "build_sealed", lambda *a, **k: pytest.fail("built"))
-    with pytest.raises(s.SealedFeatureError, match="HF_HUB_OFFLINE"):
-        s.sealed_loader()
+def test_sealed_read_needs_preflight_and_the_registered_attempt(stage_a):
+    with pytest.raises(s.SealedFeatureError, match="preflight has not passed"):
+        stage_a.build()
+    stage_a.build.preflight()
+    with pytest.raises(s.SealedFeatureError, match="no registered confirmation attempt"):
+        stage_a.build()
+    assert not sealed_calls(stage_a)
+    stage_a.marker.parent.mkdir()
+    stage_a.marker.write_text("{}")
+    stage_a.build()
+    assert sealed_calls(stage_a) == ["SEALED:build_sealed_frames"]
+
+
+def test_a_failed_preflight_clears_an_earlier_pass(stage_a, monkeypatch):
+    stage_a.build.preflight()
+    monkeypatch.delenv("TRANSFORMERS_OFFLINE")
+    with pytest.raises(s.SealedFeatureError):
+        stage_a.build.preflight()
+    stage_a.marker.parent.mkdir()
+    stage_a.marker.write_text("{}")
+    with pytest.raises(s.SealedFeatureError, match="preflight has not passed"):
+        stage_a.build()
+
+
+_real_check_finbert = s.check_finbert
+_real_check_sealed_authorization = s.check_sealed_authorization
+_real_require_equivalence = s.require_equivalence
 
 
 def test_sealed_article_routing_keeps_only_post_cutoff_articles(tmp_path):
@@ -442,11 +528,15 @@ def test_frozen_finbert_configuration_and_offline_requirement(tmp_path, monkeypa
     snap = snapshot(tmp_path)
     files = s.model_files_sha256(snap)
     monkeypatch.delenv("HF_HUB_OFFLINE", raising=False)
-    with pytest.raises(s.SealedFeatureError, match="HF_HUB_OFFLINE"):
+    monkeypatch.delenv("TRANSFORMERS_OFFLINE", raising=False)
+    with pytest.raises(s.SealedFeatureError, match="HF_HUB_OFFLINE=1 and TRANSFORMERS_OFFLINE=1"):
         s.check_finbert(frozen_like(), files, snap)
     with pytest.raises(s.SealedFeatureError, match="HF_HUB_OFFLINE"):
         s.frozen_finbert()
     monkeypatch.setenv("HF_HUB_OFFLINE", "1")
+    with pytest.raises(s.SealedFeatureError, match="TRANSFORMERS_OFFLINE=1"):
+        s.check_finbert(frozen_like(), files, snap)
+    monkeypatch.setenv("TRANSFORMERS_OFFLINE", "1")
     live = s.check_finbert(frozen_like(), files, snap)
     assert live["model_revision"] == s.FINBERT_CONFIG["model_revision"] and live["batch_size"] == 16
     for over in ({"batch_size": 32}, {"max_length": 256}, {"device": "cuda"}):
@@ -478,17 +568,3 @@ def test_finbert_labels_feed_only_event_negative_event_count(env):
     for sym in SYMS:
         assert a[sym][others].equals(b[sym][others])
     assert a["AAPL"]["event__negative_event_count"].sum() > 0 == b["AAPL"]["event__negative_event_count"].sum()
-
-
-def test_sealed_build_runs_the_label_gate_before_any_sealed_record(env, tmp_path, monkeypatch):
-    calls = []
-    monkeypatch.setattr(s, "check_sealed_authorization", lambda: {"authorization": {}, "erratum": {"model_files_sha256": {}}})
-    monkeypatch.setattr(s, "reproduce", lambda *a, **k: calls.append("reproduce"))
-    monkeypatch.setattr(s, "development_news", lambda *a, **k: env.news)
-    monkeypatch.setattr(s, "check_finbert", lambda *a, **k: calls.append("config") or {})
-    monkeypatch.setattr(s, "require_equivalence",
-                        lambda *a, **k: (_ for _ in ()).throw(s.SealedFeatureError("FinBERT label equivalence FAILED")))
-    monkeypatch.setattr(s, "sealed_articles", lambda *a, **k: calls.append("SEALED READ"))
-    with pytest.raises(s.SealedFeatureError, match="equivalence FAILED"):
-        s.build_sealed(lambda: fake(), tmp_path / "sealed")
-    assert calls == ["reproduce", "config"] and not (tmp_path / "sealed").exists()

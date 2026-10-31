@@ -304,6 +304,150 @@ def test_planted_signal_is_confirmed_and_noise_is_not(env):
 
 
 # ============================================================
+# Order: A preflight (no attempt) -> B register the attempt -> C sealed read
+# ============================================================
+
+
+def marker(e):
+    return e.out / (c.CONFIRMATION_DIR + ".incomplete") / "attempt.json"
+
+
+class Source:
+    """A two-step sealed loader double; records whether the attempt marker existed at each step."""
+
+    def __init__(self, e, fail=None, sealed_fail=False):
+        self.e, self.fail, self.sealed_fail, self.events = e, fail, sealed_fail, []
+
+    def preflight(self):
+        self.events.append(("preflight", marker(self.e).exists()))
+        if self.fail:
+            raise c.Phase12S3Error(self.fail)
+        return {"development_reproduction": "EXACT_MATCH", "equivalence": {"matches": 500}}
+
+    def __call__(self):
+        self.events.append(("sealed", marker(self.e).is_file()))
+        if self.sealed_fail:
+            raise RuntimeError("sealed build crashed")
+        return sealed_frames()
+
+
+@pytest.mark.parametrize("failure", ["HF_HUB_OFFLINE=1 required", "TRANSFORMERS_OFFLINE=1 required",
+                                     "Erratum 01 is missing or differs from its pinned SHA256",
+                                     "cached FinBERT files differ from the Erratum 01 fingerprint",
+                                     "development reproduction FAILED", "FinBERT label equivalence FAILED: 499/500"])
+def test_a_preflight_failure_consumes_no_attempt(env, failure):
+    authorize(env)
+    bad = Source(env, fail=failure)
+    with pytest.raises(c.Phase12S3Error, match=failure.split(":")[0][:20]):
+        run_confirm(env, bad)
+    assert bad.events == [("preflight", False)]                         # never reached the sealed step
+    assert not (env.out / (c.CONFIRMATION_DIR + ".incomplete")).exists()
+    good = Source(env)                                                  # the attempt is still available
+    assert run_confirm(env, good)["outcome"] in ("CONFIRMED", "NOT_CONFIRMED")
+
+
+def test_invalid_authorization_fails_before_preflight(env):
+    src = Source(env)
+    with pytest.raises(c.Phase12S3Error, match="not authorized"):
+        run_confirm(env, src)
+    authorize(env, statement="go")
+    with pytest.raises(c.Phase12S3Error, match="statement"):
+        run_confirm(env, src)
+    assert src.events == [] and not marker(env).parent.exists()
+
+
+@pytest.mark.parametrize("existing", [c.CONFIRMATION_DIR, c.CONFIRMATION_DIR + ".incomplete"])
+def test_an_existing_attempt_or_confirmation_is_refused_before_preflight(env, existing):
+    authorize(env)
+    (env.out / existing).mkdir()
+    src = Source(env)
+    with pytest.raises(c.Phase12S3Error, match="runs once"):
+        run_confirm(env, src)
+    assert src.events == []
+
+
+def test_marker_is_written_once_after_preflight_and_before_the_first_sealed_read(env):
+    authorize(env)
+    src = Source(env)
+    run_confirm(env, src)
+    assert src.events == [("preflight", False), ("sealed", True)]
+    done = env.out / c.CONFIRMATION_DIR
+    attempt = json.loads((done / "attempt.json").read_text())
+    assert attempt["preflight"]["equivalence"]["matches"] == 500 and attempt["amendment_sha256"] == env.sha
+    assert sorted(p.name for p in done.iterdir()) == ["attempt.json", "confirmation.json"]
+    again = Source(env)
+    with pytest.raises(c.Phase12S3Error, match="runs once"):
+        run_confirm(env, again)
+    assert again.events == []
+
+
+def test_a_failure_after_registration_keeps_the_marker_and_refuses_retries(env):
+    authorize(env)
+    src = Source(env, sealed_fail=True)
+    with pytest.raises(RuntimeError, match="crashed"):
+        run_confirm(env, src)
+    assert src.events == [("preflight", False), ("sealed", True)] and marker(env).is_file()
+    retry = Source(env)
+    with pytest.raises(c.Phase12S3Error, match="runs once"):
+        run_confirm(env, retry)
+    assert retry.events == [] and marker(env).is_file()
+
+
+def test_concurrent_registrations_cannot_both_succeed(tmp_path):
+    import threading
+    n, start, wins, losses = 12, threading.Barrier(12), [], []
+
+    def go(i):
+        start.wait()
+        try:
+            wins.append(c.register_attempt(tmp_path, "a" * 64, {"by": i}))
+        except c.Phase12S3Error:
+            losses.append(i)
+    threads = [threading.Thread(target=go, args=(i,)) for i in range(n)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert len(wins) == 1 and len(losses) == n - 1
+    assert [p.name for p in (tmp_path / (c.CONFIRMATION_DIR + ".incomplete")).iterdir()] == ["attempt.json"]
+
+
+def test_registration_after_a_completed_run_is_refused_without_leaving_a_marker(tmp_path, monkeypatch):
+    (tmp_path / c.CONFIRMATION_DIR).mkdir()                             # a run finished in the meantime
+    monkeypatch.setattr(c, "_refuse_existing_attempt", lambda out_dir: None)
+    with pytest.raises(c.Phase12S3Error, match="runs once"):
+        c.register_attempt(tmp_path, "a" * 64, {})
+    assert not (tmp_path / (c.CONFIRMATION_DIR + ".incomplete")).exists()
+
+
+def test_the_real_two_step_builder_reads_sealed_data_only_after_registration(env, tmp_path, monkeypatch):
+    import inspect
+
+    import training.phase12_sealed_features as s
+    assert "SealedBuild()" in inspect.getsource(c.main)                 # the CLI uses the two-step builder
+    authorize(env)
+    order = []
+    monkeypatch.setenv("HF_HUB_OFFLINE", "1")
+    monkeypatch.setenv("TRANSFORMERS_OFFLINE", "1")
+    monkeypatch.setattr(s, "check_sealed_authorization",
+                        lambda: order.append("A:gates") or {"authorization": {}, "erratum": {"model_files_sha256": {}}})
+    monkeypatch.setattr(s, "check_finbert", lambda *a, **k: order.append("A:finbert") or {})
+    monkeypatch.setattr(s, "development_news", lambda *a, **k: order.append("A:news") or ([], [], {}))
+    monkeypatch.setattr(s, "reproduce", lambda *a, **k: order.append("A:reproduce") or
+                        {"result": "EXACT_MATCH", "frame_sha256": {}})
+    monkeypatch.setattr(s, "require_equivalence", lambda *a, **k: order.append("A:labels") or
+                        {"result": "PASS", "checked": 500, "matches": 500, "article_keys_sha256": "k"})
+
+    def sealed_read(ready, out_dir):
+        order.append(("C:sealed", marker(env).is_file()))
+        return sealed_frames()
+    monkeypatch.setattr(s, "build_sealed_frames", sealed_read)
+    build = s.SealedBuild(service_factory=lambda: None, out_dir=tmp_path / "sealed", attempt_marker=marker(env))
+    assert run_confirm(env, build)["outcome"] in ("CONFIRMED", "NOT_CONFIRMED")
+    assert order == ["A:gates", "A:finbert", "A:news", "A:reproduce", "A:labels", ("C:sealed", True)]
+
+
+# ============================================================
 # Sealed eligibility and missing data
 # ============================================================
 

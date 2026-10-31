@@ -516,20 +516,52 @@ def sealed_feature_build_unavailable() -> dict:
     raise Phase12S3Error(f"the sealed feature builder ({SEALED_BUILDER_FILE}) has not been written and approved")
 
 
+def _refuse_existing_attempt(out_dir: Path) -> None:
+    if (out_dir / CONFIRMATION_DIR).exists() or (out_dir / (CONFIRMATION_DIR + ".incomplete")).exists():
+        raise Phase12S3Error("a confirmation attempt already exists; the sealed confirmation runs once")
+
+
+def register_attempt(out_dir: Path, amendment_sha: str, auth: dict, preflight: dict | None = None) -> Path:
+    """
+    The one-time registration. mkdir of confirmation.incomplete/ is atomic and exclusive, so of any concurrent
+    invocations exactly one succeeds; a run that already completed (confirmation/ exists) is refused as well.
+    """
+    out_dir = Path(out_dir)
+    final, staging = out_dir / CONFIRMATION_DIR, out_dir / (CONFIRMATION_DIR + ".incomplete")
+    _refuse_existing_attempt(out_dir)
+    try:
+        staging.mkdir()
+    except FileExistsError:
+        raise Phase12S3Error("a confirmation attempt already exists; the sealed confirmation runs once") from None
+    if final.exists():                                   # completed between the check and mkdir: not ours to run
+        staging.rmdir()
+        raise Phase12S3Error("a confirmation attempt already exists; the sealed confirmation runs once")
+    _write_new_json(staging / "attempt.json", {"amendment_sha256": amendment_sha, "authorization": auth,
+                                               "preflight": preflight,
+                                               "started_at": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+    return staging / "attempt.json"
+
+
 def confirm(out_dir: Path = OUT_DIR, stage2_dir: Path = m2.OUT_DIR, frames: dict | None = None,
             sealed_loader: Callable[[], dict] = sealed_feature_build_unavailable, pinned_sha: str | None = None,
             universe=None) -> dict:
-    """Every gate passes before `sealed_loader` is called; an attempt marker is written before sealed access."""
+    """
+    A  preflight, no sealed access, no attempt consumed: amendment, Stage 2 evidence, artifacts and fingerprints,
+       authorization (runner and builder hashes), no earlier attempt, then `sealed_loader.preflight()` if the
+       loader has one (the sealed builder: erratum, output directory, offline flags, FinBERT, development
+       reproduction, 500/500 labels)
+    B  register_attempt: confirmation.incomplete/attempt.json, exactly once
+    C  sealed_loader() -> sealed frames, then the unchanged evaluation
+    """
     out_dir = Path(out_dir)
     doc, finalist, baseline = verify(out_dir, stage2_dir, frames, pinned_sha)
     amendment_sha = file_sha256(out_dir / AMENDMENT_FILE)
     auth = load_authorization(out_dir, amendment_sha)
-    final, staging = out_dir / CONFIRMATION_DIR, out_dir / (CONFIRMATION_DIR + ".incomplete")
-    if final.exists() or staging.exists():
-        raise Phase12S3Error("a confirmation attempt already exists; the sealed confirmation runs once")
-    staging.mkdir()
-    _write_new_json(staging / "attempt.json", {"amendment_sha256": amendment_sha, "authorization": auth,
-                                               "started_at": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+    _refuse_existing_attempt(out_dir)
+    preflight = getattr(sealed_loader, "preflight", None)
+    summary = preflight() if preflight is not None else None
+    staging = register_attempt(out_dir, amendment_sha, auth, summary).parent
+    final = out_dir / CONFIRMATION_DIR
     started = time.time()
     res = evaluate(finalist, baseline, sealed_loader(), universe)
     _write_new_json(staging / "confirmation.json", {
@@ -569,8 +601,8 @@ def main(argv: list[str] | None = None) -> int:
         verify()
         print("verify: every pin reproduces on development data")
     elif args.command == "confirm":
-        from training.phase12_sealed_features import sealed_loader   # hash-bound by the authorization record
-        print(f"outcome: {confirm(sealed_loader=sealed_loader)['outcome']}")
+        from training.phase12_sealed_features import SealedBuild   # hash-bound by the authorization record
+        print(f"outcome: {confirm(sealed_loader=SealedBuild())['outcome']}")
     print("\n".join(status_lines()))
     return 0
 

@@ -24,13 +24,14 @@ Revised articles created before the cutoff are routed by their timestamps alone.
 
 Erratum 01 (phase12/stage3/erratum_01.json, pinned below) corrects Amendment 07: event__negative_event_count
 needs each article's FinBERT label, so sealed articles are scored with the frozen 11B.2 FinBERT, offline. Those
-labels are used for that feature only. `build_sealed` needs Amendment 07, the owner's authorization record
-(naming this file's hash), Erratum 01, a passing reproduction, the frozen FinBERT configuration and 500/500
-development labels reproduced, all in the same process, before any sealed record is read.
+labels are used for that feature only. `SealedBuild.preflight`, run by the confirmation runner before it
+registers the attempt, needs Amendment 07, the owner's authorization record (naming this file's hash), Erratum 01,
+both offline switches, the frozen FinBERT configuration, a passing reproduction and 500/500 development labels.
+`SealedBuild()` then reads sealed records only in the same process and only once the attempt marker exists.
 
     python -m training.phase12_sealed_features reproduce      # development only -> phase12/stage3b/ (write-once)
     python -m training.phase12_sealed_features erratum        # phase12/stage3/erratum_01.json (write-once)
-    python -m training.phase12_sealed_features finbert-check  # 500 development labels (HF_HUB_OFFLINE=1; write-once)
+    python -m training.phase12_sealed_features finbert-check  # 500 development labels (HF_HUB_OFFLINE=1, TRANSFORMERS_OFFLINE=1)
     python -m training.phase12_sealed_features status
 """
 
@@ -111,6 +112,7 @@ ERRATUM_SHA256 = "0dd61b0b12bca9951387ea8568ac536b6afc13e6a08e322a06d137e8cd0717
 EQUIVALENCE_ARTICLES = 500                 # development articles re-scored; every label must match (500/500)
 SELECTION_SALT = "phase12|erratum01|"
 EQUIVALENCE_FILE = "finbert_label_equivalence.json"
+OFFLINE_ENV = ("HF_HUB_OFFLINE", "TRANSFORMERS_OFFLINE")
 FINBERT_CONFIG = {                         # the frozen 11B.2 pipeline (scoring run record + services.finbert_sentiment)
     "model_name": "ProsusAI/finbert", "model_revision": "4556d13015211d73dccd3fdd39d39232506f3e43",
     "inference_version": "finbert_sentiment_v1", "labels": ["positive", "negative", "neutral"],
@@ -492,8 +494,7 @@ def load_erratum(path: Path | None = None, pinned_sha: str | None = None) -> dic
 def check_finbert(service, expected_files: dict, snapshot: Path | None = None) -> dict:
     """The loaded service is exactly the frozen pipeline: revision, labels, tokenizer limit, batching, files."""
     from training.phase11b_sentiment_scoring import check_model
-    if os.environ.get("HF_HUB_OFFLINE") != "1":
-        raise SealedFeatureError("HF_HUB_OFFLINE=1 is required (offline inference from the local cache)")
+    require_offline()
     check_model(service)
     b = service.backend
     live = {"model_name": b.model_name, "model_revision": b.model_revision, "labels": [str(x) for x in b.labels],
@@ -564,6 +565,14 @@ def run_label_equivalence(out_dir: Path = OUT_DIR, service_factory: Callable | N
     return doc
 
 
+def require_offline() -> None:
+    """Offline inference from the local cache only: both Hugging Face offline switches must be set."""
+    missing = [v for v in OFFLINE_ENV if os.environ.get(v) != "1"]
+    if missing:
+        raise SealedFeatureError(f"{' and '.join(f'{v}=1' for v in missing)} required (offline inference "
+                                 "from the local cache)")
+
+
 def _version(name: str) -> str | None:
     from importlib.metadata import PackageNotFoundError, version
     try:
@@ -575,8 +584,7 @@ def _version(name: str) -> str | None:
 def frozen_finbert():
     """The 11B.2 service: pinned revision, CPU, batch size 16, offline from the local cache."""
     from services.finbert_sentiment import FinBertSentimentService
-    if os.environ.get("HF_HUB_OFFLINE") != "1":
-        raise SealedFeatureError("HF_HUB_OFFLINE=1 is required (offline inference from the local cache)")
+    require_offline()
     return FinBertSentimentService.load(revision=FINBERT_CONFIG["model_revision"], device=FINBERT_CONFIG["device"],
                                         batch_size=FINBERT_CONFIG["batch_size"])
 
@@ -608,17 +616,9 @@ def sealed_articles(canonical_path: Path, expected_sha256: str) -> list[NewsArti
     return out
 
 
-def build_sealed(service_factory: Callable, out_dir: Path = SEALED_FEATURES_DIR) -> dict[str, pd.DataFrame]:
-    """The one authorized sealed build: gates, reproduction, FinBERT checks, then sealed rows (written once)."""
-    gates = check_sealed_authorization()
-    out_dir = _check_output_dir(out_dir)
-    if out_dir.exists():
-        raise SealedFeatureError(f"{out_dir.name} already exists; sealed features are built once")
-    reproduce(None)                                                    # same process, before any sealed row
-    dev_scored, dev_classified, news_inputs = development_news()
-    service = service_factory()
-    config = check_finbert(service, gates["erratum"]["model_files_sha256"])
-    equivalence = require_equivalence(dev_scored, service)            # 500/500 before any sealed inference
+def build_sealed_frames(ready: dict, out_dir: Path) -> dict[str, pd.DataFrame]:
+    """Stage C body: the first sealed read. Only called by SealedBuild after preflight and attempt registration."""
+    service, (dev_scored, dev_classified, news_inputs) = ready["service"], ready["development_news"]
     report = load_integrity_report(fb.REPORT_PATH)
     canonical = PROJECT_ROOT / report["canonical_input"]["path"]
     sealed = sealed_articles(canonical, report["canonical_input"]["sha256"])
@@ -640,20 +640,63 @@ def build_sealed(service_factory: Callable, out_dir: Path = SEALED_FEATURES_DIR)
         out.to_csv(p, index=False, lineterminator="\n", float_format="%.17g")
         files[sym] = file_sha256(p)
     _write_new_json(out_dir / "manifest.json", {
-        "document_type": "phase12_sealed_features", "stage": STAGE, "authorization": gates["authorization"],
+        "document_type": "phase12_sealed_features", "stage": STAGE, "authorization": ready["gates"]["authorization"],
         "erratum_sha256": ERRATUM_SHA256, "builder_code_sha256": file_sha256(Path(__file__)), "files_sha256": files,
         "price_snapshots_sha256": {s: a["sha256"] for s, a in inputs["artifacts"].items()},
-        "news": news_inputs, "sealed_articles": len(sealed), "finbert_config": config,
-        "finbert_equivalence": {k: equivalence[k] for k in ("result", "checked", "matches", "article_keys_sha256")},
+        "news": news_inputs, "sealed_articles": len(sealed), "finbert_config": ready["finbert_config"],
+        "finbert_equivalence": ready["equivalence"],
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds")})
     return frames
 
 
-def sealed_loader() -> dict[str, pd.DataFrame]:
-    """The confirmation runner's sealed_loader."""
-    if os.environ.get("HF_HUB_OFFLINE") != "1":
-        raise SealedFeatureError("HF_HUB_OFFLINE=1 is required (the pinned FinBERT revision loads from the local cache)")
-    return build_sealed(frozen_finbert)
+class SealedBuild:
+    """
+    The confirmation runner's sealed_loader, in two steps:
+
+        preflight()  Stage A, before the runner registers the attempt; reads no sealed record:
+                     Amendment 07, authorization (runner and builder hashes), Erratum 01, output directory,
+                     HF_HUB_OFFLINE=1 and TRANSFORMERS_OFFLINE=1, frozen FinBERT (revision, configuration, the
+                     cached model files), development feature reproduction, 500/500 development labels
+        __call__()   Stage C: refuses unless preflight passed in this process and the attempt marker exists;
+                     then the first sealed read
+    """
+
+    def __init__(self, service_factory: Callable | None = None, out_dir: Path = SEALED_FEATURES_DIR,
+                 attempt_marker: Path | None = None):
+        self.service_factory = service_factory or frozen_finbert
+        self.out_dir = Path(out_dir)
+        self.attempt_marker = Path(attempt_marker) if attempt_marker else \
+            c.OUT_DIR / (c.CONFIRMATION_DIR + ".incomplete") / "attempt.json"
+        self._ready: dict | None = None
+
+    def preflight(self) -> dict:
+        self._ready = None
+        gates = check_sealed_authorization()
+        out_dir = _check_output_dir(self.out_dir)
+        if out_dir.exists():
+            raise SealedFeatureError(f"{out_dir.name} already exists; sealed features are built once")
+        if self.attempt_marker.exists():
+            raise SealedFeatureError("a confirmation attempt already exists; the sealed confirmation runs once")
+        require_offline()
+        service = self.service_factory()
+        config = check_finbert(service, gates["erratum"]["model_files_sha256"])
+        news = development_news()
+        reproduction = reproduce(None, news_loader=lambda: news)          # exact development match
+        equivalence = require_equivalence(news[0], service)               # 500/500 development labels
+        summary = {"development_reproduction": reproduction["result"], "frame_sha256": reproduction["frame_sha256"],
+                   "finbert_config": config,
+                   "equivalence": {k: equivalence[k] for k in ("result", "checked", "matches", "article_keys_sha256")},
+                   "erratum_sha256": ERRATUM_SHA256, "builder_code_sha256": file_sha256(Path(__file__))}
+        self._ready = {"gates": gates, "service": service, "development_news": news, "finbert_config": config,
+                       "equivalence": summary["equivalence"], "out_dir": out_dir}
+        return summary
+
+    def __call__(self) -> dict[str, pd.DataFrame]:
+        if self._ready is None:
+            raise SealedFeatureError("preflight has not passed in this process; refusing sealed access")
+        if not self.attempt_marker.is_file():
+            raise SealedFeatureError("no registered confirmation attempt; refusing sealed access")
+        return build_sealed_frames(self._ready, self._ready["out_dir"])
 
 
 def status_lines(out_dir: Path = OUT_DIR) -> list[str]:
