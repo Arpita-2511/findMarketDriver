@@ -1,0 +1,231 @@
+{
+  "amendment_id": "amendment_07_phase12_sealed_confirmation",
+  "authorization": {
+    "fields": [
+      "amendment_sha256",
+      "runner_code_sha256",
+      "sealed_builder_code_sha256",
+      "authorized_by",
+      "authorized_at",
+      "statement"
+    ],
+    "file": "phase12/stage3/authorization.json",
+    "statement": "I authorize the one-time Phase 12 sealed confirmation under Amendment 07, with the runner and sealed feature builder code named in this record.",
+    "written_by": "the project owner, by hand"
+  },
+  "baseline": {
+    "artifact": "phase12/stage3/baseline_ridge_vol_h1.joblib",
+    "definition": "Ridge(alpha=1.0) on Volatility, spy_volatility_20 after training-quantile clipping [0.01, 0.99] and StandardScaler; the Stage 2 reference model",
+    "fit": "all development rows, Stage 2 fit_finalist procedure; fitted in Stage 3A from development data only because Stage 2 saved candidates only; deterministic (two fits identical)",
+    "name": "baseline_ridge_vol"
+  },
+  "calibration_boundary": "the finalist is evaluated uncalibrated; any product calibration must be developed on Stage 2 development out-of-fold predictions, frozen separately, and never tuned on sealed results",
+  "config": {
+    "max_excluded_share": 0.01,
+    "max_excluded_share_stock": 0.05,
+    "min_last_quarter": 21,
+    "min_sessions": 400,
+    "quarter_sessions": 63,
+    "stage2_config": {
+      "alpha": 0.05,
+      "clip_quantiles": [
+        0.01,
+        0.99
+      ],
+      "horizons": [
+        1,
+        5
+      ],
+      "lgb_depth": 3,
+      "lgb_leaves": 7,
+      "lgb_lr": 0.03,
+      "lgb_trees": 300,
+      "min_blocks_improved": 3,
+      "min_last_fold": 21,
+      "min_leaf_pooled": 200,
+      "min_leaf_stock": 50,
+      "min_rel_mae_improvement": 0.0,
+      "min_rel_mse_improvement": 0.01,
+      "min_share_stocks_improved": 0.6,
+      "min_train": 504,
+      "n_blocks": 4,
+      "n_repro_stocks": 5,
+      "rf_depth": 4,
+      "rf_max_features": 0.5,
+      "rf_trees": 200,
+      "ridge_alpha": 1.0,
+      "test_len": 63
+    }
+  },
+  "created_at": "2026-10-31T07:27:29+00:00",
+  "criteria_review": {
+    "Q1": "kept unchanged",
+    "Q2": "kept; the family is 1 comparison, so Holm leaves p unchanged",
+    "Q3": "kept; 4 blocks of about 6 months",
+    "Q4": "adapted: there is no walk-forward, so the gap check becomes the train/sealed separation check",
+    "Q5": "adapted: 'best fold' becomes 'best quarter', the same 63-session length as a Stage 2 fold, since the sealed period has no folds",
+    "Q6": "adapted: no refit happens, so reproducibility is checked on the frozen artifacts and on repeated inference"
+  },
+  "eligibility_and_missing_data": {
+    "features": "a row is excluded when any of the 8 features is non-finite or the generator marks it uncovered (e.g. no covered 20-session news window); excluded rows are dropped for finalist and baseline alike; no imputation, forward-fill or zero-fill",
+    "limits": "excluded rows > 1% of all rows or > 5% of any stock's rows -> INVALID",
+    "order": "validity is decided before any prediction is compared with a target",
+    "sessions": "all stocks must share the same sealed sessions; fewer than 400 -> INVALID",
+    "targets": "a non-finite Close or SPY_Close at t or t+1 -> INVALID (prices are verified snapshots)",
+    "universe": "the 29 Phase 11B stocks; a missing stock or SPY series -> INVALID",
+    "zero_counts": "zero news or event counts are values, not missing data"
+  },
+  "environment": {
+    "packages": {
+      "joblib": "1.5.3",
+      "lightgbm": "4.7.0",
+      "numpy": "2.5.1",
+      "pandas": "3.0.3",
+      "scikit-learn": "1.9.0",
+      "scipy": "1.18.0",
+      "xgboost": "3.3.0"
+    },
+    "python": "3.14.6"
+  },
+  "evidence_levels": {
+    "development_qualification": "Stage 2, 2019-02 .. 2024-09 walk-forward on development data. Exploratory and possibly optimistic: the 8 features were chosen in Stage 1 on the same 2017-2024 data.",
+    "sealed_confirmation": "This amendment: one evaluation of the frozen finalist on sessions never used for feature selection, model fitting, scaling or threshold setting. Only this result can confirm the Stage 2 finding."
+  },
+  "excluded": [
+    "pooled Ridge h=1",
+    "pooled Random Forest h=1",
+    "every h=5 model",
+    "every per-stock model",
+    "direction prediction"
+  ],
+  "finalist": {
+    "artifact": "phase12/stage2/results/finalists/pooled_lightgbm_h1.joblib",
+    "features_in_order": [
+      "Volatility",
+      "spy_volatility_20",
+      "Volume_Change_1",
+      "Volume_Change_5",
+      "event__earnings_event_count",
+      "event__event_count",
+      "event__negative_event_count",
+      "sw_count_surprise_1_20"
+    ],
+    "horizon": 1,
+    "model": "pooled LightGBM",
+    "stage2_name": "lightgbm",
+    "trained_on": "all development rows, labels complete by 2024-09-30 (Stage 2 fit_finalist)"
+  },
+  "git": {
+    "commit": "431f64cd84734224f51ff34db7a073c86c7702d3",
+    "uncommitted_changes": true
+  },
+  "inference": [
+    "verify each artifact's SHA256 before unpickling",
+    "build the 8 features for every (stock, sealed session) with the frozen generators (sealed_feature_build)",
+    "Volatility and spy_volatility_20 enter raw",
+    "the other 6 features are z-scored per stock with that stock's stored DEVELOPMENT mean and std (ddof 0, std 0 -> 1); no sealed statistic is ever computed for scaling",
+    "columns in features_in_order; estimator.predict; predictions floored at 0",
+    "the baseline is applied the same way to its 2 features",
+    "no fit, partial_fit, refit, recalibration or threshold choice on any sealed row"
+  ],
+  "metrics": [
+    "MSE",
+    "RMSE",
+    "MAE",
+    "relative MSE and MAE improvement over the baseline",
+    "per-stock and per-block relative MSE improvement",
+    "ranking (descriptive): pooled Spearman(prediction, actual); mean per-date cross-sectional Spearman",
+    "calibration (descriptive): prediction deciles; top-5% moves mean predicted / mean actual; bottom-50% moves; residual skew"
+  ],
+  "outcomes": {
+    "CONFIRMED": "valid run, Q1-Q6 pass",
+    "INVALID": "an integrity or eligibility rule fails before any prediction is compared with a target; no metric is computed or written; a repeat needs a written addendum whose fix does not depend on sealed outcomes",
+    "NOT_CONFIRMED": "valid run, any of Q1-Q6 fails; final, never re-run with changes"
+  },
+  "phase": "12",
+  "pins": {
+    "baseline": {
+      "file_sha256": "9e30150f406725ca63409742704d26c703abccdc6ba3e541097d9c05cb12ae7b",
+      "model_sha256": "684ca72d3241bb2010d26c227181232841bb822c883db7729c5628fd0aa7f682"
+    },
+    "code_sha256": {
+      "training/excess_targets.py": "455ea8fccc6564d138fd214d932d899ecb7454f020cbaa2846866347054aa9e6",
+      "training/phase11b_research.py": "c8e9905c00ef47db702bf43e8caed83dffa3111fddbb6343736c741e1f1d6180",
+      "training/phase12_magnitude.py": "8f2710cfdceb885dcb0811e57f86dcd7fdd56b50b64a282a201a374e6229f7cc",
+      "training/phase12_signal_diagnostics.py": "ed102d7de8b7e733b467b3ec7649a474c30be2d59d643083fe77bdf409135e2b"
+    },
+    "development_fingerprints": {
+      "baseline_predictions_sha256": "bc95c03f64afc80fd16da4b9543be64fce78c7a277ec3caec93b197a7e55c276",
+      "finalist_predictions_sha256": "a1504f8221ebd23df65851204a55115f6e0a52f21cc066c1812a65be542cfeaf",
+      "rows": 55883
+    },
+    "finalist": {
+      "file_sha256": "01f3c7e47a7b065998e1273f04eb198235c3648a3fec1151ba9ee770aa14e06d",
+      "model_sha256": "8e168af774bba3980ee6d7261cef85c8103c3098050e48816f4eb795dab94a8b"
+    },
+    "generator_code_sha256": {
+      "features/feature_engineering.py": "330d82380f87ffef46e3441e08748a1e8e1cc2801910f46cd443414ec958ef61",
+      "services/event_classifier.py": "c375a956ad00bf0d3c6b9e86ee1d1fc50e0e241bf50ad41cc6314f8b45d1f541",
+      "services/event_features.py": "ae1a402e32810e84cda99bdea1fbf6c4b3272d7f5ea635d8dd29da3796b0ce4c",
+      "services/historical_events.py": "8ad9356911f8b79cab6b12c7e4d946bde2b7a220a0f68f53e05f53ce5e3a6258",
+      "services/market_calendar_service.py": "353d89d09a5e6b58676dd5140607ceb82e3e9113b058d71ac9bac81063f24cc8",
+      "services/market_context.py": "79153e3e5cfa8cd650e9b1b66cc1f650ede2a765afd74ac77977b91add19620d",
+      "services/news_alignment.py": "364303b8605bdf202c0e208e5b68a7e2d1971f8dc0fe37974da0636f1443f2e5",
+      "services/sentiment_window.py": "b38bd95b853bff351d518a191b14af11ae0da40280980f845bdd6d1dd6ab7fdf",
+      "training/phase11a_research.py": "acb2b4191cb1fdb1d6778d003b4c23c28123e8e1c879d55d44a7ebc7e3873728",
+      "training/phase11b_feature_build.py": "ed282f9de2539de2afe687dfbb95beb4164612aab2d994e5e21b0922fcc8fe53"
+    },
+    "inputs_sha256": "0fb601fc6abb98ae30ac7edee57aa6e45c519726d63f4b3e962f127dc310124a",
+    "rules_v1_spec_sha256": "974016388088b7eb50c8ed2659c738bc464d10a34c7b068471fd6a24d7cd44ad",
+    "stage2_files_sha256": {
+      "stage2/protocol.json": "19d0ace0c64e409d95fd120907f1406a82576ea34fb42828fe1f9b5105463511",
+      "stage2/results/finalists/pooled_lightgbm_h1.joblib": "01f3c7e47a7b065998e1273f04eb198235c3648a3fec1151ba9ee770aa14e06d",
+      "stage2/results/manifest.json": "fd1f4a53b345293c92324e8611e89d9a9818c5909503969f7acb78a20d054926",
+      "stage2/results/results.json": "c2cfd82bfda47032e5c686422c9e78769e2a3efd7faeeeeaccbe3d489418933f"
+    },
+    "stage2_protocol_sha256": "fb9e9e38a37dcafdc5d2dbde96d14a9c0efcd70ed176169083b1f203d04e9339"
+  },
+  "prohibitions": [
+    "retraining or refitting any model on sealed rows",
+    "recalibration with sealed rows",
+    "feature, preprocessing, horizon or baseline changes",
+    "threshold or criterion changes",
+    "a second confirmation run after a valid one",
+    "evaluating any excluded model"
+  ],
+  "qualification": {
+    "Q1_improvement": "relative MSE improvement >= 0.01 AND relative MAE improvement >= 0.0",
+    "Q2_statistics": "DM p < 0.05 AND p with lag 2L < 0.05",
+    "Q3_periods": "MSE better in >= 3 of 4 equal consecutive blocks of sealed dates",
+    "Q4_separation": "artifacts trained only on rows with labels <= 2024-09-30; every evaluated row has t >= 2024-10-01 and t+1 <= 2026-09-25; no estimator is fitted during the run",
+    "Q5_breadth": "MSE improved for >= 60% of stocks, and still > 0 without the best stock and without the best quarter (63-session chunks of sealed dates; a final chunk < 21 merged into the previous one)",
+    "Q6_reproducibility": "artifact and model fingerprints and development prediction fingerprints match the pins, and a second in-process inference on the sealed rows is bit-identical",
+    "rule": "CONFIRMED only if Q1-Q6 all pass"
+  },
+  "sealed_data_read": false,
+  "sealed_feature_build": {
+    "requirements": [
+      "calls the generator files in pins.generator_code_sha256 unchanged (hash-checked at run time)",
+      "event labels from rules_v1 (spec hash pinned); no FinBERT or any other model is run",
+      "sentiment scores are not an input of any of the 8 features; where a generator needs one a constant placeholder is passed",
+      "UTX->RTX mapping and the news alignment and prediction-timestamp rules exactly as in 11B.3",
+      "before any sealed row is emitted, the builder rebuilds the development period and must reproduce the 8 columns of the frozen 11B development frames exactly (bit-identical); otherwise it stops",
+      "outputs only Date, Close, SPY_Close and the 8 features for sealed-window sessions"
+    ],
+    "status": "NOT YET WRITTEN (training/phase12_sealed_features.py); reviewed and approved separately before authorization"
+  },
+  "sealed_window": {
+    "lookback": "rolling features at t may use sessions before 2024-10-01 (as in development); no feature uses information after the session-t prediction timestamp",
+    "prediction_dates": "common sessions t with 2024-10-01 <= t and t+1 <= 2026-09-25",
+    "target_dates": "t+1 in 2024-10-01 .. 2026-09-25"
+  },
+  "stage": "12.S3A",
+  "statistics": {
+    "alpha": 0.05,
+    "family": "1 comparison (Holm-adjusted p = raw p)",
+    "test": "one-sided Diebold-Mariano, H0: finalist squared error not lower than the baseline's, on the per-date cross-sectional mean loss differential",
+    "variance": "Newey-West, Bartlett, lag L = max(1, ceil(T^(1/3))), T = sealed dates; 2L sensitivity"
+  },
+  "status": "FROZEN before any sealed observation is read",
+  "target": "y = |(Close[t+1]/Close[t] - 1) - (SPY_Close[t+1]/SPY_Close[t] - 1)|: excess_return_v1 at h=1 (training.excess_targets.build_excess_targets), absolute value; Close = the frozen snapshot close"
+}

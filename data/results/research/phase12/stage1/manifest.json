@@ -1,0 +1,12 @@
+{
+  "code_sha256": {
+    "training/excess_targets.py": "455ea8fccc6564d138fd214d932d899ecb7454f020cbaa2846866347054aa9e6",
+    "training/phase11b_research.py": "c8e9905c00ef47db702bf43e8caed83dffa3111fddbb6343736c741e1f1d6180",
+    "training/phase12_signal_diagnostics.py": "ed102d7de8b7e733b467b3ec7649a474c30be2d59d643083fe77bdf409135e2b"
+  },
+  "files": {
+    "summary.json": "67213b81bea1101cb33e71eb37af5ea41696ba3dc2cf773270f03ea00bd9a3b0",
+    "tests.csv": "d4ac4715319f9db7b80d30439a0a6baf02ff9cb20c2cde77d83449bc8f3f8083"
+  },
+  "inputs_sha256": "0fb601fc6abb98ae30ac7edee57aa6e45c519726d63f4b3e962f127dc310124a"
+}

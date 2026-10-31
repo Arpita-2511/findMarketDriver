@@ -1,0 +1,131 @@
+{
+  "code_sha256": {
+    "training/excess_targets.py": "455ea8fccc6564d138fd214d932d899ecb7454f020cbaa2846866347054aa9e6",
+    "training/phase11b_research.py": "c8e9905c00ef47db702bf43e8caed83dffa3111fddbb6343736c741e1f1d6180",
+    "training/phase12_magnitude.py": "8f2710cfdceb885dcb0811e57f86dcd7fdd56b50b64a282a201a374e6229f7cc",
+    "training/phase12_signal_diagnostics.py": "ed102d7de8b7e733b467b3ec7649a474c30be2d59d643083fe77bdf409135e2b"
+  },
+  "config": {
+    "alpha": 0.05,
+    "clip_quantiles": [
+      0.01,
+      0.99
+    ],
+    "horizons": [
+      1,
+      5
+    ],
+    "lgb_depth": 3,
+    "lgb_leaves": 7,
+    "lgb_lr": 0.03,
+    "lgb_trees": 300,
+    "min_blocks_improved": 3,
+    "min_last_fold": 21,
+    "min_leaf_pooled": 200,
+    "min_leaf_stock": 50,
+    "min_rel_mae_improvement": 0.0,
+    "min_rel_mse_improvement": 0.01,
+    "min_share_stocks_improved": 0.6,
+    "min_train": 504,
+    "n_blocks": 4,
+    "n_repro_stocks": 5,
+    "rf_depth": 4,
+    "rf_max_features": 0.5,
+    "rf_trees": 200,
+    "ridge_alpha": 1.0,
+    "test_len": 63
+  },
+  "created_at": "2026-10-30T19:38:40+00:00",
+  "data": "29 hash-verified Phase 11B development frames, 2017-02-01 .. 2024-09-30; sealed period never read",
+  "excluded": "direction prediction; any other feature; stock identity (never a feature)",
+  "features": [
+    "Volatility",
+    "spy_volatility_20",
+    "Volume_Change_1",
+    "Volume_Change_5",
+    "event__earnings_event_count",
+    "event__event_count",
+    "event__negative_event_count",
+    "sw_count_surprise_1_20"
+  ],
+  "finalists": "pooled qualifiers are refit on all development rows and saved; nothing else is saved",
+  "git": {
+    "commit": "431f64cd84734224f51ff34db7a073c86c7702d3",
+    "uncommitted_changes": true
+  },
+  "holdout": "sealed confirmation period untouched; evaluated at most once, only for finalists, only with owner approval",
+  "metrics": [
+    "MSE",
+    "RMSE",
+    "MAE",
+    "R2_oos vs reference = 1 - MSE/MSE_reference",
+    "relative MAE improvement",
+    "R2 vs training-median benchmark",
+    "prediction deciles (mean predicted vs actual)",
+    "top-5% actual moves: mean predicted / mean actual",
+    "per-block and per-stock relative MSE improvement"
+  ],
+  "models": {
+    "baseline_ridge_vol": "REFERENCE BASELINE: Ridge(alpha=1.0) on Volatility, spy_volatility_20",
+    "lightgbm": "candidate: LGBMRegressor(n_estimators=300, learning_rate=0.03, num_leaves=7, max_depth=3, min_child_samples=200 pooled / 50 per stock, subsample=0.8, subsample_freq=1, colsample_bytree=0.8, reg_lambda=1.0, random_state=42, n_jobs=1, deterministic=True)",
+    "lightgbm_vol": "descriptive control: the lightgbm candidate on the 2 volatility features only",
+    "median": "benchmark: training-fold median of y",
+    "no_tuning": true,
+    "random_forest": "candidate: RandomForestRegressor(n_estimators=200, max_depth=4, max_features=0.5, min_samples_leaf=200 pooled / 50 per stock, random_state=42, n_jobs=1)",
+    "ridge": "candidate: Ridge(alpha=1.0) on the 8 features",
+    "scaled_vol": "benchmark: c * Volatility, c = least squares through the origin on the training fold"
+  },
+  "phase": "12",
+  "preprocessing": {
+    "missing_values": "none expected; any non-finite value stops the run (no imputation)",
+    "pooled": "the 6 non-volatility features are z-scored per stock with that stock's training-fold mean and std (std 0 -> 1); volatility features stay raw; no stock identity feature",
+    "predictions": "floored at 0 for every model",
+    "ridge": "inputs clipped to training-fold quantiles [0.01, 0.99], then StandardScaler fit on the training fold",
+    "trees": "no scaling"
+  },
+  "protocol_sha256": "fb9e9e38a37dcafdc5d2dbde96d14a9c0efcd70ed176169083b1f203d04e9339",
+  "protocol_version": "phase12_stage2_magnitude_protocol_v1",
+  "qualification": {
+    "Q1_improvement": "relative MSE improvement over the reference >= 0.01 AND relative MAE improvement >= 0.0",
+    "Q2_statistics": "Holm-adjusted one-sided DM p < 0.05 within the family AND raw p with lag 2L < 0.05",
+    "Q3_periods": "MSE better than the reference in >= 3 of 4 equal consecutive blocks of test dates",
+    "Q4_leakage": "every fold satisfies the gap check; the automated leakage tests pass",
+    "Q5_breadth": "pooled only: MSE improved for >= 60% of stocks, and the improvement stays > 0 without the single best stock and without the single best fold",
+    "Q6_reproducibility": "a second in-process run gives bit-identical predictions (pooled: every model; per stock: 5 hash-chosen stocks)",
+    "applies_to": "each candidate x horizon (pooled: primary family; per stock: secondary family)",
+    "rule": "QUALIFIED only if Q1-Q6 all pass; thresholds are fixed here and never changed after results"
+  },
+  "stage": "12.S2",
+  "statistics": {
+    "alpha": 0.05,
+    "families": {
+      "primary": "pooled candidates x horizons = 6 comparisons, Holm",
+      "secondary": "per-stock candidates x 29 stocks x horizons = 174 comparisons, Holm"
+    },
+    "test": "one-sided Diebold-Mariano, H0: candidate squared error not lower than the reference's; pooled: per-date cross-sectional mean loss differential; per stock: that stock's series",
+    "variance": "Newey-West, Bartlett kernel, lag L = max(h, ceil(T^(1/3))), T = number of test dates; 2L sensitivity"
+  },
+  "status": "PRE-REGISTERED before any model fit",
+  "target": {
+    "definition": "|future_excess_return_h|, future_excess_return_h from excess_return_v1 (training.excess_targets.build_excess_targets); last h rows unlabelled",
+    "horizons": {
+      "1": "primary",
+      "5": "secondary"
+    }
+  },
+  "validation": {
+    "gap": "h: a training row i satisfies i + h < first test row (its label is complete before prediction)",
+    "last_fold": "a final fold shorter than 21 sessions is merged into the previous fold",
+    "min_train_sessions": 504,
+    "scopes": {
+      "per_stock": "one model per stock (secondary)",
+      "pooled": "one model on all 29 stocks (primary)"
+    },
+    "test_sessions_per_fold": 63,
+    "type": "expanding-window walk-forward over the common session index, identical folds for all models"
+  },
+  "volatility_features": [
+    "Volatility",
+    "spy_volatility_20"
+  ]
+}

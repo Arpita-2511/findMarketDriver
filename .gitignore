@@ -34,6 +34,9 @@ Thumbs.db
 # ================================
 *.pkl
 *.joblib
+# Phase 12 confirmation models: hash-pinned evidence (Stage 2 manifest, Amendment 07), so tracked
+!data/results/research/phase12/stage2/results/finalists/*.joblib
+!data/results/research/phase12/stage3/*.joblib
 
 # ================================
 # Logs / generated tracking files

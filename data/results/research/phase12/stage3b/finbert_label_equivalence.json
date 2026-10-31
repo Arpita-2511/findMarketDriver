@@ -1,0 +1,2553 @@
+{
+  "amendment_sha256": "54aa14a84de9f76aa79f579171e6908471fbf63ddd9056cabc5ac2c16894e0d7",
+  "article_keys_sha256": "1af19605b08a6bba522cce4ae9469b9fa3d6cc4ae559381284706299f99af465",
+  "articles": [
+    {
+      "article_key": "alpaca:13048164",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13425250",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:11589104",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:15617665",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:22516265",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:20397339",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:16386769",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:10161549",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:18311261",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:23914630",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:37753491",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:26241181",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:22573831",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:22951448",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:11411003",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:39295950",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:13491913",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:12749720",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:28334878",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:9027725",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:23993545",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:16970192",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27487094",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27539076",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14964002",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:18359573",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:15125736",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:9975426",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:15823492",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:20925690",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:23266173",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:36549296",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:17888367",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:12362151",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27496170",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:15192015",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:25133323",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:11269004",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:26303265",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39468609",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:15619185",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:38295494",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:38671567",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:18952206",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:32059232",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:27354151",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:28501020",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:24131174",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9209087",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:37399976",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:33994119",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:15609158",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:28946188",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12555697",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:29029490",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:28376138",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:25574591",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14435784",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:26692300",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:21457298",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:30829921",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:12779519",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:20823006",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:15396406",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:40711541",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:20654389",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:29122704",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:31834044",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:22675244",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:34474248",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:9974804",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:25669723",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:38184616",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:38853243",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9757049",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:36198672",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13399786",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:36043013",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:29988017",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:27893271",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:21962489",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:15235357",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:20889295",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:32686824",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:34441900",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:16690425",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14774659",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:11041197",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13601716",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39990450",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:25944305",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:24325157",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14685001",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:34979260",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12686853",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:11334766",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:40027292",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:24356056",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:18182128",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:16903022",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:10050244",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:40749484",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:20518827",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:15157794",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:11739246",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12404475",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13951710",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:32548412",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:8983712",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13810199",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:33285322",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:13405017",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:15155822",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:30484611",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:32361926",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:20618195",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:26870551",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:20882133",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:20114015",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:8950970",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:35126981",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:26197647",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:26896414",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39223613",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:39151941",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:29906511",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:19300587",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:34577920",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:11585875",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:16345562",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:23121414",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:15175834",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:28082087",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:22359488",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:38664485",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:13850779",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:35542647",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:19057940",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13398016",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:33363562",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:10083975",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:32862629",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9316748",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12315688",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:35845493",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:31784657",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:30141324",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:29746776",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12781211",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:25813156",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27834675",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:23493725",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:35964414",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:24116234",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14477976",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:15066089",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:38459367",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:31746310",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:24571815",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:31453557",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:30061658",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:26662175",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:32490318",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:19137114",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9673111",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:25447639",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:20083157",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12951203",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13067705",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39046260",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:26538819",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:26574722",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:28517750",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:25346260",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13337566",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14940230",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:31543060",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:35601229",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:15815752",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:27834162",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9097710",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:12128641",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:31295140",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:15155396",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39864633",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:26428966",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:21412831",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9531673",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39536375",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39668096",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:11072256",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:22129375",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:10213839",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:18670095",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:26509488",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:40007344",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:27144275",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:24014581",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:32597277",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:29800106",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:31383457",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:18717811",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:15127275",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:31103401",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:15203569",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:22723356",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:39917385",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:32722650",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:37817597",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:15129441",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:8987364",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:33365222",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:40222520",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:22972253",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:28316019",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:25457160",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:8946034",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:20622438",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:8899977",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:36360331",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:20766829",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:11934763",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27901337",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:23867381",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:32556285",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:34754568",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:35409188",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:15696623",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:36110358",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:10066560",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:26367932",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:34035464",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:31001624",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:22156174",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27537294",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:25527961",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:31604873",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:17644956",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:38301915",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:22223097",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:28078071",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:19117427",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12064157",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:11815913",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:24512965",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:19723526",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:25719145",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:8932213",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:26807891",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9411100",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:23722849",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:18439911",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13589289",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:33972090",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:22867430",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:32084792",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:32628266",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:12032219",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12679646",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:18423881",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:12861296",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:29308512",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:34499163",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:20915015",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:18453270",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:18002475",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:36388158",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:35227684",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:29736986",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:26456632",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:25259980",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:9599652",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14219027",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:15809118",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:12675703",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:30082763",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:35697322",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:29524356",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:11094350",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14308599",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13111127",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:38459982",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:22569929",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14752780",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39010704",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13991647",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13587311",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:36448189",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:35914989",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:12281784",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12406371",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:16106259",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:34922268",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:20835011",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:17760145",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27102778",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:20125933",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:23397197",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:19271088",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:20926038",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:15760626",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:38218518",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:12678400",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:36731409",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:14001345",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:22185681",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:26689379",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:29710695",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:14158131",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:20999537",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:15548839",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:11356951",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:9873406",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:30046778",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:24191242",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:23209669",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:34831456",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:24485486",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:29253936",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:36090360",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:33231950",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9560787",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:25210006",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9777447",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:38651994",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:25057505",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:40399338",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:39211185",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:35799406",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:40792367",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:12433060",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:30703007",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:32668301",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:35504210",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:36111207",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:26898929",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:26407187",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:13426367",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:12970648",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:12000571",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:18306978",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:9255605",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:36733979",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:20544678",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:33209191",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:40682966",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:25464553",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:40583951",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:38093581",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:36629841",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:17767520",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:26629280",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:15393748",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:23103866",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:30897463",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:24188323",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:34291261",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:19497867",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:30818833",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:14663339",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14768125",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:27407465",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:40048309",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39141091",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:30673729",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:10277763",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:20718798",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:20579407",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:22379266",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:17425688",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:32982890",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:25687000",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:15910003",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27899395",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:33636463",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:19079866",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:28127726",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:30852815",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27735179",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:19179993",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:38900479",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:38870742",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:28316511",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:29735972",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:11429871",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:11103224",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:17889595",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:14911424",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:35393803",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:9826755",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:34442081",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:37670631",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:36511800",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:28589259",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12031508",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:15745878",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:34868173",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:14187575",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:11888216",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:26681528",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:23394312",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:15515116",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:28051901",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14052602",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:40168743",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:39550510",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:29406096",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:33644129",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:31291489",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:33386514",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:20030539",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27301983",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:15917008",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:33234819",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:40378619",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13639451",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:26691706",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:31995117",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:32804027",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:22033235",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:21952961",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13197642",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:20520031",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:14115167",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:13944346",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:16612012",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:16903058",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:30949924",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:17322066",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:11319620",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:13047264",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:12484378",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:20793269",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:31882349",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:30829528",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:28103261",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:13766094",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:21641966",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:32479616",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:33556046",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:18133620",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:33037585",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:21417571",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:9907888",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39233177",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:22743676",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:30943924",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:32722039",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:27897329",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:33879603",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9935332",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:12835922",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:33571213",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:38263260",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:28938578",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9209226",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:16095285",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:29890613",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:19398217",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:13018659",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:28012580",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:12202999",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:14436978",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:24086022",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:32811151",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:28304040",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:33994204",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:12878933",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:36867264",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:11820046",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:35196257",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:15794781",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:33399392",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:8953688",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:36616209",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:38965886",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:26117020",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:12256544",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:40378509",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:14361134",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:35132150",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:39007606",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:33877052",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:32880156",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:25186570",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:19682126",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:29575394",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:27746079",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:36983859",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:9365571",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:39855166",
+      "fresh": "negative",
+      "stored": "negative"
+    },
+    {
+      "article_key": "alpaca:21723181",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:9255422",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:14494179",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:30468077",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:14850008",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:33047184",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:13693495",
+      "fresh": "neutral",
+      "stored": "neutral"
+    },
+    {
+      "article_key": "alpaca:39339825",
+      "fresh": "positive",
+      "stored": "positive"
+    },
+    {
+      "article_key": "alpaca:35496646",
+      "fresh": "negative",
+      "stored": "negative"
+    }
+  ],
+  "builder_code_sha256": "02046472ad4989d659fd3c139eb61de4726fe1bd0c74a574aac9471a9926307f",
+  "checked": 500,
+  "created_at": "2026-10-31T09:16:38+00:00",
+  "document_type": "phase12_finbert_label_equivalence",
+  "environment": {
+    "packages": {
+      "joblib": "1.5.3",
+      "lightgbm": "4.7.0",
+      "numpy": "2.5.1",
+      "pandas": "3.0.3",
+      "scikit-learn": "1.9.0",
+      "scipy": "1.18.0",
+      "xgboost": "3.3.0"
+    },
+    "python": "3.14.6"
+  },
+  "erratum_sha256": "0dd61b0b12bca9951387ea8568ac536b6afc13e6a08e322a06d137e8cd071713",
+  "finbert_config": {
+    "batch_size": 16,
+    "device": "cpu",
+    "labels": [
+      "positive",
+      "negative",
+      "neutral"
+    ],
+    "libraries": {
+      "torch": "2.9.0+cpu",
+      "transformers": "4.57.1"
+    },
+    "max_length": 512,
+    "model_name": "ProsusAI/finbert",
+    "model_revision": "4556d13015211d73dccd3fdd39d39232506f3e43"
+  },
+  "matches": 500,
+  "mismatches": [],
+  "model_files_sha256": {
+    "config.json": "f6449ddda85eb726207a40be59c0cd3bd4b142ccb27298d5e45f9ae3396b1abe",
+    "pytorch_model.bin": "e15a7b5738df7f17553399b6d94c6e2ff69c89245d066e8e5d183f5803a554e3",
+    "special_tokens_map.json": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3",
+    "tokenizer_config.json": "ffc7913f6084b138dad68de5a0c2f0ee25ac983709260901e01f53be5796b9d9",
+    "vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+  },
+  "result": "PASS",
+  "sealed_data_read": false,
+  "selection": "sort by sha256('phase12|erratum01|' + article_key), take the first 500",
+  "stage": "12.S3C",
+  "stored_scores_sha256": "b92a1da354c2861fea42ad97d5b7a6fcdbfe643446af448f31584472fa586fde"
+}

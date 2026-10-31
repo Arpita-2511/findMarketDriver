@@ -1,0 +1,12 @@
+{
+  "files": {
+    "finalists/pooled_lightgbm_h1.joblib": "01f3c7e47a7b065998e1273f04eb198235c3648a3fec1151ba9ee770aa14e06d",
+    "finalists/pooled_random_forest_h1.joblib": "9a438170003c38d67d6ced9b6b8ad36221436cd4a3cee05a7f3f4a828f36ba75",
+    "finalists/pooled_ridge_h1.joblib": "0d6222e729e42a7b9d96d593579bfb75d9fe1ccc2e251c569f8de1c34302c119",
+    "per_stock_comparisons.csv": "d36fb73aa35261bf972f7d057136ab7475a4899f121b3e4028564bb11d87ef4c",
+    "per_stock_metrics.csv": "cacce481a432557e44ab45322bb89ff17bff5e7617fa12e8309b3b1b5d148171",
+    "results.json": "c2cfd82bfda47032e5c686422c9e78769e2a3efd7faeeeeaccbe3d489418933f"
+  },
+  "inputs_sha256": "0fb601fc6abb98ae30ac7edee57aa6e45c519726d63f4b3e962f127dc310124a",
+  "protocol_sha256": "fb9e9e38a37dcafdc5d2dbde96d14a9c0efcd70ed176169083b1f203d04e9339"
+}

@@ -1,0 +1,86 @@
+{
+  "amends": {
+    "amendment_id": "amendment_07_phase12_sealed_confirmation",
+    "amendment_sha256": "54aa14a84de9f76aa79f579171e6908471fbf63ddd9056cabc5ac2c16894e0d7",
+    "file": "phase12/stage3/amendment_07_confirmation.json",
+    "relation": "supplements Amendment 07; Amendment 07 itself is not modified"
+  },
+  "correction": {
+    "replaces": [
+      "no FinBERT or any other model is run",
+      "sentiment scores are not an input of any of the 8 features; where a generator needs one a constant placeholder is passed"
+    ],
+    "with": "sealed articles are scored with the frozen 11B.2 FinBERT pipeline below, offline, and their labels are used only for event__negative_event_count"
+  },
+  "created_at": "2026-10-31T09:11:45+00:00",
+  "equivalence_gate": {
+    "articles": 500,
+    "on_failure": "stop; no sealed record is read; the requirement is never weakened",
+    "population": "11B.2 development articles only",
+    "requirement": "500/500 fresh labels equal the stored 11B.2 labels",
+    "selection": "sort by sha256('phase12|erratum01|' + article_key), take the first 500",
+    "when": "in the same process, after the development feature reproduction and before any sealed inference"
+  },
+  "erratum_id": "amendment_07_erratum_01_finbert_labels",
+  "finbert": {
+    "batch_size": 16,
+    "device": "cpu",
+    "hf_hub_offline": true,
+    "inference_version": "finbert_sentiment_v1",
+    "label_rule": "argmax of softmax(logits); ties broken in the label order above",
+    "labels": [
+      "positive",
+      "negative",
+      "neutral"
+    ],
+    "libraries": {
+      "torch": "2.9.0+cpu",
+      "transformers": "4.57.1"
+    },
+    "max_length": 512,
+    "model_name": "ProsusAI/finbert",
+    "model_revision": "4556d13015211d73dccd3fdd39d39232506f3e43",
+    "text_policy": "text_v1: headline + ' ' + summary (whitespace-collapsed; summary dropped if it repeats the headline); content (HTML stripped) only if both are empty; never URLs, ids, symbols, timestamps or source",
+    "tokenizer": "AutoTokenizer of the pinned revision; truncation by tokens at max_length; padding to the longest text of a batch (none for a single text); attention mask"
+  },
+  "model_files_sha256": {
+    "config.json": "f6449ddda85eb726207a40be59c0cd3bd4b142ccb27298d5e45f9ae3396b1abe",
+    "pytorch_model.bin": "e15a7b5738df7f17553399b6d94c6e2ff69c89245d066e8e5d183f5803a554e3",
+    "special_tokens_map.json": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3",
+    "tokenizer_config.json": "ffc7913f6084b138dad68de5a0c2f0ee25ac983709260901e01f53be5796b9d9",
+    "vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+  },
+  "no_substitution": "no other model, revision, tokenizer, text policy, truncation, padding, batch size, device or label mapping; any difference stops the build",
+  "permitted_use": "the label of each sealed article, as an input of event__negative_event_count only",
+  "phase": "12",
+  "qualification_statement": "Q1-Q6 and the CONFIRMED rule are exactly those of Amendment 07",
+  "qualification_unchanged": {
+    "Q1_improvement": "relative MSE improvement >= 0.01 AND relative MAE improvement >= 0.0",
+    "Q2_statistics": "DM p < 0.05 AND p with lag 2L < 0.05",
+    "Q3_periods": "MSE better in >= 3 of 4 equal consecutive blocks of sealed dates",
+    "Q4_separation": "artifacts trained only on rows with labels <= 2024-09-30; every evaluated row has t >= 2024-10-01 and t+1 <= 2026-09-25; no estimator is fitted during the run",
+    "Q5_breadth": "MSE improved for >= 60% of stocks, and still > 0 without the best stock and without the best quarter (63-session chunks of sealed dates; a final chunk < 21 merged into the previous one)",
+    "Q6_reproducibility": "artifact and model fingerprints and development prediction fingerprints match the pins, and a second in-process inference on the sealed rows is bit-identical",
+    "rule": "CONFIRMED only if Q1-Q6 all pass"
+  },
+  "reason": "Amendment 07 sealed_feature_build says no FinBERT run is needed and sentiment is not an input of the 8 features. That is wrong for event__negative_event_count: event_features_v1 counts events whose article FinBERT label is negative (services.event_taxonomy.impact_from_sentiment_label). A placeholder label would make the feature constant on sealed data.",
+  "restriction": "no FinBERT output feeds any other feature: the other 7 features and their generation rules are unchanged and must be identical whatever the sentiment values (tested); sentiment scores, ratios and means are never used",
+  "sealed_access": "this erratum authorizes no sealed access, sealed inference, sealed feature generation or confirmation; those need the owner's separate authorization record",
+  "sealed_data_read": false,
+  "stage": "12.S3C",
+  "status": "APPROVED by the project owner (Stage 3C); written before any sealed record is read",
+  "unchanged": [
+    "the other 7 features and every generation rule",
+    "finalist artifact",
+    "baseline artifact",
+    "preprocessing",
+    "target",
+    "horizon",
+    "sealed window",
+    "eligibility and missing-data rules",
+    "metrics",
+    "statistics",
+    "outcomes",
+    "prohibitions"
+  ]
+}
